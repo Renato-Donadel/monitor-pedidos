@@ -4,7 +4,26 @@ import os
 from io import BytesIO
 import hashlib
 
+# ==============================
+# LOGIN SIMPLES (1x por sessão)
+# ==============================
 SENHA_APP = "8S15?w5fkP"
+
+if "autenticado" not in st.session_state:
+    st.session_state["autenticado"] = False
+
+if not st.session_state["autenticado"]:
+    st.title("🔒 Acesso restrito")
+    senha = st.text_input("Digite a senha para acessar", type="password")
+
+    if st.button("Entrar"):
+        if senha == SENHA_APP:
+            st.session_state["autenticado"] = True
+            st.rerun()
+        else:
+            st.error("Senha incorreta.")
+    st.stop()
+
 
 
 # ==============================
