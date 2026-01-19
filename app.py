@@ -4,6 +4,9 @@ import os
 from io import BytesIO
 import hashlib
 
+SENHA_APP = "8S15?w5fkP"
+
+
 # ==============================
 # CONFIGURAÇÕES
 # ==============================
@@ -62,6 +65,13 @@ if st.session_state["arquivo_hash"] != arquivo_hash:
 # ==============================
 # INTERFACE
 # ==============================
+
+senha = st.text_input("🔒 Digite a senha para acessar", type="password")
+
+if senha != SENHA_APP:
+    st.warning("Acesso restrito. Digite a senha correta.")
+    st.stop()
+
 st.title("📦 Monitor de Pedidos Críticos")
 st.write(
     "Clique no botão da sua carteira para baixar **300 pedidos por vez**, "
