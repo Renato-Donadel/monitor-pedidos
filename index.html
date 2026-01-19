@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Monitor de Pedidos</title>
+
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f2f4f7;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      display: flex;
+      height: 100vh;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card {
+      background: #ffffff;
+      padding: 32px 40px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+      text-align: center;
+      width: 360px;
+    }
+
+    h1 {
+      margin-top: 0;
+      color: #333;
+    }
+
+    p {
+      color: #555;
+      font-size: 15px;
+    }
+
+    .btn-download {
+      display: block;
+      margin-top: 25px;
+      padding: 14px;
+      background: #0078d4;
+      color: #ffffff;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .btn-download:hover {
+      background: #005fa3;
+    }
+
+    .footer {
+      margin-top: 20px;
+      font-size: 12px;
+      color: #888;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>📊 Monitor de Pedidos</h1>
+
+      <p>
+        Clique no botão abaixo para baixar<br>
+        o relatório atualizado.
+      </p>
+
+      <a class="btn-download"
+         href="data/Monitor_Pedidos_Processado.xlsx"
+         download>
+        ⬇️ Baixar Excel
+      </a>
+
+      <div class="footer">
+        Bravium • Atualizado automaticamente
+      </div>
+    </div>
+  </div>
+</body>
+</html>
