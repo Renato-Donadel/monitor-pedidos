@@ -3,15 +3,16 @@ import pandas as pd
 import os
 from io import BytesIO
 import matplotlib.pyplot as plt
+import re
 
 # ==============================
 # CONFIGS
 # ==============================
-PASTA_DATA = os.path.join(os.path.dirname(__file__), "data")
+BASE_DIR = os.path.dirname(__file__)
+PASTA_DATA = os.path.join(BASE_DIR, "data")
+PASTA_HIST_SITE = os.path.join(PASTA_DATA, "historico")
 
 ARQ_ATUAL = os.path.join(PASTA_DATA, "Monitor_Pedidos_Processado.xlsx")
-ARQ_MANHA = os.path.join(PASTA_DATA, "Monitor_Pedidos_Processado_manha.xlsx")
-ARQ_TARDE = os.path.join(PASTA_DATA, "Monitor_Pedidos_Processado_tarde.xlsx")
 
 TAMANHO_LOTE = 300
 
@@ -44,7 +45,6 @@ if not st.session_state["autenticado"]:
 # ==============================
 def ler_base(path: str, nome: str) -> pd.DataFrame:
     if not os.path.exists(path):
-        st.warning(f"⚠️ Arquivo não encontrado: **{nome}**")
         return pd.DataFrame()
     try:
         return pd.read_excel(path)
@@ -59,17 +59,15 @@ def calcular_tratados(df_manha: pd.DataFrame, df_tarde: pd.DataFrame, filtro_man
       - sumiu na tarde
       OU
       - continua, mas Status mudou
-    Se filtro_manha for passado, ele filtra o df_manha antes de comparar.
     """
     if df_manha.empty or df_tarde.empty:
         return None
 
     chave = "PedidoFormatado"
-
-    # garante colunas básicas
-    for c in [chave, "Status"]:
-        if c not in df_manha.columns or c not in df_tarde.columns:
-            return None
+    if chave not in df_manha.columns or chave not in df_tarde.columns:
+        return None
+    if "Status" not in df_manha.columns or "Status" not in df_tarde.columns:
+        return None
 
     if filtro_manha is not None:
         try:
@@ -88,7 +86,6 @@ def calcular_tratados(df_manha: pd.DataFrame, df_tarde: pd.DataFrame, filtro_man
 
     sumiu = m["Status_tarde"].isna()
     mudou = (~sumiu) & (m["Status_manha"] != m["Status_tarde"])
-
     tratados = sumiu | mudou
 
     total = len(m)
@@ -98,24 +95,52 @@ def calcular_tratados(df_manha: pd.DataFrame, df_tarde: pd.DataFrame, filtro_man
     return total, qtd_tratados, qtd_nao_tratados
 
 
-def pizza_tratados(titulo: str, total: int, tratados: int, nao_tratados: int, tamanho=1.0):
-    fig, ax = plt.subplots(figsize=(4.0 * tamanho, 4.0 * tamanho))
+def pizza_tratados(titulo: str, total: int, tratados: int, nao_tratados: int):
+    """
+    Pizza bem pequena, para caber várias por dia e vários dias na tela
+    """
+    fig, ax = plt.subplots(figsize=(1.25, 1.25))  # bem pequeno
     ax.pie(
         [tratados, nao_tratados],
-        labels=["Tratados", "Não tratados"],
+        labels=None,
         autopct="%1.0f%%",
         startangle=90,
+        textprops={"fontsize": 6},
     )
-    ax.set_title(f"{titulo}\nTotal: {total} | Tratados: {tratados}")
+    ax.set_title(titulo, fontsize=7)
     st.pyplot(fig)
 
 
-# ==============================
-# CARREGAR BASES
-# ==============================
-df_atual = ler_base(ARQ_ATUAL, "Monitor atual (botões)")
-df_manha = ler_base(ARQ_MANHA, "Monitor manhã (gráficos)")
-df_tarde = ler_base(ARQ_TARDE, "Monitor tarde (gráficos)")
+def listar_dias_historico():
+    """
+    Espera arquivos:
+      data/historico/DD-MM-YYYY_manha.xlsx
+      data/historico/DD-MM-YYYY_tarde.xlsx
+    """
+    if not os.path.exists(PASTA_HIST_SITE):
+        return []
+
+    arquivos = os.listdir(PASTA_HIST_SITE)
+
+    # captura datas por regex
+    datas = set()
+    for a in arquivos:
+        m = re.match(r"(\d{2}-\d{2}-\d{4})_(manha|tarde)\.xlsx$", a, flags=re.IGNORECASE)
+        if m:
+            datas.add(m.group(1))
+
+    # ordena por data real
+    def chave_data(s):
+        try:
+            return pd.to_datetime(s, format="%d-%m-%Y")
+        except Exception:
+            return pd.Timestamp.min
+
+    return sorted(list(datas), key=chave_data)
+
+
+def caminho_hist(dia: str, periodo: str) -> str:
+    return os.path.join(PASTA_HIST_SITE, f"{dia}_{periodo}.xlsx")
 
 
 # ==============================
@@ -125,12 +150,14 @@ st.title("📦 Monitor de Pedidos Críticos")
 
 
 # ==============================
-# TOPO: BOTÕES (HORIZONTAL)
+# TOPO: BOTÕES (DOWNLOAD)
 # ==============================
 st.subheader("📥 Carteiras — Download (base atual)")
 
+df_atual = ler_base(ARQ_ATUAL, "Monitor atual")
+
 if df_atual.empty:
-    st.error("Base atual vazia ou não carregada. Verifique o arquivo Monitor_Pedidos_Processado.xlsx.")
+    st.error("Base atual não encontrada ou vazia (data/Monitor_Pedidos_Processado.xlsx).")
     st.stop()
 
 if "Ranking" in df_atual.columns:
@@ -141,7 +168,7 @@ if "offsets" not in st.session_state:
 
 carteiras = sorted(df_atual["Carteira"].dropna().unique())
 
-COLS_POR_LINHA = 4
+COLS_POR_LINHA = 5
 linhas = [carteiras[i:i + COLS_POR_LINHA] for i in range(0, len(carteiras), COLS_POR_LINHA)]
 
 for grupo in linhas:
@@ -158,11 +185,11 @@ for grupo in linhas:
             st.caption(f"**{carteira}**")
             st.caption(f"{inicio+1}–{fim} / {total_carteira}")
 
-            if st.button("📥 Baixar", key=f"baixar_{carteira}"):
+            if st.button("📥", key=f"baixar_{carteira}"):
                 df_lote = df_carteira.iloc[inicio:fim]
 
                 if df_lote.empty:
-                    st.warning("✅ Já chegou no fim dessa carteira.")
+                    st.warning("Fim da carteira.")
                     st.stop()
 
                 st.session_state["offsets"][carteira] = fim
@@ -185,75 +212,74 @@ st.divider()
 
 
 # ==============================
-# BI (EMBAIXO)
+# HISTÓRICO BI (vários dias lado a lado)
 # ==============================
-st.subheader("📊 BI — Tratados do dia (manhã x tarde)")
-st.caption(f"📅 Data: **{pd.Timestamp.today().strftime('%d/%m/%Y')}**")
+st.subheader("📊 BI — Histórico de Tratados (manhã x tarde)")
+st.caption("Cada dia adiciona um novo bloco de 5 pizzas ao lado (histórico).")
 
-if df_manha.empty or df_tarde.empty:
-    st.info("Os gráficos aparecem quando existirem os arquivos de **manhã** e **tarde** na pasta `data/`.")
+dias = listar_dias_historico()
+
+if not dias:
+    st.info("Sem histórico ainda. Falta criar arquivos em data/historico/ (DD-MM-YYYY_manha.xlsx e DD-MM-YYYY_tarde.xlsx).")
     st.stop()
 
-if "DescricaoCriticidade" not in df_manha.columns:
-    st.warning("⚠️ Sua base da manhã não tem a coluna `DescricaoCriticidade`. Alguns gráficos podem não funcionar.")
+# mostra os últimos 10 dias para não ficar infinito
+ULTIMOS = 10
+dias_exibir = dias[-ULTIMOS:]
 
-with st.container(border=True):
-    # 1) GERAL (em cima)
-    r = calcular_tratados(df_manha, df_tarde)
-    if r is None:
-        st.error("Não foi possível calcular o gráfico geral (verifique colunas PedidoFormatado e Status).")
-    else:
+cols_dias = st.columns(len(dias_exibir))
+
+for i, dia in enumerate(dias_exibir):
+    with cols_dias[i]:
+        st.markdown(f"### 📅 {dia}")
+
+        df_manha = ler_base(caminho_hist(dia, "manha"), f"{dia}_manha")
+        df_tarde = ler_base(caminho_hist(dia, "tarde"), f"{dia}_tarde")
+
+        if df_manha.empty or df_tarde.empty:
+            st.warning("Sem manhã ou tarde")
+            continue
+
+        # 1) Geral
+        r = calcular_tratados(df_manha, df_tarde)
+        if r is None:
+            st.warning("Erro geral")
+            continue
         total, tratados, nao_tratados = r
-        pizza_tratados("Geral — pedidos tratados", total, tratados, nao_tratados, tamanho=0.85)
+        pizza_tratados(f"Geral\nT:{tratados}/{total}", total, tratados, nao_tratados)
 
-    # linha 1
-    c1, c2 = st.columns(2)
-
-    # 2) Triplo prazo transportador
-    with c1:
+        # Triplo transportador (via texto)
         def filtro_triplo(df):
             if "DescricaoCriticidade" not in df.columns:
                 return pd.Series([False] * len(df))
-            return df["DescricaoCriticidade"].fillna("").str.contains(
-                "Triplo prazo transportador", case=False
-            )
+            return df["DescricaoCriticidade"].fillna("").str.contains("Triplo prazo transportador", case=False)
 
         t, tr, ntr = calcular_tratados(df_manha, df_tarde, filtro_manha=filtro_triplo)
-        pizza_tratados("Triplo prazo transportador (manhã)", t, tr, ntr, tamanho=0.75)
+        pizza_tratados(f"Triplo\nT:{tr}/{t}", t, tr, ntr)
 
-    # 3) Status específico
-    with c2:
-        def filtro_status_especifico(df):
+        # Status específico (via texto)
+        def filtro_especifico(df):
             if "DescricaoCriticidade" not in df.columns:
                 return pd.Series([False] * len(df))
-            return df["DescricaoCriticidade"].fillna("").str.contains(
-                "Dobro prazo status específico", case=False
-            )
+            return df["DescricaoCriticidade"].fillna("").str.contains("Dobro prazo status específico", case=False)
 
-        t, tr, ntr = calcular_tratados(df_manha, df_tarde, filtro_manha=filtro_status_especifico)
-        pizza_tratados("Status específico (manhã)", t, tr, ntr, tamanho=0.75)
+        t, tr, ntr = calcular_tratados(df_manha, df_tarde, filtro_manha=filtro_especifico)
+        pizza_tratados(f"Específico\nT:{tr}/{t}", t, tr, ntr)
 
-    # linha 2
-    c3, c4 = st.columns(2)
-
-    # 4) Campanha peso 3
-    with c3:
-        def filtro_campanha_peso3(df):
+        # Campanha peso 3
+        def filtro_peso3(df):
             if "PesoCampanha" not in df.columns:
                 return pd.Series([False] * len(df))
             return df["PesoCampanha"].fillna(0) == 3
 
-        t, tr, ntr = calcular_tratados(df_manha, df_tarde, filtro_manha=filtro_campanha_peso3)
-        pizza_tratados("Campanha prioritária (peso 3)", t, tr, ntr, tamanho=0.75)
+        t, tr, ntr = calcular_tratados(df_manha, df_tarde, filtro_manha=filtro_peso3)
+        pizza_tratados(f"Campanha 3\nT:{tr}/{t}", t, tr, ntr)
 
-    # 5) Por região
-    with c4:
+        # Região (via texto)
         def filtro_regiao(df):
             if "DescricaoCriticidade" not in df.columns:
                 return pd.Series([False] * len(df))
-            return df["DescricaoCriticidade"].fillna("").str.contains(
-                "Dobro prazo status por região", case=False
-            )
+            return df["DescricaoCriticidade"].fillna("").str.contains("Dobro prazo status por região", case=False)
 
         t, tr, ntr = calcular_tratados(df_manha, df_tarde, filtro_manha=filtro_regiao)
-        pizza_tratados("Fora do prazo por região (manhã)", t, tr, ntr, tamanho=0.75)
+        pizza_tratados(f"Região\nT:{tr}/{t}", t, tr, ntr)
