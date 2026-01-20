@@ -20,7 +20,7 @@ st.set_page_config(page_title="Monitor de Pedidos Críticos", layout="wide")
 # ==============================
 # LOGIN (1x por sessão)
 # ==============================
-SENHA_APP = "SUA_SENHA_AQUI"
+SENHA_APP = "8S15?w5fkP"
 
 if "autenticado" not in st.session_state:
     st.session_state["autenticado"] = False
