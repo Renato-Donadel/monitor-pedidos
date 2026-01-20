@@ -13,7 +13,6 @@ PASTA_DATA = os.path.join(BASE_DIR, "data")
 PASTA_HIST_SITE = os.path.join(PASTA_DATA, "historico")
 
 ARQ_ATUAL = os.path.join(PASTA_DATA, "Monitor_Pedidos_Processado.xlsx")
-
 TAMANHO_LOTE = 300
 
 st.set_page_config(page_title="Monitor de Pedidos Críticos", layout="wide")
@@ -22,7 +21,7 @@ st.set_page_config(page_title="Monitor de Pedidos Críticos", layout="wide")
 # ==============================
 # LOGIN (1x por sessão)
 # ==============================
-SENHA_APP = "SUA_SENHA_AQUI"
+SENHA_APP = "8S15?w5fkP"
 
 if "autenticado" not in st.session_state:
     st.session_state["autenticado"] = False
@@ -97,18 +96,30 @@ def calcular_tratados(df_manha: pd.DataFrame, df_tarde: pd.DataFrame, filtro_man
 
 def pizza_tratados(titulo: str, total: int, tratados: int, nao_tratados: int):
     """
-    Pizza bem pequena, para caber várias por dia e vários dias na tela
+    Pizza MINIATURA e nítida (sem esticar no Streamlit)
     """
-    fig, ax = plt.subplots(figsize=(1.25, 1.25))  # bem pequeno
+    if total == 0:
+        st.caption(f"{titulo}: 0")
+        return
+
+    fig, ax = plt.subplots(figsize=(0.85, 0.85), dpi=200)
+
+    # sem labels grandes
     ax.pie(
         [tratados, nao_tratados],
         labels=None,
-        autopct="%1.0f%%",
+        autopct=lambda p: f"{p:.0f}%",
         startangle=90,
-        textprops={"fontsize": 6},
+        textprops={"fontsize": 5},
     )
-    ax.set_title(titulo, fontsize=7)
-    st.pyplot(fig)
+
+    ax.set_title(titulo, fontsize=6, pad=2)
+
+    # deixa bem "quadradinho" e sem margens
+    ax.axis("equal")
+    plt.tight_layout(pad=0.2)
+
+    st.pyplot(fig)  # NÃO usar container_width
 
 
 def listar_dias_historico():
@@ -122,14 +133,12 @@ def listar_dias_historico():
 
     arquivos = os.listdir(PASTA_HIST_SITE)
 
-    # captura datas por regex
     datas = set()
     for a in arquivos:
         m = re.match(r"(\d{2}-\d{2}-\d{4})_(manha|tarde)\.xlsx$", a, flags=re.IGNORECASE)
         if m:
             datas.add(m.group(1))
 
-    # ordena por data real
     def chave_data(s):
         try:
             return pd.to_datetime(s, format="%d-%m-%Y")
@@ -212,7 +221,7 @@ st.divider()
 
 
 # ==============================
-# HISTÓRICO BI (vários dias lado a lado)
+# HISTÓRICO BI (dias lado a lado)
 # ==============================
 st.subheader("📊 BI — Histórico de Tratados (manhã x tarde)")
 st.caption("Cada dia adiciona um novo bloco de 5 pizzas ao lado (histórico).")
@@ -220,10 +229,9 @@ st.caption("Cada dia adiciona um novo bloco de 5 pizzas ao lado (histórico).")
 dias = listar_dias_historico()
 
 if not dias:
-    st.info("Sem histórico ainda. Falta criar arquivos em data/historico/ (DD-MM-YYYY_manha.xlsx e DD-MM-YYYY_tarde.xlsx).")
+    st.info("Sem histórico ainda (pasta data/historico vazia).")
     st.stop()
 
-# mostra os últimos 10 dias para não ficar infinito
 ULTIMOS = 10
 dias_exibir = dias[-ULTIMOS:]
 
@@ -248,7 +256,7 @@ for i, dia in enumerate(dias_exibir):
         total, tratados, nao_tratados = r
         pizza_tratados(f"Geral\nT:{tratados}/{total}", total, tratados, nao_tratados)
 
-        # Triplo transportador (via texto)
+        # 2) Triplo transportador (via texto)
         def filtro_triplo(df):
             if "DescricaoCriticidade" not in df.columns:
                 return pd.Series([False] * len(df))
@@ -257,25 +265,25 @@ for i, dia in enumerate(dias_exibir):
         t, tr, ntr = calcular_tratados(df_manha, df_tarde, filtro_manha=filtro_triplo)
         pizza_tratados(f"Triplo\nT:{tr}/{t}", t, tr, ntr)
 
-        # Status específico (via texto)
+        # 3) Status específico (via texto)
         def filtro_especifico(df):
             if "DescricaoCriticidade" not in df.columns:
                 return pd.Series([False] * len(df))
             return df["DescricaoCriticidade"].fillna("").str.contains("Dobro prazo status específico", case=False)
 
         t, tr, ntr = calcular_tratados(df_manha, df_tarde, filtro_manha=filtro_especifico)
-        pizza_tratados(f"Específico\nT:{tr}/{t}", t, tr, ntr)
+        pizza_tratados(f"Espec.\nT:{tr}/{t}", t, tr, ntr)
 
-        # Campanha peso 3
+        # 4) Campanha peso 3
         def filtro_peso3(df):
             if "PesoCampanha" not in df.columns:
                 return pd.Series([False] * len(df))
             return df["PesoCampanha"].fillna(0) == 3
 
         t, tr, ntr = calcular_tratados(df_manha, df_tarde, filtro_manha=filtro_peso3)
-        pizza_tratados(f"Campanha 3\nT:{tr}/{t}", t, tr, ntr)
+        pizza_tratados(f"Camp 3\nT:{tr}/{t}", t, tr, ntr)
 
-        # Região (via texto)
+        # 5) Região (via texto)
         def filtro_regiao(df):
             if "DescricaoCriticidade" not in df.columns:
                 return pd.Series([False] * len(df))
