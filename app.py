@@ -12,7 +12,6 @@ from datetime import datetime
 BASE_DIR = os.path.dirname(__file__)
 PASTA_DATA = os.path.join(BASE_DIR, "data")
 PASTA_HIST = os.path.join(PASTA_DATA, "historico")
-ARQ_AUX = r"Z:\9. Transportes\9.2. Business Intelligence\9.2 Monitor_Pedidos\Auxiliares.xlsx"
 
 st.set_page_config(page_title="BI Executivo - Monitor", layout="wide")
 
@@ -48,19 +47,6 @@ def pizza(tratados, nao, titulo):
     plt.close(fig)
     buf.seek(0)
     return buf.getvalue()
-
-# ==============================
-# AUX STATUS (prazo específico)
-# ==============================
-xls = pd.ExcelFile(ARQ_AUX)
-param_status = pd.read_excel(
-    xls,
-    sheet_name=[s for s in xls.sheet_names if "Status" in s][0]
-)
-
-mapa_prazo_status = dict(
-    zip(param_status["StatusEspecificos"], param_status["Prazo"])
-)
 
 # ==============================
 # INÍCIO
@@ -141,35 +127,28 @@ for i in range(len(dias)-1):
     datas_plot.append(dia_atual)
 
     # =====================================================
-    # 🟡 STATUS ESPECÍFICO 2x
+    # 🟡 STATUS 2x (USANDO FLAG)
     # =====================================================
     st.markdown("## 🟡 Status Específico 2x Prazo")
 
-    df_ant["PrazoStatus"] = df_ant["Status"].map(mapa_prazo_status).fillna(0)
-    df_ant["DiasStatus"] = (
-        pd.to_datetime(dia_atual, format="%d-%m-%Y") -
-        pd.to_datetime(df_ant["DataÚltimoStatus"])
-    ).dt.days
+    status_ant = df_ant[df_ant["Status_Dobro"]=="X"]
+    status_atual = df_atual[df_atual["Status_Dobro"]=="X"]
 
-    critico_status = df_ant[
-        df_ant["DiasStatus"] >= df_ant["PrazoStatus"]*2
+    persist_status = status_ant[
+        status_ant["PedidoFormatado"].isin(status_atual["PedidoFormatado"])
     ]
 
-    persist_status = critico_status[
-        critico_status["PedidoFormatado"].isin(df_atual["PedidoFormatado"])
-    ]
-
-    entrou_status = df_atual[
-        ~df_atual["PedidoFormatado"].isin(critico_status["PedidoFormatado"])
+    entrou_status = status_atual[
+        ~status_atual["PedidoFormatado"].isin(status_ant["PedidoFormatado"])
     ]
 
     c1,c2,c3 = st.columns(3)
     with c1:
-        st.metric("Críticos", len(critico_status))
+        st.metric("Críticos Status 2x", len(status_ant))
     with c2:
         st.metric("Entraram", len(entrou_status))
     with c3:
-        st.metric("Persist 2x", len(persist_status))
+        st.metric("Persistentes", len(persist_status))
 
         buffer = BytesIO()
         persist_status.to_excel(buffer,index=False)
@@ -180,42 +159,28 @@ for i in range(len(dias)-1):
         )
 
     # =====================================================
-    # 🔵 REGIÃO 2x
+    # 🔵 REGIÃO 2x (USANDO FLAG)
     # =====================================================
     st.markdown("## 🔵 Região 2x Prazo")
 
-    mapa_regiao = {
-        "AC":6,"AP":6,"AM":6,"PA":6,"RO":6,"RR":6,"TO":6,
-        "AL":4,"BA":4,"CE":4,"MA":4,"PB":4,"PE":4,"PI":4,"RN":4,"SE":4,
-        "DF":4,"GO":4,"MT":4,"MS":4,
-        "PR":3,"RS":3,"SC":3
-    }
+    reg_ant = df_ant[df_ant["Regiao_Dobro"]=="X"]
+    reg_atual = df_atual[df_atual["Regiao_Dobro"]=="X"]
 
-    df_ant["PrazoRegiao"] = df_ant["UF"].map(mapa_regiao).fillna(2)
-    df_ant["DiasRegiao"] = (
-        pd.to_datetime(dia_atual, format="%d-%m-%Y") -
-        pd.to_datetime(df_ant["DataÚltimoStatus"])
-    ).dt.days
-
-    critico_reg = df_ant[
-        df_ant["DiasRegiao"] >= df_ant["PrazoRegiao"]*2
+    persist_reg = reg_ant[
+        reg_ant["PedidoFormatado"].isin(reg_atual["PedidoFormatado"])
     ]
 
-    persist_reg = critico_reg[
-        critico_reg["PedidoFormatado"].isin(df_atual["PedidoFormatado"])
-    ]
-
-    entrou_reg = df_atual[
-        ~df_atual["PedidoFormatado"].isin(critico_reg["PedidoFormatado"])
+    entrou_reg = reg_atual[
+        ~reg_atual["PedidoFormatado"].isin(reg_ant["PedidoFormatado"])
     ]
 
     c1,c2,c3 = st.columns(3)
     with c1:
-        st.metric("Críticos Região", len(critico_reg))
+        st.metric("Críticos Região 2x", len(reg_ant))
     with c2:
         st.metric("Entraram", len(entrou_reg))
     with c3:
-        st.metric("Persist Região 2x", len(persist_reg))
+        st.metric("Persistentes", len(persist_reg))
 
         buffer = BytesIO()
         persist_reg.to_excel(buffer,index=False)
