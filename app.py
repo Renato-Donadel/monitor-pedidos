@@ -4,281 +4,236 @@ import os
 from io import BytesIO
 import matplotlib.pyplot as plt
 import re
+from datetime import datetime
 
 # ==============================
 # CONFIGS
 # ==============================
 BASE_DIR = os.path.dirname(__file__)
 PASTA_DATA = os.path.join(BASE_DIR, "data")
-PASTA_HIST_SITE = os.path.join(PASTA_DATA, "historico")
+PASTA_HIST = os.path.join(PASTA_DATA, "historico")
+ARQ_AUX = r"Z:\9. Transportes\9.2. Business Intelligence\9.2 Monitor_Pedidos\Auxiliares.xlsx"
 
-ARQ_ATUAL = os.path.join(PASTA_DATA, "Monitor_Pedidos_Processado.xlsx")
-TAMANHO_LOTE = 300
-
-st.set_page_config(page_title="Monitor de Pedidos Críticos", layout="wide")
+st.set_page_config(page_title="BI Executivo - Monitor", layout="wide")
 
 # ==============================
-# LOGIN (1x por sessão)
+# FUNÇÕES BASE
 # ==============================
-SENHA_APP = "8S15?w5fkP"
-
-if "autenticado" not in st.session_state:
-    st.session_state["autenticado"] = False
-
-if not st.session_state["autenticado"]:
-    st.title("🔒 Acesso restrito")
-    senha = st.text_input("Digite a senha para acessar", type="password")
-
-    if st.button("Entrar"):
-        if senha == SENHA_APP:
-            st.session_state["autenticado"] = True
-            st.rerun()
-        else:
-            st.error("Senha incorreta.")
-    st.stop()
-
-# ==============================
-# FUNÇÕES
-# ==============================
-def ler_base(path: str, nome: str) -> pd.DataFrame:
+def ler_base(path):
     if not os.path.exists(path):
         return pd.DataFrame()
-    try:
-        return pd.read_excel(path)
-    except Exception as e:
-        st.error(f"Erro ao ler **{nome}**: {e}")
-        return pd.DataFrame()
+    return pd.read_excel(path)
 
+def listar_dias():
+    arquivos = os.listdir(PASTA_HIST)
+    datas = set()
+    for a in arquivos:
+        m = re.match(r"(\d{2}-\d{2}-\d{4})_manha\.xlsx$", a)
+        if m:
+            datas.add(m.group(1))
+    return sorted(datas, key=lambda x: pd.to_datetime(x, format="%d-%m-%Y"))
 
-def calcular_tratados(df_manha: pd.DataFrame, df_tarde: pd.DataFrame, filtro_manha=None):
-    if df_manha.empty or df_tarde.empty:
-        return None
+def caminho(dia):
+    return os.path.join(PASTA_HIST, f"{dia}_manha.xlsx")
 
-    chave = "PedidoFormatado"
-    if chave not in df_manha.columns or chave not in df_tarde.columns:
-        return None
-    if "Status" not in df_manha.columns or "Status" not in df_tarde.columns:
-        return None
-
-    if filtro_manha is not None:
-        mask = filtro_manha(df_manha)
-        df_manha = df_manha[mask].copy()
-
-    if df_manha.empty:
-        return 0, 0, 0
-
-    df_m = df_manha[[chave, "Status"]].copy()
-    df_t = df_tarde[[chave, "Status"]].copy()
-
-    m = df_m.merge(df_t, on=chave, how="left", suffixes=("_manha", "_tarde"))
-
-    sumiu = m["Status_tarde"].isna()
-    mudou = (~sumiu) & (m["Status_manha"] != m["Status_tarde"])
-    tratados = sumiu | mudou
-
-    total = len(m)
-    qtd_tratados = int(tratados.sum())
-    qtd_nao_tratados = total - qtd_tratados
-
-    return total, qtd_tratados, qtd_nao_tratados
-
-
-def fig_pizza_bytes(tratados: int, nao_tratados: int, titulo: str):
-    """
-    Renderiza a pizza como PNG em bytes (MUUUUITO menor e nítido no Streamlit).
-    """
-    fig, ax = plt.subplots(figsize=(0.55, 0.55), dpi=260)
-
-    if tratados + nao_tratados == 0:
-        ax.text(0.5, 0.5, "0", ha="center", va="center", fontsize=6)
+def pizza(tratados, nao, titulo):
+    fig, ax = plt.subplots(figsize=(2.5,2.5))
+    if tratados + nao == 0:
+        ax.text(0.5,0.5,"0",ha="center")
     else:
-        ax.pie(
-            [tratados, nao_tratados],
-            labels=None,
-            startangle=90,
-            autopct=lambda p: f"{p:.0f}%",
-            textprops={"fontsize": 4},
-        )
-
-    ax.set_title(titulo, fontsize=5, pad=1)
-    ax.axis("equal")
-    plt.tight_layout(pad=0.01)
-
+        ax.pie([tratados, nao], autopct="%1.0f%%", startangle=90)
+    ax.set_title(titulo)
     buf = BytesIO()
-    fig.savefig(buf, format="png", bbox_inches="tight", pad_inches=0.01)
+    fig.savefig(buf, format="png", bbox_inches="tight")
     plt.close(fig)
     buf.seek(0)
     return buf.getvalue()
 
+# ==============================
+# AUX STATUS (prazo específico)
+# ==============================
+xls = pd.ExcelFile(ARQ_AUX)
+param_status = pd.read_excel(
+    xls,
+    sheet_name=[s for s in xls.sheet_names if "Status" in s][0]
+)
 
-def listar_dias_historico():
-    if not os.path.exists(PASTA_HIST_SITE):
-        return []
-
-    arquivos = os.listdir(PASTA_HIST_SITE)
-    datas = set()
-
-    for a in arquivos:
-        m = re.match(r"(\d{2}-\d{2}-\d{4})_(manha|tarde)\.xlsx$", a, flags=re.IGNORECASE)
-        if m:
-            datas.add(m.group(1))
-
-    def chave_data(s):
-        try:
-            return pd.to_datetime(s, format="%d-%m-%Y")
-        except Exception:
-            return pd.Timestamp.min
-
-    return sorted(list(datas), key=chave_data)
-
-
-def caminho_hist(dia: str, periodo: str) -> str:
-    return os.path.join(PASTA_HIST_SITE, f"{dia}_{periodo}.xlsx")
-
+mapa_prazo_status = dict(
+    zip(param_status["StatusEspecificos"], param_status["Prazo"])
+)
 
 # ==============================
-# TÍTULO
+# INÍCIO
 # ==============================
-st.title("📦 Monitor de Pedidos Críticos")
+st.title("📊 BI Executivo — Monitor de Risco")
 
-
-# ==============================
-# TOPO: BOTÕES (DOWNLOAD)
-# ==============================
-st.subheader("📥 Carteiras — Download (base atual)")
-
-df_atual = ler_base(ARQ_ATUAL, "Monitor atual")
-
-if df_atual.empty:
-    st.error("Base atual não encontrada ou vazia (data/Monitor_Pedidos_Processado.xlsx).")
+dias = listar_dias()
+if len(dias) < 2:
+    st.warning("Histórico insuficiente.")
     st.stop()
 
-if "Ranking" in df_atual.columns:
-    df_atual = df_atual.sort_values("Ranking").reset_index(drop=True)
+dias = dias[-15:]
 
-if "offsets" not in st.session_state:
-    st.session_state["offsets"] = {}
-
-carteiras = sorted(df_atual["Carteira"].dropna().unique())
-
-COLS_POR_LINHA = 6
-linhas = [carteiras[i:i + COLS_POR_LINHA] for i in range(0, len(carteiras), COLS_POR_LINHA)]
-
-for grupo in linhas:
-    cols = st.columns(COLS_POR_LINHA)
-    for idx, carteira in enumerate(grupo):
-        with cols[idx]:
-            df_carteira = df_atual[df_atual["Carteira"] == carteira].reset_index(drop=True)
-            total_carteira = len(df_carteira)
-
-            offset_atual = st.session_state["offsets"].get(carteira, 0)
-            inicio = offset_atual
-            fim = min(offset_atual + TAMANHO_LOTE, total_carteira)
-
-            st.caption(f"**{carteira}**")
-            st.caption(f"{inicio+1}–{fim} / {total_carteira}")
-
-            if st.button("📥", key=f"baixar_{carteira}"):
-                df_lote = df_carteira.iloc[inicio:fim]
-
-                if df_lote.empty:
-                    st.warning("Fim da carteira.")
-                    st.stop()
-
-                st.session_state["offsets"][carteira] = fim
-
-                nome_arquivo = f"Pedidos_{carteira}_{inicio+1}_a_{fim}.xlsx"
-
-                buffer = BytesIO()
-                df_lote.to_excel(buffer, index=False)
-                buffer.seek(0)
-
-                st.download_button(
-                    label="⬇️ Excel",
-                    data=buffer,
-                    file_name=nome_arquivo,
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    key=f"download_{carteira}",
-                )
-
-st.divider()
-
+tend_triplo = []
+datas_plot = []
 
 # ==============================
-# BI HISTÓRICO (datas em VERTICAL / gráficos em HORIZONTAL)
+# LOOP DIA A DIA
 # ==============================
-st.subheader("📊 BI — Histórico de Tratados (manhã x tarde)")
-st.caption("Datas em lista (vertical). Para cada data: 5 pizzas na horizontal.")
+for i in range(len(dias)-1):
 
-dias = listar_dias_historico()
+    dia_ant = dias[i]
+    dia_atual = dias[i+1]
 
-if not dias:
-    st.info("Sem histórico ainda (pasta data/historico vazia).")
-    st.stop()
+    df_ant = ler_base(caminho(dia_ant))
+    df_atual = ler_base(caminho(dia_atual))
 
-ULTIMOS = 15
-dias_exibir = dias[-ULTIMOS:]
-
-for dia in reversed(dias_exibir):  # mais recente em cima
-    df_manha = ler_base(caminho_hist(dia, "manha"), f"{dia}_manha")
-    df_tarde = ler_base(caminho_hist(dia, "tarde"), f"{dia}_tarde")
-
-    st.markdown(f"### 📅 {dia}")
-
-    if df_manha.empty or df_tarde.empty:
-        st.warning("Sem manhã ou tarde")
-        st.divider()
+    if df_ant.empty or df_atual.empty:
         continue
 
-    # filtros por texto
-    def filtro_triplo(df):
-        if "DescricaoCriticidade" not in df.columns:
-            return pd.Series([False] * len(df))
-        return df["DescricaoCriticidade"].fillna("").str.contains("Triplo prazo transportador", case=False)
+    st.markdown(f"# 📅 {dia_ant} ➜ {dia_atual}")
 
-    def filtro_especifico(df):
-        if "DescricaoCriticidade" not in df.columns:
-            return pd.Series([False] * len(df))
-        return df["DescricaoCriticidade"].fillna("").str.contains("Dobro prazo status específico", case=False)
+    # =====================================================
+    # 🔴 TRIPLO TRANSPORTADORA
+    # =====================================================
+    st.markdown("## 🔴 Triplo Transportadora")
 
-    def filtro_regiao(df):
-        if "DescricaoCriticidade" not in df.columns:
-            return pd.Series([False] * len(df))
-        return df["DescricaoCriticidade"].fillna("").str.contains("Dobro prazo status por região", case=False)
+    triplo_ant = df_ant[df_ant["Transportadora_Triplo"]=="X"]
+    triplo_atual = df_atual[df_atual["Transportadora_Triplo"]=="X"]
 
-    def filtro_peso3(df):
-        if "PesoCampanha" not in df.columns:
-            return pd.Series([False] * len(df))
-        return df["PesoCampanha"].fillna(0) == 3
+    tratados = triplo_ant[
+        ~triplo_ant["PedidoFormatado"].isin(triplo_atual["PedidoFormatado"])
+    ]
 
-    # calcula os 5
-    r1 = calcular_tratados(df_manha, df_tarde)
-    r2 = calcular_tratados(df_manha, df_tarde, filtro_manha=filtro_triplo)
-    r3 = calcular_tratados(df_manha, df_tarde, filtro_manha=filtro_especifico)
-    r4 = calcular_tratados(df_manha, df_tarde, filtro_manha=filtro_peso3)
-    r5 = calcular_tratados(df_manha, df_tarde, filtro_manha=filtro_regiao)
+    nao_tratados = triplo_ant[
+        triplo_ant["PedidoFormatado"].isin(triplo_atual["PedidoFormatado"])
+    ]
 
-    # render em 5 colunas
-    c1, c2, c3, c4, c5 = st.columns(5)
+    entrou = triplo_atual[
+        ~triplo_atual["PedidoFormatado"].isin(triplo_ant["PedidoFormatado"])
+    ]
 
+    persist_72 = nao_tratados[
+        (pd.to_datetime(dia_atual, format="%d-%m-%Y") -
+         pd.to_datetime(nao_tratados["DataÚltimoStatus"])
+        ).dt.days >= 3
+    ]
+
+    c1,c2,c3 = st.columns(3)
     with c1:
-        t, tr, ntr = r1
-        st.image(fig_pizza_bytes(tr, ntr, f"Geral\n{tr}/{t}"))
+        st.image(pizza(len(tratados), len(nao_tratados),
+                       f"Tratados\n{len(tratados)}/{len(triplo_ant)}"))
 
     with c2:
-        t, tr, ntr = r2
-        st.image(fig_pizza_bytes(tr, ntr, f"Triplo\n{tr}/{t}"))
+        st.metric("Entraram no Triplo", len(entrou))
 
     with c3:
-        t, tr, ntr = r3
-        st.image(fig_pizza_bytes(tr, ntr, f"Esp.\n{tr}/{t}"))
+        st.metric("Persist ≥72h", len(persist_72))
+        buffer = BytesIO()
+        persist_72.to_excel(buffer,index=False)
+        st.download_button(
+            "Exportar Persistentes 72h",
+            buffer.getvalue(),
+            file_name=f"triplo_72h_{dia_atual}.xlsx"
+        )
 
-    with c4:
-        t, tr, ntr = r4
-        st.image(fig_pizza_bytes(tr, ntr, f"Camp 3\n{tr}/{t}"))
+    tend_triplo.append(len(triplo_atual))
+    datas_plot.append(dia_atual)
 
-    with c5:
-        t, tr, ntr = r5
-        st.image(fig_pizza_bytes(tr, ntr, f"Região\n{tr}/{t}"))
+    # =====================================================
+    # 🟡 STATUS ESPECÍFICO 2x
+    # =====================================================
+    st.markdown("## 🟡 Status Específico 2x Prazo")
+
+    df_ant["PrazoStatus"] = df_ant["Status"].map(mapa_prazo_status).fillna(0)
+    df_ant["DiasStatus"] = (
+        pd.to_datetime(dia_atual, format="%d-%m-%Y") -
+        pd.to_datetime(df_ant["DataÚltimoStatus"])
+    ).dt.days
+
+    critico_status = df_ant[
+        df_ant["DiasStatus"] >= df_ant["PrazoStatus"]*2
+    ]
+
+    persist_status = critico_status[
+        critico_status["PedidoFormatado"].isin(df_atual["PedidoFormatado"])
+    ]
+
+    entrou_status = df_atual[
+        ~df_atual["PedidoFormatado"].isin(critico_status["PedidoFormatado"])
+    ]
+
+    c1,c2,c3 = st.columns(3)
+    with c1:
+        st.metric("Críticos", len(critico_status))
+    with c2:
+        st.metric("Entraram", len(entrou_status))
+    with c3:
+        st.metric("Persist 2x", len(persist_status))
+
+        buffer = BytesIO()
+        persist_status.to_excel(buffer,index=False)
+        st.download_button(
+            "Exportar Status Persistente",
+            buffer.getvalue(),
+            file_name=f"status_2x_{dia_atual}.xlsx"
+        )
+
+    # =====================================================
+    # 🔵 REGIÃO 2x
+    # =====================================================
+    st.markdown("## 🔵 Região 2x Prazo")
+
+    mapa_regiao = {
+        "AC":6,"AP":6,"AM":6,"PA":6,"RO":6,"RR":6,"TO":6,
+        "AL":4,"BA":4,"CE":4,"MA":4,"PB":4,"PE":4,"PI":4,"RN":4,"SE":4,
+        "DF":4,"GO":4,"MT":4,"MS":4,
+        "PR":3,"RS":3,"SC":3
+    }
+
+    df_ant["PrazoRegiao"] = df_ant["UF"].map(mapa_regiao).fillna(2)
+    df_ant["DiasRegiao"] = (
+        pd.to_datetime(dia_atual, format="%d-%m-%Y") -
+        pd.to_datetime(df_ant["DataÚltimoStatus"])
+    ).dt.days
+
+    critico_reg = df_ant[
+        df_ant["DiasRegiao"] >= df_ant["PrazoRegiao"]*2
+    ]
+
+    persist_reg = critico_reg[
+        critico_reg["PedidoFormatado"].isin(df_atual["PedidoFormatado"])
+    ]
+
+    entrou_reg = df_atual[
+        ~df_atual["PedidoFormatado"].isin(critico_reg["PedidoFormatado"])
+    ]
+
+    c1,c2,c3 = st.columns(3)
+    with c1:
+        st.metric("Críticos Região", len(critico_reg))
+    with c2:
+        st.metric("Entraram", len(entrou_reg))
+    with c3:
+        st.metric("Persist Região 2x", len(persist_reg))
+
+        buffer = BytesIO()
+        persist_reg.to_excel(buffer,index=False)
+        st.download_button(
+            "Exportar Região Persistente",
+            buffer.getvalue(),
+            file_name=f"regiao_2x_{dia_atual}.xlsx"
+        )
 
     st.divider()
+
+# ==============================
+# 📈 TENDÊNCIA
+# ==============================
+st.markdown("# 📈 Tendência Triplo")
+
+fig, ax = plt.subplots()
+ax.plot(datas_plot, tend_triplo)
+ax.set_title("Triplo ao longo do tempo")
+ax.tick_params(axis='x', rotation=45)
+st.pyplot(fig)
