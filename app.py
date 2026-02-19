@@ -4,10 +4,10 @@ import os
 from io import BytesIO
 import matplotlib.pyplot as plt
 import re
-from datetime import timedelta
+import base64
 
 # ==============================
-# CONFIGS (SEMPRE PRIMEIRO)
+# CONFIGS
 # ==============================
 BASE_DIR = os.path.dirname(__file__)
 PASTA_DATA = os.path.join(BASE_DIR, "data")
@@ -24,7 +24,7 @@ st.set_page_config(
 )
 
 # ==============================
-# 🎨 TEMA VISUAL (ESTILO BRAVIUM)
+# 🎨 ESTILO BRAVIUM
 # ==============================
 st.markdown("""
 <style>
@@ -32,7 +32,6 @@ st.markdown("""
     background-color: #f4f6f9;
 }
 
-/* HEADER AZUL COM LOGO DENTRO */
 .header-box {
     background: linear-gradient(90deg, #0f2a44, #1f4e79);
     padding: 18px 24px;
@@ -40,7 +39,7 @@ st.markdown("""
     display: flex;
     align-items: center;
     gap: 20px;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
 }
 
 .header-title {
@@ -57,34 +56,32 @@ st.markdown("""
     font-size: 14px;
 }
 
-/* Pizzas mais compactas */
 img {
     max-width: 220px !important;
 }
 
-/* Botões bonitos */
-.stDownloadButton > button {
-    background: linear-gradient(90deg, #0f2a44, #1f4e79);
-    color: white;
-    border-radius: 10px;
-    font-weight: 700;
-    height: 42px;
-    width: 100%;
-    border: none;
-    font-size: 14px;
-}
-
-.stDownloadButton > button:hover {
-    background: linear-gradient(90deg, #1f4e79, #2d6aa3);
-}
-
-/* Título das datas menor */
 .data-title {
     font-size: 20px;
     font-weight: 700;
     color: #0f2a44;
     margin-top: 10px;
-    margin-bottom: 5px;
+    margin-bottom: 10px;
+}
+
+.metric-small {
+    font-size: 16px;
+    font-weight: 600;
+    color: #0f2a44;
+}
+
+.stDownloadButton > button {
+    background: linear-gradient(90deg, #0f2a44, #1f4e79);
+    color: white;
+    border-radius: 10px;
+    font-weight: 700;
+    height: 40px;
+    width: 100%;
+    border: none;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -94,7 +91,6 @@ img {
 # ==============================
 logo_html = ""
 if os.path.exists(LOGO_PATH):
-    import base64
     with open(LOGO_PATH, "rb") as f:
         logo_base64 = base64.b64encode(f.read()).decode()
     logo_html = f'<img src="data:image/png;base64,{logo_base64}" width="120">'
@@ -122,7 +118,6 @@ def ler_base(path):
     except Exception:
         return pd.DataFrame()
 
-    # NORMALIZAÇÃO CRÍTICA (resolve bug do espaço)
     if "PedidoFormatado" in df.columns:
         df["PedidoFormatado"] = (
             df["PedidoFormatado"]
@@ -141,7 +136,6 @@ def listar_dias():
     datas = set()
 
     for a in arquivos:
-        # REGEX CORRETA (SEM \\ DUPLO)
         m = re.match(r"(\d{2}-\d{2}-\d{4})_manha\.xlsx$", a)
         if m:
             datas.add(m.group(1))
@@ -154,7 +148,7 @@ def caminho(dia):
 
 
 def pizza(tratados, restantes, titulo):
-    fig, ax = plt.subplots(figsize=(2.4, 2.4))
+    fig, ax = plt.subplots(figsize=(2.3, 2.3))
     total = tratados + restantes
 
     if total == 0:
@@ -170,14 +164,15 @@ def pizza(tratados, restantes, titulo):
     return buf.getvalue()
 
 # ==============================
-# 📥 DOWNLOAD 300 EM 300 (CORRIGIDO)
+# 📥 DOWNLOAD POR CARTEIRA (CORRIGIDO DEFINITIVO)
 # ==============================
 st.markdown("### 📥 Exportação por Carteira (300 em 300)")
 
 df_atual_base = ler_base(ARQ_ATUAL)
 
-if "offsets" not in st.session_state:
-    st.session_state["offsets"] = {}
+# estado persistente correto por carteira
+if "offsets_carteira" not in st.session_state:
+    st.session_state["offsets_carteira"] = {}
 
 if not df_atual_base.empty and "Carteira" in df_atual_base.columns:
 
@@ -187,10 +182,16 @@ if not df_atual_base.empty and "Carteira" in df_atual_base.columns:
     carteiras = sorted(df_atual_base["Carteira"].dropna().unique())
 
     for carteira in carteiras:
-        df_carteira = df_atual_base[df_atual_base["Carteira"] == carteira].reset_index(drop=True)
+
+        df_carteira = df_atual_base[
+            df_atual_base["Carteira"] == carteira
+        ].reset_index(drop=True)
+
         total = len(df_carteira)
 
-        offset = st.session_state["offsets"].get(carteira, 0)
+        # pega offset individual da carteira
+        offset = st.session_state["offsets_carteira"].get(carteira, 0)
+
         inicio = offset
         fim = min(offset + TAMANHO_LOTE, total)
 
@@ -207,20 +208,19 @@ if not df_atual_base.empty and "Carteira" in df_atual_base.columns:
                 st.write(f"**{carteira}** — {inicio+1} até {fim} de {total}")
 
             with col2:
-                clicked = st.download_button(
+                if st.download_button(
                     label=f"⬇️ Baixar {carteira}",
                     data=buffer,
                     file_name=f"{carteira}_{inicio+1}_a_{fim}.xlsx",
                     key=f"dl_{carteira}_{offset}"
-                )
-
-                if clicked:
-                    st.session_state["offsets"][carteira] = fim
+                ):
+                    # ATUALIZA OFFSET APÓS DOWNLOAD (sequencial garantido)
+                    st.session_state["offsets_carteira"][carteira] = fim
 
 st.divider()
 
 # ==============================
-# 📊 BI EXECUTIVO (3 PIZZAS LADO A LADO)
+# 📊 BI EXECUTIVO
 # ==============================
 dias = listar_dias()
 
@@ -228,7 +228,6 @@ if len(dias) < 2:
     st.warning("Histórico insuficiente na pasta data/historico.")
     st.stop()
 
-# últimos 15 dias
 dias = dias[-15:]
 
 for i in range(len(dias)-1, 0, -1):
@@ -242,30 +241,34 @@ for i in range(len(dias)-1, 0, -1):
     if df_atual.empty or df_ant.empty:
         continue
 
-    st.markdown(f'<p class="data-title">📅 {dia_ant} ➜ {dia_atual}</p>', unsafe_allow_html=True)
+    st.markdown(
+        f'<p class="data-title">📅 {dia_ant} ➜ {dia_atual}</p>',
+        unsafe_allow_html=True
+    )
 
-    colA, colB, colC = st.columns(3)
+    col1, col2, col3 = st.columns(3)
 
     # ================= TRIPLO =================
-    with colA:
+    with col1:
         if "Transportadora_Triplo" in df_atual.columns:
-            triplo_atual = df_atual[df_atual["Transportadora_Triplo"]=="X"]
-            triplo_ant = df_ant[df_ant["Transportadora_Triplo"]=="X"]
 
-            tratados = triplo_ant[
-                ~triplo_ant["PedidoFormatado"].isin(triplo_atual["PedidoFormatado"])
-            ]
+            atual = df_atual[df_atual["Transportadora_Triplo"]=="X"]
+            ant = df_ant[df_ant["Transportadora_Triplo"]=="X"]
 
-            restantes = triplo_ant[
-                triplo_ant["PedidoFormatado"].isin(triplo_atual["PedidoFormatado"])
-            ]
-
-            entrou = triplo_atual[
-                ~triplo_atual["PedidoFormatado"].isin(triplo_ant["PedidoFormatado"])
-            ]
+            tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
+            restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
+            entrou = atual[~atual["PedidoFormatado"].isin(ant["PedidoFormatado"])]
 
             st.image(pizza(len(tratados), len(restantes), "Triplo Transportadora"))
-            st.caption(f"Entraram: {len(entrou)}")
+
+            st.markdown(
+                f'<p class="metric-small">Tratados: {len(tratados)} / {len(ant)}</p>',
+                unsafe_allow_html=True
+            )
+            st.markdown(
+                f'<p class="metric-small">Entraram: {len(entrou)}</p>',
+                unsafe_allow_html=True
+            )
 
             buf = BytesIO()
             restantes.to_excel(buf, index=False)
@@ -276,25 +279,26 @@ for i in range(len(dias)-1, 0, -1):
             )
 
     # ================= STATUS 2X =================
-    with colB:
+    with col2:
         if "Status_Dobro" in df_atual.columns:
-            s_atual = df_atual[df_atual["Status_Dobro"]=="X"]
-            s_ant = df_ant[df_ant["Status_Dobro"]=="X"]
 
-            tratados = s_ant[
-                ~s_ant["PedidoFormatado"].isin(s_atual["PedidoFormatado"])
-            ]
+            atual = df_atual[df_atual["Status_Dobro"]=="X"]
+            ant = df_ant[df_ant["Status_Dobro"]=="X"]
 
-            restantes = s_ant[
-                s_ant["PedidoFormatado"].isin(s_atual["PedidoFormatado"])
-            ]
-
-            entrou = s_atual[
-                ~s_atual["PedidoFormatado"].isin(s_ant["PedidoFormatado"])
-            ]
+            tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
+            restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
+            entrou = atual[~atual["PedidoFormatado"].isin(ant["PedidoFormatado"])]
 
             st.image(pizza(len(tratados), len(restantes), "Status Específico 2x"))
-            st.caption(f"Entraram: {len(entrou)}")
+
+            st.markdown(
+                f'<p class="metric-small">Tratados: {len(tratados)} / {len(ant)}</p>',
+                unsafe_allow_html=True
+            )
+            st.markdown(
+                f'<p class="metric-small">Entraram: {len(entrou)}</p>',
+                unsafe_allow_html=True
+            )
 
             buf = BytesIO()
             restantes.to_excel(buf, index=False)
@@ -305,25 +309,26 @@ for i in range(len(dias)-1, 0, -1):
             )
 
     # ================= REGIÃO 2X =================
-    with colC:
+    with col3:
         if "Regiao_Dobro" in df_atual.columns:
-            r_atual = df_atual[df_atual["Regiao_Dobro"]=="X"]
-            r_ant = df_ant[df_ant["Regiao_Dobro"]=="X"]
 
-            tratados = r_ant[
-                ~r_ant["PedidoFormatado"].isin(r_atual["PedidoFormatado"])
-            ]
+            atual = df_atual[df_atual["Regiao_Dobro"]=="X"]
+            ant = df_ant[df_ant["Regiao_Dobro"]=="X"]
 
-            restantes = r_ant[
-                r_ant["PedidoFormatado"].isin(r_atual["PedidoFormatado"])
-            ]
-
-            entrou = r_atual[
-                ~r_atual["PedidoFormatado"].isin(r_ant["PedidoFormatado"])
-            ]
+            tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
+            restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
+            entrou = atual[~atual["PedidoFormatado"].isin(ant["PedidoFormatado"])]
 
             st.image(pizza(len(tratados), len(restantes), "Região 2x Prazo"))
-            st.caption(f"Entraram: {len(entrou)}")
+
+            st.markdown(
+                f'<p class="metric-small">Tratados: {len(tratados)} / {len(ant)}</p>',
+                unsafe_allow_html=True
+            )
+            st.markdown(
+                f'<p class="metric-small">Entraram: {len(entrou)}</p>',
+                unsafe_allow_html=True
+            )
 
             buf = BytesIO()
             restantes.to_excel(buf, index=False)
