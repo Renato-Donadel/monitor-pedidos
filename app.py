@@ -228,7 +228,7 @@ if not df_atual_base.empty and "Carteira" in df_atual_base.columns:
 
             with col2:
                 if st.download_button(
-                    label=f"⬇️{carteira}",
+                    label=f"⬇️ {carteira}",
                     data=buffer,
                     file_name=f"{carteira}_{inicio+1}_a_{fim}.xlsx",
                     key=f"download_{carteira}_{offset}"
