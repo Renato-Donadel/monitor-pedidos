@@ -61,17 +61,18 @@ img {
 }
 
 .data-title {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
     color: #0f2a44;
-    margin-top: 10px;
-    margin-bottom: 10px;
+    margin-top: 6px;
+    margin-bottom: 6px;
 }
 
 .metric-small {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
     color: #0f2a44;
+    margin: 2px 0;
 }
 
 .stDownloadButton > button {
@@ -79,7 +80,7 @@ img {
     color: white;
     border-radius: 10px;
     font-weight: 700;
-    height: 40px;
+    height: 38px;
     width: 100%;
     border: none;
 }
@@ -87,13 +88,13 @@ img {
 """, unsafe_allow_html=True)
 
 # ==============================
-# HEADER COM LOGO DENTRO DA FAIXA AZUL
+# HEADER COM LOGO NA FAIXA AZUL
 # ==============================
 logo_html = ""
 if os.path.exists(LOGO_PATH):
     with open(LOGO_PATH, "rb") as f:
         logo_base64 = base64.b64encode(f.read()).decode()
-    logo_html = f'<img src="data:image/png;base64,{logo_base64}" width="120">'
+    logo_html = f'<img src="data:image/png;base64,{logo_base64}" width="130">'
 
 st.markdown(f"""
 <div class="header-box">
@@ -125,6 +126,7 @@ def ler_base(path):
             .str.strip()
             .str.upper()
         )
+
     return df
 
 
@@ -148,7 +150,7 @@ def caminho(dia):
 
 
 def pizza(tratados, restantes, titulo):
-    fig, ax = plt.subplots(figsize=(2.3, 2.3))
+    fig, ax = plt.subplots(figsize=(2.2, 2.2))
     total = tratados + restantes
 
     if total == 0:
@@ -164,13 +166,12 @@ def pizza(tratados, restantes, titulo):
     return buf.getvalue()
 
 # ==============================
-# 📥 DOWNLOAD POR CARTEIRA (CORRIGIDO DEFINITIVO)
+# 📥 DOWNLOAD POR CARTEIRA (SEQUENCIAL CORRETO)
 # ==============================
 st.markdown("### 📥 Exportação por Carteira (300 em 300)")
 
 df_atual_base = ler_base(ARQ_ATUAL)
 
-# estado persistente correto por carteira
 if "offsets_carteira" not in st.session_state:
     st.session_state["offsets_carteira"] = {}
 
@@ -188,8 +189,6 @@ if not df_atual_base.empty and "Carteira" in df_atual_base.columns:
         ].reset_index(drop=True)
 
         total = len(df_carteira)
-
-        # pega offset individual da carteira
         offset = st.session_state["offsets_carteira"].get(carteira, 0)
 
         inicio = offset
@@ -208,134 +207,134 @@ if not df_atual_base.empty and "Carteira" in df_atual_base.columns:
                 st.write(f"**{carteira}** — {inicio+1} até {fim} de {total}")
 
             with col2:
-                if st.download_button(
+                clicou = st.download_button(
                     label=f"⬇️ Baixar {carteira}",
                     data=buffer,
                     file_name=f"{carteira}_{inicio+1}_a_{fim}.xlsx",
                     key=f"dl_{carteira}_{offset}"
-                ):
-                    # ATUALIZA OFFSET APÓS DOWNLOAD (sequencial garantido)
+                )
+
+                if clicou:
                     st.session_state["offsets_carteira"][carteira] = fim
 
 st.divider()
 
 # ==============================
-# 📊 BI EXECUTIVO
+# 📊 BI EXECUTIVO (REMNESCENTE MATEMÁTICO)
 # ==============================
 dias = listar_dias()
 
-if len(dias) < 2:
-    st.warning("Histórico insuficiente na pasta data/historico.")
+if len(dias) < 1:
+    st.warning("Nenhuma base encontrada na pasta data/historico.")
     st.stop()
 
-dias = dias[-15:]
+# usa a base mais recente para cálculo matemático
+dia_atual = dias[-1]
+df_atual = ler_base(caminho(dia_atual))
 
-for i in range(len(dias)-1, 0, -1):
+if df_atual.empty:
+    st.warning("Base mais recente vazia.")
+    st.stop()
 
-    dia_atual = dias[i]
-    dia_ant = dias[i-1]
+st.markdown(
+    f'<p class="data-title">📅 Base Atual: {dia_atual}</p>',
+    unsafe_allow_html=True
+)
 
-    df_atual = ler_base(caminho(dia_atual))
-    df_ant = ler_base(caminho(dia_ant))
+col1, col2, col3 = st.columns(3)
 
-    if df_atual.empty or df_ant.empty:
-        continue
+# ================= TRIPLO TRANSPORTADORA =================
+with col1:
+    if (
+        "Transportadora_Triplo" in df_atual.columns and
+        "DiasDesdeExpedicao" in df_atual.columns and
+        "PrazoTransportadorDiasUteis" in df_atual.columns
+    ):
+        triplo = df_atual[df_atual["Transportadora_Triplo"] == "X"]
 
-    st.markdown(
-        f'<p class="data-title">📅 {dia_ant} ➜ {dia_atual}</p>',
-        unsafe_allow_html=True
-    )
+        limite_critico = (triplo["PrazoTransportadorDiasUteis"] * 3) + 3
 
-    col1, col2, col3 = st.columns(3)
+        remanescente = triplo[
+            triplo["DiasDesdeExpedicao"] > limite_critico
+        ]
 
-    # ================= TRIPLO =================
-    with col1:
-        if "Transportadora_Triplo" in df_atual.columns:
+        tratados = len(triplo) - len(remanescente)
 
-            atual = df_atual[df_atual["Transportadora_Triplo"]=="X"]
-            ant = df_ant[df_ant["Transportadora_Triplo"]=="X"]
+        st.image(pizza(tratados, len(remanescente), "Triplo Transportadora"))
 
-            tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
-            restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
-            entrou = atual[~atual["PedidoFormatado"].isin(ant["PedidoFormatado"])]
+        st.markdown(
+            f'<p class="metric-small">Críticos: {len(remanescente)} / {len(triplo)}</p>',
+            unsafe_allow_html=True
+        )
 
-            st.image(pizza(len(tratados), len(restantes), "Triplo Transportadora"))
+        buf = BytesIO()
+        remanescente.to_excel(buf, index=False)
+        st.download_button(
+            "Remanescente Triplo Crítico",
+            buf.getvalue(),
+            file_name=f"remanescente_triplo_critico_{dia_atual}.xlsx"
+        )
 
-            st.markdown(
-                f'<p class="metric-small">Tratados: {len(tratados)} / {len(ant)}</p>',
-                unsafe_allow_html=True
-            )
-            st.markdown(
-                f'<p class="metric-small">Entraram: {len(entrou)}</p>',
-                unsafe_allow_html=True
-            )
+# ================= STATUS ESPECÍFICO 2X =================
+with col2:
+    if (
+        "Status_Dobro" in df_atual.columns and
+        "DiasDesdeUltimoStatus" in df_atual.columns and
+        "Prazo_Status_Especifico" in df_atual.columns
+    ):
+        status = df_atual[df_atual["Status_Dobro"] == "X"]
 
-            buf = BytesIO()
-            restantes.to_excel(buf, index=False)
-            st.download_button(
-                "Remanescentes Triplo",
-                buf.getvalue(),
-                file_name=f"remanescente_triplo_{dia_atual}.xlsx"
-            )
+        limite_critico = (status["Prazo_Status_Especifico"] * 2) + 1
 
-    # ================= STATUS 2X =================
-    with col2:
-        if "Status_Dobro" in df_atual.columns:
+        remanescente = status[
+            status["DiasDesdeUltimoStatus"] > limite_critico
+        ]
 
-            atual = df_atual[df_atual["Status_Dobro"]=="X"]
-            ant = df_ant[df_ant["Status_Dobro"]=="X"]
+        tratados = len(status) - len(remanescente)
 
-            tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
-            restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
-            entrou = atual[~atual["PedidoFormatado"].isin(ant["PedidoFormatado"])]
+        st.image(pizza(tratados, len(remanescente), "Status Específico 2x"))
 
-            st.image(pizza(len(tratados), len(restantes), "Status Específico 2x"))
+        st.markdown(
+            f'<p class="metric-small">Críticos: {len(remanescente)} / {len(status)}</p>',
+            unsafe_allow_html=True
+        )
 
-            st.markdown(
-                f'<p class="metric-small">Tratados: {len(tratados)} / {len(ant)}</p>',
-                unsafe_allow_html=True
-            )
-            st.markdown(
-                f'<p class="metric-small">Entraram: {len(entrou)}</p>',
-                unsafe_allow_html=True
-            )
+        buf = BytesIO()
+        remanescente.to_excel(buf, index=False)
+        st.download_button(
+            "Remanescente Status Crítico",
+            buf.getvalue(),
+            file_name=f"remanescente_status_critico_{dia_atual}.xlsx"
+        )
 
-            buf = BytesIO()
-            restantes.to_excel(buf, index=False)
-            st.download_button(
-                "Remanescentes Status 2x",
-                buf.getvalue(),
-                file_name=f"remanescente_status_{dia_atual}.xlsx"
-            )
+# ================= REGIÃO 2X =================
+with col3:
+    if (
+        "Regiao_Dobro" in df_atual.columns and
+        "DiasDesdeUltimoStatus" in df_atual.columns and
+        "Prazo_Regiao" in df_atual.columns
+    ):
+        regiao = df_atual[df_atual["Regiao_Dobro"] == "X"]
 
-    # ================= REGIÃO 2X =================
-    with col3:
-        if "Regiao_Dobro" in df_atual.columns:
+        limite_critico = (regiao["Prazo_Regiao"] * 2) + 1
 
-            atual = df_atual[df_atual["Regiao_Dobro"]=="X"]
-            ant = df_ant[df_ant["Regiao_Dobro"]=="X"]
+        remanescente = regiao[
+            regiao["DiasDesdeUltimoStatus"] > limite_critico
+        ]
 
-            tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
-            restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
-            entrou = atual[~atual["PedidoFormatado"].isin(ant["PedidoFormatado"])]
+        tratados = len(regiao) - len(remanescente)
 
-            st.image(pizza(len(tratados), len(restantes), "Região 2x Prazo"))
+        st.image(pizza(tratados, len(remanescente), "Região 2x Prazo"))
 
-            st.markdown(
-                f'<p class="metric-small">Tratados: {len(tratados)} / {len(ant)}</p>',
-                unsafe_allow_html=True
-            )
-            st.markdown(
-                f'<p class="metric-small">Entraram: {len(entrou)}</p>',
-                unsafe_allow_html=True
-            )
+        st.markdown(
+            f'<p class="metric-small">Críticos: {len(remanescente)} / {len(regiao)}</p>',
+            unsafe_allow_html=True
+        )
 
-            buf = BytesIO()
-            restantes.to_excel(buf, index=False)
-            st.download_button(
-                "Remanescentes Região 2x",
-                buf.getvalue(),
-                file_name=f"remanescente_regiao_{dia_atual}.xlsx"
-            )
-
-    st.divider()
+        buf = BytesIO()
+        remanescente.to_excel(buf, index=False)
+        st.download_button(
+            "Remanescente Região Crítico",
+            buf.getvalue(),
+            file_name=f"remanescente_regiao_critico_{dia_atual}.xlsx"
+        )
