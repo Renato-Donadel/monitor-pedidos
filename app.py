@@ -24,7 +24,7 @@ st.set_page_config(
 )
 
 # ==============================
-# 🎨 TEMA VISUAL BRAVIUM (REAL)
+# 🎨 TEMA VISUAL (ESTILO BRAVIUM)
 # ==============================
 st.markdown("""
 <style>
@@ -32,105 +32,92 @@ st.markdown("""
     background-color: #f4f6f9;
 }
 
-/* Container azul estilo bravium */
-.header-bravium {
-    background: linear-gradient(90deg, #0b2c5f, #1f4e79);
-    padding: 20px 30px;
-    border-radius: 18px;
-    color: white;
-    display: flex;
-    align-items: center;
-    gap: 25px;
-    margin-bottom: 25px;
-}
+/* Títulos menores (layout mais compacto) */
+h1 { font-size: 28px !important; }
+h2 { font-size: 22px !important; }
+h3 { font-size: 18px !important; }
 
-/* Título menor (como você pediu) */
-.titulo-principal {
-    font-size: 26px;
-    font-weight: 700;
-    margin: 0;
-}
-
-.subtitulo {
-    font-size: 14px;
-    opacity: 0.85;
-    margin-top: 4px;
-}
-
-/* Seções de data menores */
-.titulo-data {
-    font-size: 20px;
-    font-weight: 600;
-    color: #0f2a44;
-    margin-top: 20px;
-}
-
-/* Cards compactos */
-.metric-card {
+/* Cards métricos */
+div[data-testid="metric-container"] {
     background: white;
-    border-radius: 14px;
-    padding: 12px;
-    border: 1px solid #e6e9ef;
+    border-radius: 12px;
+    padding: 14px;
     box-shadow: 0px 4px 14px rgba(0,0,0,0.05);
+    border: 1px solid #e6e9ef;
 }
 
-/* Botões estilo corporativo */
+/* Botões de download (meninas) */
 .stDownloadButton > button {
     background: linear-gradient(90deg, #0b2c5f, #1f4e79);
     color: white;
     border-radius: 10px;
-    font-weight: 600;
+    font-weight: 700;
     height: 42px;
     width: 100%;
     border: none;
+    font-size: 15px;
 }
 
 .stDownloadButton > button:hover {
     background: linear-gradient(90deg, #1f4e79, #2d6aa3);
     transform: scale(1.02);
 }
+
+/* Divisores */
+hr {
+    border: 1px solid #e6e9ef;
+    margin-top: 25px;
+    margin-bottom: 25px;
+}
 </style>
 """, unsafe_allow_html=True)
 
 # ==============================
-# HEADER COM LOGO DENTRO DO AZUL (IGUAL BRAVIUM)
+# HEADER BRAVIUM (LOGO DENTRO DO AZUL)
 # ==============================
-logo_html = ""
-if os.path.exists(LOGO_PATH):
-    logo_html = f'<img src="data:image/png;base64,{st.image(LOGO_PATH)._repr_html_()}" />'
+col_header = st.container()
 
-col_logo, col_text = st.columns([1, 8])
+with col_header:
+    col_logo, col_title = st.columns([1, 6])
 
-with col_logo:
-    if os.path.exists(LOGO_PATH):
-        st.image(LOGO_PATH, width=140)
+    with col_logo:
+        if os.path.exists(LOGO_PATH):
+            st.image(LOGO_PATH, width=120)
 
-with col_text:
-    st.markdown("""
-    <div class="header-bravium">
-        <div>
-            <div class="titulo-principal">
+    with col_title:
+        st.markdown("""
+        <div style="
+            background: linear-gradient(90deg, #0b2c5f, #1f4e79);
+            padding: 18px 24px;
+            border-radius: 18px;
+            color: white;
+            height: 90px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        ">
+            <div style="font-size:26px; font-weight:700;">
                 Monitor de Pedidos — BI Executivo
             </div>
-            <div class="subtitulo">
+            <div style="font-size:14px; opacity:0.85;">
                 Análise de Risco Logístico • Transportadora • Status • Região • Cliente
             </div>
         </div>
-    </div>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
 
 # ==============================
-# FUNÇÕES
+# FUNÇÕES BASE
 # ==============================
 def ler_base(path):
     if not os.path.exists(path):
         return pd.DataFrame()
+
     try:
         df = pd.read_excel(path)
     except Exception:
         return pd.DataFrame()
 
-    # NORMALIZAÇÃO CRÍTICA (remove espaços bug do PedidoFormatado)
+    # NORMALIZAÇÃO CRÍTICA (remove espaços bugados)
     if "PedidoFormatado" in df.columns:
         df["PedidoFormatado"] = (
             df["PedidoFormatado"]
@@ -170,7 +157,7 @@ def encontrar_dia_72h(dias, dia_atual):
 
     candidatos = [
         d for d in dias
-        if pd.to_datetime(d, format="%d-%m-%Y") <= alvo
+        if pd.to_datetime  (d, format="%d-%m-%Y") <= alvo
     ]
 
     if not candidatos:
@@ -179,16 +166,16 @@ def encontrar_dia_72h(dias, dia_atual):
     return max(candidatos, key=lambda d: pd.to_datetime(d, format="%d-%m-%Y"))
 
 
-def pizza(a, b, titulo):
-    fig, ax = plt.subplots(figsize=(2.2, 2.2))
-    total = a + b
+def pizza(tratados, nao, titulo):
+    fig, ax = plt.subplots(figsize=(2.8, 2.8))
+    total = tratados + nao
 
     if total == 0:
         ax.text(0.5, 0.5, "0", ha="center", va="center")
     else:
-        ax.pie([a, b], autopct="%1.0f%%", startangle=90)
+        ax.pie([tratados, nao], autopct="%1.0f%%", startangle=90)
 
-    ax.set_title(titulo, fontsize=10)
+    ax.set_title(titulo, fontsize=11)
     buf = BytesIO()
     fig.savefig(buf, format="png", bbox_inches="tight")
     plt.close(fig)
@@ -196,9 +183,9 @@ def pizza(a, b, titulo):
     return buf.getvalue()
 
 # ==============================
-# 📥 EXPORTAÇÃO CARTEIRAS (BONITO)
+# 📥 EXPORTAÇÃO POR CARTEIRA (300 EM 300)
 # ==============================
-st.markdown("### 📥 Exportação por Carteira (300 em 300)")
+st.markdown("## 📥 Exportação por Carteira (300 em 300)")
 
 df_atual_base = ler_base(ARQ_ATUAL)
 
@@ -213,9 +200,11 @@ if not df_atual_base.empty and "Carteira" in df_atual_base.columns:
     carteiras = sorted(df_atual_base["Carteira"].dropna().unique())
 
     for carteira in carteiras:
-        df_carteira = df_atual_base[df_atual_base["Carteira"] == carteira].reset_index(drop=True)
-        total = len(df_carteira)
+        df_carteira = df_atual_base[
+            df_atual_base["Carteira"] == carteira
+        ].reset_index(drop=True)
 
+        total = len(df_carteira)
         offset = st.session_state["offsets"].get(carteira, 0)
         inicio = offset
         fim = min(offset + TAMANHO_LOTE, total)
@@ -227,14 +216,14 @@ if not df_atual_base.empty and "Carteira" in df_atual_base.columns:
             lote.to_excel(buffer, index=False)
             buffer.seek(0)
 
-            c1, c2 = st.columns([5, 2])
+            col1, col2 = st.columns([5, 2])
 
-            with c1:
+            with col1:
                 st.markdown(f"**{carteira}** — Pedidos {inicio+1} até {fim} de {total}")
 
-            with c2:
+            with col2:
                 if st.download_button(
-                    label=f"⬇️ Baixar carteira {carteira}",
+                    label=f"⬇️ {carteira}",
                     data=buffer,
                     file_name=f"{carteira}_{inicio+1}_a_{fim}.xlsx",
                     key=f"download_{carteira}_{offset}"
@@ -244,7 +233,7 @@ if not df_atual_base.empty and "Carteira" in df_atual_base.columns:
 st.divider()
 
 # ==============================
-# 📊 BI EXECUTIVO (LAYOUT COMPACTO + PIZZAS)
+# 📊 BI EXECUTIVO (COMPARAÇÃO DIA A DIA)
 # ==============================
 dias = listar_dias()
 
@@ -253,10 +242,13 @@ if len(dias) < 2:
     st.stop()
 
 dias = dias[-15:]
+
 tend_triplo = []
 datas_plot = []
 
-# MAIS NOVO → MAIS ANTIGO
+st.markdown("## 📊 BI Executivo — Comparação Dia a Dia")
+
+# LOOP DO MAIS NOVO PARA O MAIS ANTIGO
 for i in range(len(dias) - 1, 0, -1):
 
     dia_atual = dias[i]
@@ -268,12 +260,11 @@ for i in range(len(dias) - 1, 0, -1):
     if df_atual.empty or df_ant.empty:
         continue
 
-    st.markdown(f'<div class="titulo-data">📅 {dia_ant} ➜ {dia_atual}</div>', unsafe_allow_html=True)
+    st.markdown(f"### 📅 {dia_ant} ➜ {dia_atual}")
 
-    col_triplo, col_status, col_regiao = st.columns(3)
-
-    # 🔴 TRIPLO TRANSPORTADORA
+    # ================= TRIPLO TRANSPORTADORA =================
     if "Transportadora_Triplo" in df_atual.columns:
+
         triplo_atual = df_atual[df_atual["Transportadora_Triplo"] == "X"]
         triplo_ant = df_ant[df_ant["Transportadora_Triplo"] == "X"]
 
@@ -300,84 +291,91 @@ for i in range(len(dias) - 1, 0, -1):
         else:
             persist_72h = pd.DataFrame()
 
+        # LAYOUT 3 COLUNAS COMPACTO (COMO VOCÊ PEDIU)
+        col_triplo, col_status, col_regiao = st.columns(3)
+
         with col_triplo:
             st.markdown("#### 🔴 Triplo Transportadora")
-            st.image(pizza(len(tratados), len(persist_d1), "Tratados"))
-            st.write(f"Entraram: **{len(entrou)}**")
+            st.image(pizza(len(tratados), len(persist_d1), "Tratados vs Restantes"))
+            st.metric("Entraram", len(entrou))
 
             buf = BytesIO()
             persist_72h.to_excel(buf, index=False)
             st.download_button(
-                "Exportar Triplo > 72h",
+                "⬇️ Triplo > 72h",
                 buf.getvalue(),
-                file_name=f"triplo_72h_{dia_atual}.xlsx"
+                file_name=f"triplo_72h_{dia_atual}.xlsx",
+                key=f"triplo_{dia_atual}"
             )
+
+        # ================= STATUS 2X =================
+        if "Status_Dobro" in df_atual.columns:
+            status_atual = df_atual[df_atual["Status_Dobro"] == "X"]
+            status_ant = df_ant[df_ant["Status_Dobro"] == "X"]
+
+            persist_status = status_ant[
+                status_ant["PedidoFormatado"].isin(status_atual["PedidoFormatado"])
+            ]
+
+            entrou_status = status_atual[
+                ~status_atual["PedidoFormatado"].isin(status_ant["PedidoFormatado"])
+            ]
+
+            with col_status:
+                st.markdown("#### 🟡 Status 2x Prazo")
+                st.image(pizza(len(status_ant)-len(persist_status), len(persist_status), "Tratados vs Persistentes"))
+                st.metric("Entraram", len(entrou_status))
+
+                buf2 = BytesIO()
+                persist_status.to_excel(buf2, index=False)
+                st.download_button(
+                    "⬇️ Status Persistente",
+                    buf2.getvalue(),
+                    file_name=f"status_2x_{dia_atual}.xlsx",
+                    key=f"status_{dia_atual}"
+                )
+
+        # ================= REGIÃO 2X =================
+        if "Regiao_Dobro" in df_atual.columns:
+            reg_atual = df_atual[df_atual["Regiao_Dobro"] == "X"]
+            reg_ant = df_ant[df_ant["Regiao_Dobro"] == "X"]
+
+            persist_reg = reg_ant[
+                reg_ant["PedidoFormatado"].isin(reg_atual["PedidoFormatado"])
+            ]
+
+            entrou_reg = reg_atual[
+                ~reg_atual["PedidoFormatado"].isin(reg_ant["PedidoFormatado"])
+            ]
+
+            with col_regiao:
+                st.markdown("#### 🔵 Região 2x Prazo")
+                st.image(pizza(len(reg_ant)-len(persist_reg), len(persist_reg), "Tratados vs Persistentes"))
+                st.metric("Entraram", len(entrou_reg))
+
+                buf3 = BytesIO()
+                persist_reg.to_excel(buf3, index=False)
+                st.download_button(
+                    "⬇️ Região Persistente",
+                    buf3.getvalue(),
+                    file_name=f"regiao_2x_{dia_atual}.xlsx",
+                    key=f"regiao_{dia_atual}"
+                )
 
         tend_triplo.append(len(triplo_atual))
         datas_plot.append(dia_atual)
 
-    # 🟡 STATUS 2X
-    if "Status_Dobro" in df_atual.columns:
-        status_atual = df_atual[df_atual["Status_Dobro"] == "X"]
-        status_ant = df_ant[df_ant["Status_Dobro"] == "X"]
-
-        persist_status = status_ant[
-            status_ant["PedidoFormatado"].isin(status_atual["PedidoFormatado"])
-        ]
-
-        entrou_status = status_atual[
-            ~status_atual["PedidoFormatado"].isin(status_ant["PedidoFormatado"])
-        ]
-
-        with col_status:
-            st.markdown("#### 🟡 Status 2x Prazo")
-            st.image(pizza(len(entrou_status), len(persist_status), "Entraram vs Persist"))
-            st.write(f"Entraram: **{len(entrou_status)}**")
-
-            buf = BytesIO()
-            persist_status.to_excel(buf, index=False)
-            st.download_button(
-                "Exportar Status Persistente",
-                buf.getvalue(),
-                file_name=f"status_2x_{dia_atual}.xlsx"
-            )
-
-    # 🔵 REGIÃO 2X
-    if "Regiao_Dobro" in df_atual.columns:
-        reg_atual = df_atual[df_atual["Regiao_Dobro"] == "X"]
-        reg_ant = df_ant[df_ant["Regiao_Dobro"] == "X"]
-
-        persist_reg = reg_ant[
-            reg_ant["PedidoFormatado"].isin(reg_atual["PedidoFormatado"])
-        ]
-
-        entrou_reg = reg_atual[
-            ~reg_atual["PedidoFormatado"].isin(reg_ant["PedidoFormatado"])
-        ]
-
-        with col_regiao:
-            st.markdown("#### 🔵 Região 2x Prazo")
-            st.image(pizza(len(entrou_reg), len(persist_reg), "Entraram vs Persist"))
-            st.write(f"Entraram: **{len(entrou_reg)}**")
-
-            buf = BytesIO()
-            persist_reg.to_excel(buf, index=False)
-            st.download_button(
-                "Exportar Região Persistente",
-                buf.getvalue(),
-                file_name=f"regiao_2x_{dia_atual}.xlsx"
-            )
-
     st.divider()
 
 # ==============================
-# 📈 TENDÊNCIA (AGORA SEM ERRO)
+# 📈 TENDÊNCIA TRIPLO (SEM ERRO)
 # ==============================
 if len(tend_triplo) > 0:
-    st.markdown("### 📈 Tendência Triplo Transportadora")
+    st.markdown("## 📈 Tendência — Triplo Transportadora")
 
     fig, ax = plt.subplots(figsize=(8, 3))
     ax.plot(datas_plot[::-1], tend_triplo[::-1])
-    ax.set_title("Triplo ao longo do tempo")
+    ax.set_title("Triplo ao longo do tempo (mais recente à direita)")
     ax.tick_params(axis='x', rotation=45)
+
     st.pyplot(fig)
