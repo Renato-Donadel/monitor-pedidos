@@ -221,7 +221,7 @@ if not df_atual_base.empty and "Carteira" in df_atual_base.columns:
 st.divider()
 
 # ==============================
-# 🚚 EXPEDIÇÃO — 3+ DIAS NO STATUS
+# 🚚 EXPEDIÇÃO — 3+ DIAS NO STATUS (EXPORTAÇÃO ENXUTA)
 # ==============================
 st.markdown("### 🚚 Expedição (3+ dias no status)")
 
@@ -250,14 +250,39 @@ if not df_atual_base.empty:
 
         with col2:
             if total > 0:
+
+                # Define colunas desejadas (com fallback seguro)
+                colunas_exportar = [
+                    c for c in [
+                        "PedidoFormatado",
+                        "NotaFiscal",
+                        "Logistica",  # Armazém no seu modelo
+                        "DiasDesdeUltimoStatus"
+                    ] if c in df_expedicao.columns
+                ]
+
+                df_export = df_expedicao[colunas_exportar].copy()
+
+                # Renomeia para ficar mais executivo (opcional)
+                df_export = df_export.rename(columns={
+                    "Logistica": "Armazem",
+                    "DiasDesdeUltimoStatus": "Dias_Parado_no_Status"
+                })
+
+                # Ordena pelos mais críticos primeiro
+                df_export = df_export.sort_values(
+                    "Dias_Parado_no_Status",
+                    ascending=False
+                )
+
                 buffer = BytesIO()
-                df_expedicao.to_excel(buffer, index=False)
+                df_export.to_excel(buffer, index=False)
                 buffer.seek(0)
 
                 st.download_button(
                     label="⬇️ Baixar Expedição (3+ dias)",
                     data=buffer,
-                    file_name="expedicao_3_dias_ou_mais_no_status.xlsx",
+                    file_name="expedicao_parada_3_dias_ou_mais.xlsx",
                     key="download_expedicao_3dias"
                 )
             else:
