@@ -221,6 +221,49 @@ if not df_atual_base.empty and "Carteira" in df_atual_base.columns:
 st.divider()
 
 # ==============================
+# 🚚 EXPEDIÇÃO — 3+ DIAS NO STATUS
+# ==============================
+st.markdown("### 🚚 Expedição (3+ dias no status)")
+
+df_atual_base = ler_base(ARQ_ATUAL)
+
+if not df_atual_base.empty:
+
+    if (
+        "Status" in df_atual_base.columns and
+        "DiasDesdeUltimoStatus" in df_atual_base.columns
+    ):
+
+        df_expedicao = df_atual_base[
+            (df_atual_base["Status"] == "TSP - Aguardando Expedição") &
+            (df_atual_base["DiasDesdeUltimoStatus"] >= 3)
+        ].copy()
+
+        total = len(df_expedicao)
+
+        col1, col2 = st.columns([4, 2])
+
+        with col1:
+            st.write(
+                f"Pedidos aguardando expedição há ≥ 3 dias úteis: **{total}**"
+            )
+
+        with col2:
+            if total > 0:
+                buffer = BytesIO()
+                df_expedicao.to_excel(buffer, index=False)
+                buffer.seek(0)
+
+                st.download_button(
+                    label="⬇️ Baixar Expedição (3+ dias)",
+                    data=buffer,
+                    file_name="expedicao_3_dias_ou_mais_no_status.xlsx",
+                    key="download_expedicao_3dias"
+                )
+            else:
+                st.write("Nenhum pedido elegível.")
+
+# ==============================
 # 📊 BI EXECUTIVO (MANTIDO D-1)
 # ==============================
 dias = listar_dias()
