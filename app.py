@@ -31,7 +31,7 @@ st.set_page_config(
 )
 
 # ==============================
-# 🎨 ESTILO (MANTIDO IGUAL)
+# ESTILO
 # ==============================
 st.markdown("""
 <style>
@@ -53,7 +53,7 @@ height: 40px; width: 100%; border: none; }
 """, unsafe_allow_html=True)
 
 # ==============================
-# HEADER (MANTIDO)
+# HEADER
 # ==============================
 logo_html = ""
 if os.path.exists(LOGO_PATH):
@@ -74,7 +74,7 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ==============================
-# FUNÇÕES (INALTERADAS)
+# FUNÇÕES
 # ==============================
 def ler_base(path):
     if not os.path.exists(path):
@@ -137,6 +137,9 @@ if not df_atual_base.empty and "Carteira" in df_atual_base.columns:
 
     carteiras = sorted(df_atual_base["Carteira"].dropna().unique())
 
+    if "Igor" in df_atual_base["Carteira"].values and "Igor" not in carteiras:
+        carteiras.append("Igor")
+
     for carteira in carteiras:
 
         df_carteira = df_atual_base[
@@ -187,7 +190,7 @@ if not df_atual_base.empty and "Carteira" in df_atual_base.columns:
 st.divider()
 
 # ==============================
-# BI EXECUTIVO (INALTERADO)
+# BI EXECUTIVO
 # ==============================
 dias = listar_dias()
 
@@ -197,7 +200,7 @@ if len(dias) < 2:
 
 dias = dias[-15:]
 
-# 🔥 NOVO GRÁFICO (ANTES DO LOOP)
+# GRÁFICO PEQUENO
 st.markdown("### 📈 Status Diários")
 
 contagem = []
@@ -214,7 +217,7 @@ if contagem:
     df_graf["Data"] = pd.to_datetime(df_graf["Data"], format="%d-%m-%Y")
     df_graf = df_graf.sort_values("Data")
 
-    fig, ax = plt.subplots(figsize=(2.2, 1.2))  # pequeno
+    fig, ax = plt.subplots(figsize=(2.2, 1.2))
     ax.plot(df_graf["Data"], df_graf["Qtd"])
     ax.set_xticks(df_graf["Data"])
     ax.set_xticklabels(df_graf["Data"].dt.day, fontsize=7)
@@ -227,7 +230,7 @@ if contagem:
 
 st.divider()
 
-# LOOP ORIGINAL CONTINUA EXATAMENTE IGUAL DAQUI PARA BAIXO
+# LOOP ORIGINAL COMPLETO
 for i in range(len(dias)-1, 0, -1):
 
     dia_atual = dias[i]
@@ -246,4 +249,91 @@ for i in range(len(dias)-1, 0, -1):
 
     col1, col2, col3 = st.columns(3)
 
-    # (todo seu restante permanece idêntico)
+    # TRIPLO
+    with col1:
+        if "Transportadora_Triplo" in df_atual.columns:
+            atual = df_atual[df_atual["Transportadora_Triplo"]=="X"]
+            ant = df_ant[df_ant["Transportadora_Triplo"]=="X"]
+
+            tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
+            restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
+            entrou = atual[~atual["PedidoFormatado"].isin(ant["PedidoFormatado"])]
+
+            st.image(pizza(len(tratados), len(restantes), "Triplo Transportadora"))
+
+            st.markdown(
+                f'<p class="metric-small">Tratados: {len(tratados)} / {len(ant)}</p>',
+                unsafe_allow_html=True
+            )
+            st.markdown(
+                f'<p class="metric-small">Entraram: {len(entrou)}</p>',
+                unsafe_allow_html=True
+            )
+
+            buf = BytesIO()
+            restantes.to_excel(buf, index=False)
+            st.download_button(
+                "Remanescentes Triplo",
+                buf.getvalue(),
+                file_name=f"remanescente_triplo_{dia_atual}.xlsx"
+            )
+
+    # STATUS 2X
+    with col2:
+        if "Status_Dobro" in df_atual.columns:
+            atual = df_atual[df_atual["Status_Dobro"]=="X"]
+            ant = df_ant[df_ant["Status_Dobro"]=="X"]
+
+            tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
+            restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
+            entrou = atual[~atual["PedidoFormatado"].isin(ant["PedidoFormatado"])]
+
+            st.image(pizza(len(tratados), len(restantes), "Status Específico 2x"))
+
+            st.markdown(
+                f'<p class="metric-small">Tratados: {len(tratados)} / {len(ant)}</p>',
+                unsafe_allow_html=True
+            )
+            st.markdown(
+                f'<p class="metric-small">Entraram: {len(entrou)}</p>',
+                unsafe_allow_html=True
+            )
+
+            buf = BytesIO()
+            restantes.to_excel(buf, index=False)
+            st.download_button(
+                "Remanescentes Status 2x",
+                buf.getvalue(),
+                file_name=f"remanescente_status_{dia_atual}.xlsx"
+            )
+
+    # REGIÃO 2X
+    with col3:
+        if "Regiao_Dobro" in df_atual.columns:
+            atual = df_atual[df_atual["Regiao_Dobro"]=="X"]
+            ant = df_ant[df_ant["Regiao_Dobro"]=="X"]
+
+            tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
+            restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
+            entrou = atual[~atual["PedidoFormatado"].isin(ant["PedidoFormatado"])]
+
+            st.image(pizza(len(tratados), len(restantes), "Região 2x Prazo"))
+
+            st.markdown(
+                f'<p class="metric-small">Tratados: {len(tratados)} / {len(ant)}</p>',
+                unsafe_allow_html=True
+            )
+            st.markdown(
+                f'<p class="metric-small">Entraram: {len(entrou)}</p>',
+                unsafe_allow_html=True
+            )
+
+            buf = BytesIO()
+            restantes.to_excel(buf, index=False)
+            st.download_button(
+                "Remanescentes Região 2x",
+                buf.getvalue(),
+                file_name=f"remanescente_regiao_{dia_atual}.xlsx"
+            )
+
+    st.divider()
