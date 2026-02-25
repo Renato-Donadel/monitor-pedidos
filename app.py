@@ -15,7 +15,15 @@ PASTA_HIST = os.path.join(PASTA_DATA, "historico")
 ARQ_ATUAL = os.path.join(PASTA_DATA, "Monitor_Pedidos_Processado.xlsx")
 LOGO_PATH = os.path.join(PASTA_DATA, "logo_bravium.png")
 
-TAMANHO_LOTE = 300
+TAMANHO_LOTE = 400
+
+STATUS_DIARIOS = [
+    "TSP - Pendente Transportes - Dados do Recebedor Solicitado",
+    "TSP - Item Faltante",
+    "TSP - Pendente Transportes - Aguardando Acareação",
+    "TSP - Aguardando Dados do Recebedor"
+]
+STATUS_DIARIOS = [s.strip() for s in STATUS_DIARIOS]
 
 st.set_page_config(
     page_title="BI Executivo - Monitor",
@@ -24,70 +32,7 @@ st.set_page_config(
 )
 
 # ==============================
-# 🎨 ESTILO (MANTIDO IGUAL)
-# ==============================
-st.markdown("""
-<style>
-.stApp {
-    background-color: #f4f6f9;
-}
-
-.header-box {
-    background: linear-gradient(90deg, #0f2a44, #1f4e79);
-    padding: 18px 24px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    margin-bottom: 20px;
-}
-
-.header-title {
-    color: white;
-    font-size: 26px;
-    font-weight: 700;
-    margin: 0;
-}
-
-.header-sub {
-    color: white;
-    opacity: 0.85;
-    margin: 0;
-    font-size: 14px;
-}
-
-img {
-    max-width: 220px !important;
-}
-
-.data-title {
-    font-size: 20px;
-    font-weight: 700;
-    color: #0f2a44;
-    margin-top: 10px;
-    margin-bottom: 10px;
-}
-
-.metric-small {
-    font-size: 16px;
-    font-weight: 600;
-    color: #0f2a44;
-}
-
-.stDownloadButton > button {
-    background: linear-gradient(90deg, #0f2a44, #1f4e79);
-    color: white;
-    border-radius: 10px;
-    font-weight: 700;
-    height: 40px;
-    width: 100%;
-    border: none;
-}
-</style>
-""", unsafe_allow_html=True)
-
-# ==============================
-# HEADER COM LOGO DENTRO DA FAIXA AZUL (MANTIDO)
+# HEADER
 # ==============================
 logo_html = ""
 if os.path.exists(LOGO_PATH):
@@ -96,11 +41,13 @@ if os.path.exists(LOGO_PATH):
     logo_html = f'<img src="data:image/png;base64,{logo_base64}" width="120">'
 
 st.markdown(f"""
-<div class="header-box">
+<div style="background: linear-gradient(90deg, #0f2a44, #1f4e79);
+padding: 18px 24px; border-radius: 14px; display: flex; align-items: center; gap: 20px; margin-bottom: 20px;">
     {logo_html}
     <div>
-        <p class="header-title">Monitor de Pedidos — BI Executivo</p>
-        <p class="header-sub">
+        <p style="color:white;font-size:26px;font-weight:700;margin:0;">
+        Monitor de Pedidos — BI Executivo</p>
+        <p style="color:white;opacity:0.85;margin:0;font-size:14px;">
         Análise de Risco Logístico • Transportadora • Status • Região • Cliente
         </p>
     </div>
@@ -115,7 +62,7 @@ def ler_base(path):
         return pd.DataFrame()
     try:
         df = pd.read_excel(path)
-    except Exception:
+    except:
         return pd.DataFrame()
 
     if "PedidoFormatado" in df.columns:
@@ -125,6 +72,15 @@ def ler_base(path):
             .str.strip()
             .str.upper()
         )
+
+    # 🔥 NORMALIZA STATUS
+    if "Status" in df.columns:
+        df["Status"] = (
+            df["Status"]
+            .astype(str)
+            .str.strip()
+        )
+
     return df
 
 
@@ -164,9 +120,9 @@ def pizza(tratados, restantes, titulo):
     return buf.getvalue()
 
 # ==============================
-# 📥 DOWNLOAD POR CARTEIRA (SEQUENCIAL 300 EM 300 + IGOR)
+# DOWNLOAD POR CARTEIRA
 # ==============================
-st.markdown("### 📥 Exportação por Carteira (300 em 300)")
+st.markdown("### 📥 Exportação por Carteira")
 
 df_atual_base = ler_base(ARQ_ATUAL)
 
@@ -180,10 +136,6 @@ if not df_atual_base.empty and "Carteira" in df_atual_base.columns:
 
     carteiras = sorted(df_atual_base["Carteira"].dropna().unique())
 
-    # GARANTE QUE IGOR APAREÇA
-    if "Igor" in df_atual_base["Carteira"].values and "Igor" not in carteiras:
-        carteiras.append("Igor")
-
     for carteira in carteiras:
 
         df_carteira = df_atual_base[
@@ -191,110 +143,58 @@ if not df_atual_base.empty and "Carteira" in df_atual_base.columns:
         ].reset_index(drop=True)
 
         total = len(df_carteira)
-
         offset = st.session_state["offsets_carteira"].get(carteira, 0)
 
-        inicio = offset
-        fim = min(offset + TAMANHO_LOTE, total)
+        df_status_diarios = df_carteira[
+            df_carteira["Status"].isin(STATUS_DIARIOS)
+        ]
 
-        lote = df_carteira.iloc[inicio:fim]
+        df_restante = df_carteira[
+            ~df_carteira.index.isin(df_status_diarios.index)
+        ]
+
+        lote_normal = df_restante.iloc[offset:offset + TAMANHO_LOTE]
+        lote = pd.concat([df_status_diarios, lote_normal]).drop_duplicates()
 
         if not lote.empty:
+
             buffer = BytesIO()
-            lote.to_excel(buffer, index=False)
+
+            with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
+                lote.to_excel(writer, index=False, sheet_name="Lote")
+
+                if not df_status_diarios.empty:
+                    df_status_diarios.to_excel(
+                        writer,
+                        index=False,
+                        sheet_name="Status Diários"
+                    )
+
             buffer.seek(0)
 
             col1, col2 = st.columns([4, 2])
 
             with col1:
-                st.write(f"**{carteira}** — {inicio+1} até {fim} de {total}")
+                st.write(f"**{carteira}** — {offset+1} até {min(offset+TAMANHO_LOTE, total)} de {total}")
 
             with col2:
                 if st.download_button(
                     label=f"⬇️ Baixar {carteira}",
                     data=buffer,
-                    file_name=f"{carteira}_{inicio+1}_a_{fim}.xlsx",
+                    file_name=f"{carteira}.xlsx",
                     key=f"dl_{carteira}_{offset}"
                 ):
-                    st.session_state["offsets_carteira"][carteira] = fim
+                    st.session_state["offsets_carteira"][carteira] = offset + TAMANHO_LOTE
 
 st.divider()
 
 # ==============================
-# 🚚 EXPEDIÇÃO — 3+ DIAS NO STATUS (EXPORTAÇÃO ENXUTA)
-# ==============================
-st.markdown("### 🚚 Expedição (3+ dias no status)")
-
-df_atual_base = ler_base(ARQ_ATUAL)
-
-if not df_atual_base.empty:
-
-    if (
-        "Status" in df_atual_base.columns and
-        "DiasDesdeUltimoStatus" in df_atual_base.columns
-    ):
-
-        df_expedicao = df_atual_base[
-            (df_atual_base["Status"] == "TSP - Aguardando Expedição") &
-            (df_atual_base["DiasDesdeUltimoStatus"] >= 3)
-        ].copy()
-
-        total = len(df_expedicao)
-
-        col1, col2 = st.columns([4, 2])
-
-        with col1:
-            st.write(
-                f"Pedidos aguardando expedição há ≥ 3 dias úteis: **{total}**"
-            )
-
-        with col2:
-            if total > 0:
-
-                # Define colunas desejadas (com fallback seguro)
-                colunas_exportar = [
-                    c for c in [
-                        "PedidoFormatado",
-                        "NotaFiscal",
-                        "Logistica",  # Armazém no seu modelo
-                        "DiasDesdeUltimoStatus"
-                    ] if c in df_expedicao.columns
-                ]
-
-                df_export = df_expedicao[colunas_exportar].copy()
-
-                # Renomeia para ficar mais executivo (opcional)
-                df_export = df_export.rename(columns={
-                    "Logistica": "Armazem",
-                    "DiasDesdeUltimoStatus": "Dias_Parado_no_Status"
-                })
-
-                # Ordena pelos mais críticos primeiro
-                df_export = df_export.sort_values(
-                    "Dias_Parado_no_Status",
-                    ascending=False
-                )
-
-                buffer = BytesIO()
-                df_export.to_excel(buffer, index=False)
-                buffer.seek(0)
-
-                st.download_button(
-                    label="⬇️ Baixar Expedição (3+ dias)",
-                    data=buffer,
-                    file_name="expedicao_parada_3_dias_ou_mais.xlsx",
-                    key="download_expedicao_3dias"
-                )
-            else:
-                st.write("Nenhum pedido elegível.")
-
-# ==============================
-# 📊 BI EXECUTIVO (MANTIDO D-1)
+# BI EXECUTIVO
 # ==============================
 dias = listar_dias()
 
 if len(dias) < 2:
-    st.warning("Histórico insuficiente na pasta data/historico.")
+    st.warning("Histórico insuficiente.")
     st.stop()
 
 dias = dias[-15:]
@@ -310,14 +210,10 @@ for i in range(len(dias)-1, 0, -1):
     if df_atual.empty or df_ant.empty:
         continue
 
-    st.markdown(
-        f'<p class="data-title">📅 {dia_ant} ➜ {dia_atual}</p>',
-        unsafe_allow_html=True
-    )
+    st.markdown(f"### 📅 {dia_ant} ➜ {dia_atual}")
 
     col1, col2, col3 = st.columns(3)
 
-    # ================= TRIPLO (PIZZA MANTIDA D-1) =================
     with col1:
         if "Transportadora_Triplo" in df_atual.columns:
 
@@ -326,121 +222,44 @@ for i in range(len(dias)-1, 0, -1):
 
             tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
             restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
-            entrou = atual[~atual["PedidoFormatado"].isin(ant["PedidoFormatado"])]
 
             st.image(pizza(len(tratados), len(restantes), "Triplo Transportadora"))
 
-            st.markdown(
-                f'<p class="metric-small">Tratados: {len(tratados)} / {len(ant)}</p>',
-                unsafe_allow_html=True
-            )
-            st.markdown(
-                f'<p class="metric-small">Entraram: {len(entrou)}</p>',
-                unsafe_allow_html=True
-            )
-
-            # 🔥 REMANESCENTE NOVO (MATEMÁTICO, NÃO D-1)
-            if (
-                "DiasDesdeExpedicao" in atual.columns and
-                "PrazoTransportadorDiasUteis" in atual.columns
-            ):
-                limite = (atual["PrazoTransportadorDiasUteis"] * 3) + 3
-                remanescente_triplo = atual[
-                    atual["DiasDesdeExpedicao"] > limite
-                ].copy()
-            else:
-                remanescente_triplo = restantes.copy()
-
-            buf = BytesIO()
-            remanescente_triplo.to_excel(buf, index=False)
-            st.download_button(
-                "Remanescentes Triplo",
-                buf.getvalue(),
-                file_name=f"remanescente_triplo_{dia_atual}.xlsx"
-            )
-
-    # ================= STATUS 2X =================
-    with col2:
-        if "Status_Dobro" in df_atual.columns:
-
-            atual = df_atual[df_atual["Status_Dobro"]=="X"]
-            ant = df_ant[df_ant["Status_Dobro"]=="X"]
-
-            tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
-            restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
-            entrou = atual[~atual["PedidoFormatado"].isin(ant["PedidoFormatado"])]
-
-            st.image(pizza(len(tratados), len(restantes), "Status Específico 2x"))
-
-            st.markdown(
-                f'<p class="metric-small">Tratados: {len(tratados)} / {len(ant)}</p>',
-                unsafe_allow_html=True
-            )
-            st.markdown(
-                f'<p class="metric-small">Entraram: {len(entrou)}</p>',
-                unsafe_allow_html=True
-            )
-
-            # 🔥 REMANESCENTE MATEMÁTICO (2x + 1)
-            if (
-                "DiasDesdeUltimoStatus" in atual.columns and
-                "Prazo_Status_Especifico" in atual.columns
-            ):
-                limite = (atual["Prazo_Status_Especifico"] * 2) + 1
-                remanescente_status = atual[
-                    atual["DiasDesdeUltimoStatus"] > limite
-                ].copy()
-            else:
-                remanescente_status = restantes.copy()
-
-            buf = BytesIO()
-            remanescente_status.to_excel(buf, index=False)
-            st.download_button(
-                "Remanescentes Status 2x",
-                buf.getvalue(),
-                file_name=f"remanescente_status_{dia_atual}.xlsx"
-            )
-
-    # ================= REGIÃO 2X =================
-    with col3:
-        if "Regiao_Dobro" in df_atual.columns:
-
-            atual = df_atual[df_atual["Regiao_Dobro"]=="X"]
-            ant = df_ant[df_ant["Regiao_Dobro"]=="X"]
-
-            tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
-            restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
-            entrou = atual[~atual["PedidoFormatado"].isin(ant["PedidoFormatado"])]
-
-            st.image(pizza(len(tratados), len(restantes), "Região 2x Prazo"))
-
-            st.markdown(
-                f'<p class="metric-small">Tratados: {len(tratados)} / {len(ant)}</p>',
-                unsafe_allow_html=True
-            )
-            st.markdown(
-                f'<p class="metric-small">Entraram: {len(entrou)}</p>',
-                unsafe_allow_html=True
-            )
-
-            # 🔥 REMANESCENTE MATEMÁTICO (2x + 1)
-            if (
-                "DiasDesdeUltimoStatus" in atual.columns and
-                "Prazo_Regiao" in atual.columns
-            ):
-                limite = (atual["Prazo_Regiao"] * 2) + 1
-                remanescente_regiao = atual[
-                    atual["DiasDesdeUltimoStatus"] > limite
-                ].copy()
-            else:
-                remanescente_regiao = restantes.copy()
-
-            buf = BytesIO()
-            remanescente_regiao.to_excel(buf, index=False)
-            st.download_button(
-                "Remanescentes Região 2x",
-                buf.getvalue(),
-                file_name=f"remanescente_regiao_{dia_atual}.xlsx"
-            )
-
     st.divider()
+
+# ==============================
+# GRÁFICO ÚNICO - STATUS DIÁRIOS
+# ==============================
+st.markdown("### 📈 Evolução - Status Diários")
+
+contagem_status = []
+
+for dia_hist in dias:
+
+    df_temp = ler_base(caminho(dia_hist))
+
+    if df_temp.empty or "Status" not in df_temp.columns:
+        continue
+
+    qtd = df_temp[
+        df_temp["Status"].isin(STATUS_DIARIOS)
+    ].shape[0]
+
+    contagem_status.append((dia_hist, qtd))
+
+if contagem_status:
+
+    df_graf = pd.DataFrame(contagem_status, columns=["Data", "Quantidade"])
+    df_graf["Data"] = pd.to_datetime(df_graf["Data"], format="%d-%m-%Y")
+    df_graf = df_graf.sort_values("Data")
+
+    fig, ax = plt.subplots()
+
+    ax.plot(df_graf["Data"], df_graf["Quantidade"])
+
+    ax.set_xlabel("Data")
+    ax.set_ylabel("Quantidade de Pedidos")
+    ax.set_title("Status Diários ao Longo do Tempo")
+
+    st.pyplot(fig)
+    plt.close(fig)
