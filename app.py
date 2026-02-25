@@ -106,7 +106,7 @@ def pizza(tratados, restantes, titulo):
     else:
         ax.pie([tratados, restantes], autopct="%1.0f%%", startangle=90)
 
-    ax.set_title(titulo, fontsize=10)
+    ax.set_title(titulo, fontsize=9)
     buf = BytesIO()
     fig.savefig(buf, format="png", bbox_inches="tight")
     plt.close(fig)
@@ -114,70 +114,18 @@ def pizza(tratados, restantes, titulo):
     return buf.getvalue()
 
 # ==============================
-# DOWNLOAD POR CARTEIRA
-# ==============================
-st.markdown("### 📥 Exportação por Carteira (300 em 300)")
-
-df_atual_base = ler_base(ARQ_ATUAL)
-
-if "offsets_carteira" not in st.session_state:
-    st.session_state["offsets_carteira"] = {}
-
-if not df_atual_base.empty and "Carteira" in df_atual_base.columns:
-
-    if "Ranking" in df_atual_base.columns:
-        df_atual_base = df_atual_base.sort_values("Ranking").reset_index(drop=True)
-
-    carteiras = sorted(df_atual_base["Carteira"].dropna().unique())
-
-    for carteira in carteiras:
-
-        df_carteira = df_atual_base[
-            df_atual_base["Carteira"] == carteira
-        ].reset_index(drop=True)
-
-        total = len(df_carteira)
-        offset = st.session_state["offsets_carteira"].get(carteira, 0)
-
-        inicio = offset
-        fim = min(offset + TAMANHO_LOTE, total)
-
-        lote = df_carteira.iloc[inicio:fim]
-
-        if not lote.empty:
-            buffer = BytesIO()
-            lote.to_excel(buffer, index=False)
-            buffer.seek(0)
-
-            col1, col2 = st.columns([4, 2])
-
-            with col1:
-                st.write(f"**{carteira}** — {inicio+1} até {fim} de {total}")
-
-            with col2:
-                if st.download_button(
-                    label=f"⬇️ Baixar {carteira}",
-                    data=buffer,
-                    file_name=f"{carteira}_{inicio+1}_a_{fim}.xlsx",
-                    key=f"dl_{carteira}_{offset}"
-                ):
-                    st.session_state["offsets_carteira"][carteira] = fim
-
-st.divider()
-
-# ==============================
 # BI EXECUTIVO
 # ==============================
 dias = listar_dias()
 
 if len(dias) < 2:
-    st.warning("Histórico insuficiente na pasta data/historico.")
+    st.warning("Histórico insuficiente.")
     st.stop()
 
 dias = dias[-15:]
 
 # ==============================
-# 📈 STATUS DIÁRIOS (ANTES DAS PIZZAS)
+# 📈 STATUS DIÁRIOS (GRÁFICO PEQUENO)
 # ==============================
 st.markdown("### 📈 Status Diários")
 
@@ -185,7 +133,7 @@ contagem_status = []
 
 for dia_hist in dias:
     df_temp = ler_base(caminho(dia_hist))
-    if df_temp.empty or "Status" not in df_temp.columns:
+    if df_temp.empty:
         continue
 
     qtd = df_temp[df_temp["Status"].isin(STATUS_DIARIOS)].shape[0]
@@ -197,16 +145,16 @@ if contagem_status:
     df_graf["Data"] = pd.to_datetime(df_graf["Data"], format="%d-%m-%Y")
     df_graf = df_graf.sort_values("Data")
 
-    fig, ax = plt.subplots(figsize=(5, 2.5))
+    fig, ax = plt.subplots(figsize=(2.5, 1.4))  # metade do tamanho
 
     ax.plot(df_graf["Data"], df_graf["Quantidade"])
 
     ax.set_xticks(df_graf["Data"])
-    ax.set_xticklabels(df_graf["Data"].dt.day)
+    ax.set_xticklabels(df_graf["Data"].dt.day, fontsize=7)
 
-    ax.set_xlabel("Dia")
-    ax.set_ylabel("Qtde")
-    ax.set_title("Pedidos nos Status Críticos")
+    ax.set_xlabel("Dia", fontsize=8)
+    ax.set_ylabel("Qtde", fontsize=8)
+    ax.set_title("Status Críticos", fontsize=9)
 
     st.pyplot(fig)
     plt.close(fig)
@@ -214,7 +162,7 @@ if contagem_status:
 st.divider()
 
 # ==============================
-# LOOP DAS COMPARAÇÕES (INALTERADO)
+# LOOP ORIGINAL COMPLETO
 # ==============================
 for i in range(len(dias)-1, 0, -1):
 
@@ -231,34 +179,76 @@ for i in range(len(dias)-1, 0, -1):
 
     col1, col2, col3 = st.columns(3)
 
+    # TRIPLO
     with col1:
         if "Transportadora_Triplo" in df_atual.columns:
+
             atual = df_atual[df_atual["Transportadora_Triplo"]=="X"]
             ant = df_ant[df_ant["Transportadora_Triplo"]=="X"]
 
             tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
             restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
+            entrou = atual[~atual["PedidoFormatado"].isin(ant["PedidoFormatado"])]
 
-            st.image(pizza(len(tratados), len(restantes), "Triplo Transportadora"))
+            st.image(pizza(len(tratados), len(restantes), "Triplo"))
 
+            st.markdown(f"Tratados: {len(tratados)} / {len(ant)}")
+            st.markdown(f"Entraram: {len(entrou)}")
+
+            buf = BytesIO()
+            restantes.to_excel(buf, index=False)
+            st.download_button(
+                "Remanescentes Triplo",
+                buf.getvalue(),
+                file_name=f"remanescente_triplo_{dia_atual}.xlsx"
+            )
+
+    # STATUS 2X
     with col2:
         if "Status_Dobro" in df_atual.columns:
+
             atual = df_atual[df_atual["Status_Dobro"]=="X"]
             ant = df_ant[df_ant["Status_Dobro"]=="X"]
 
             tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
             restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
+            entrou = atual[~atual["PedidoFormatado"].isin(ant["PedidoFormatado"])]
 
             st.image(pizza(len(tratados), len(restantes), "Status 2x"))
 
+            st.markdown(f"Tratados: {len(tratados)} / {len(ant)}")
+            st.markdown(f"Entraram: {len(entrou)}")
+
+            buf = BytesIO()
+            restantes.to_excel(buf, index=False)
+            st.download_button(
+                "Remanescentes Status 2x",
+                buf.getvalue(),
+                file_name=f"remanescente_status_{dia_atual}.xlsx"
+            )
+
+    # REGIÃO 2X
     with col3:
         if "Regiao_Dobro" in df_atual.columns:
+
             atual = df_atual[df_atual["Regiao_Dobro"]=="X"]
             ant = df_ant[df_ant["Regiao_Dobro"]=="X"]
 
             tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
             restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
+            entrou = atual[~atual["PedidoFormatado"].isin(ant["PedidoFormatado"])]
 
             st.image(pizza(len(tratados), len(restantes), "Região 2x"))
+
+            st.markdown(f"Tratados: {len(tratados)} / {len(ant)}")
+            st.markdown(f"Entraram: {len(entrou)}")
+
+            buf = BytesIO()
+            restantes.to_excel(buf, index=False)
+            st.download_button(
+                "Remanescentes Região 2x",
+                buf.getvalue(),
+                file_name=f"remanescente_regiao_{dia_atual}.xlsx"
+            )
 
     st.divider()
