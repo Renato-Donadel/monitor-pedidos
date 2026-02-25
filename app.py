@@ -160,7 +160,7 @@ if not df_atual_base.empty and "Carteira" in df_atual_base.columns:
 
             buffer = BytesIO()
 
-            with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
+            with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
                 lote.to_excel(writer, index=False, sheet_name="Lote")
 
                 if not df_status_diarios.empty:
