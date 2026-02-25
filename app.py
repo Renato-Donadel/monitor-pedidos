@@ -15,7 +15,7 @@ PASTA_HIST = os.path.join(PASTA_DATA, "historico")
 ARQ_ATUAL = os.path.join(PASTA_DATA, "Monitor_Pedidos_Processado.xlsx")
 LOGO_PATH = os.path.join(PASTA_DATA, "logo_bravium.png")
 
-TAMANHO_LOTE = 400
+TAMANHO_LOTE = 300
 
 STATUS_DIARIOS = [
     "TSP - Pendente Transportes - Dados do Recebedor Solicitado",
@@ -23,7 +23,6 @@ STATUS_DIARIOS = [
     "TSP - Pendente Transportes - Aguardando Acareação",
     "TSP - Aguardando Dados do Recebedor"
 ]
-STATUS_DIARIOS = [s.strip() for s in STATUS_DIARIOS]
 
 st.set_page_config(
     page_title="BI Executivo - Monitor",
@@ -73,13 +72,8 @@ def ler_base(path):
             .str.upper()
         )
 
-    # 🔥 NORMALIZA STATUS
     if "Status" in df.columns:
-        df["Status"] = (
-            df["Status"]
-            .astype(str)
-            .str.strip()
-        )
+        df["Status"] = df["Status"].astype(str).str.strip()
 
     return df
 
@@ -122,7 +116,7 @@ def pizza(tratados, restantes, titulo):
 # ==============================
 # DOWNLOAD POR CARTEIRA
 # ==============================
-st.markdown("### 📥 Exportação por Carteira")
+st.markdown("### 📥 Exportação por Carteira (300 em 300)")
 
 df_atual_base = ler_base(ARQ_ATUAL)
 
@@ -145,46 +139,29 @@ if not df_atual_base.empty and "Carteira" in df_atual_base.columns:
         total = len(df_carteira)
         offset = st.session_state["offsets_carteira"].get(carteira, 0)
 
-        df_status_diarios = df_carteira[
-            df_carteira["Status"].isin(STATUS_DIARIOS)
-        ]
+        inicio = offset
+        fim = min(offset + TAMANHO_LOTE, total)
 
-        df_restante = df_carteira[
-            ~df_carteira.index.isin(df_status_diarios.index)
-        ]
-
-        lote_normal = df_restante.iloc[offset:offset + TAMANHO_LOTE]
-        lote = pd.concat([df_status_diarios, lote_normal]).drop_duplicates()
+        lote = df_carteira.iloc[inicio:fim]
 
         if not lote.empty:
-
             buffer = BytesIO()
-
-            with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
-                lote.to_excel(writer, index=False, sheet_name="Lote")
-
-                if not df_status_diarios.empty:
-                    df_status_diarios.to_excel(
-                        writer,
-                        index=False,
-                        sheet_name="Status Diários"
-                    )
-
+            lote.to_excel(buffer, index=False)
             buffer.seek(0)
 
             col1, col2 = st.columns([4, 2])
 
             with col1:
-                st.write(f"**{carteira}** — {offset+1} até {min(offset+TAMANHO_LOTE, total)} de {total}")
+                st.write(f"**{carteira}** — {inicio+1} até {fim} de {total}")
 
             with col2:
                 if st.download_button(
                     label=f"⬇️ Baixar {carteira}",
                     data=buffer,
-                    file_name=f"{carteira}.xlsx",
+                    file_name=f"{carteira}_{inicio+1}_a_{fim}.xlsx",
                     key=f"dl_{carteira}_{offset}"
                 ):
-                    st.session_state["offsets_carteira"][carteira] = offset + TAMANHO_LOTE
+                    st.session_state["offsets_carteira"][carteira] = fim
 
 st.divider()
 
@@ -194,11 +171,51 @@ st.divider()
 dias = listar_dias()
 
 if len(dias) < 2:
-    st.warning("Histórico insuficiente.")
+    st.warning("Histórico insuficiente na pasta data/historico.")
     st.stop()
 
 dias = dias[-15:]
 
+# ==============================
+# 📈 STATUS DIÁRIOS (ANTES DAS PIZZAS)
+# ==============================
+st.markdown("### 📈 Status Diários")
+
+contagem_status = []
+
+for dia_hist in dias:
+    df_temp = ler_base(caminho(dia_hist))
+    if df_temp.empty or "Status" not in df_temp.columns:
+        continue
+
+    qtd = df_temp[df_temp["Status"].isin(STATUS_DIARIOS)].shape[0]
+    contagem_status.append((dia_hist, qtd))
+
+if contagem_status:
+
+    df_graf = pd.DataFrame(contagem_status, columns=["Data", "Quantidade"])
+    df_graf["Data"] = pd.to_datetime(df_graf["Data"], format="%d-%m-%Y")
+    df_graf = df_graf.sort_values("Data")
+
+    fig, ax = plt.subplots(figsize=(5, 2.5))
+
+    ax.plot(df_graf["Data"], df_graf["Quantidade"])
+
+    ax.set_xticks(df_graf["Data"])
+    ax.set_xticklabels(df_graf["Data"].dt.day)
+
+    ax.set_xlabel("Dia")
+    ax.set_ylabel("Qtde")
+    ax.set_title("Pedidos nos Status Críticos")
+
+    st.pyplot(fig)
+    plt.close(fig)
+
+st.divider()
+
+# ==============================
+# LOOP DAS COMPARAÇÕES (INALTERADO)
+# ==============================
 for i in range(len(dias)-1, 0, -1):
 
     dia_atual = dias[i]
@@ -216,7 +233,6 @@ for i in range(len(dias)-1, 0, -1):
 
     with col1:
         if "Transportadora_Triplo" in df_atual.columns:
-
             atual = df_atual[df_atual["Transportadora_Triplo"]=="X"]
             ant = df_ant[df_ant["Transportadora_Triplo"]=="X"]
 
@@ -225,41 +241,24 @@ for i in range(len(dias)-1, 0, -1):
 
             st.image(pizza(len(tratados), len(restantes), "Triplo Transportadora"))
 
+    with col2:
+        if "Status_Dobro" in df_atual.columns:
+            atual = df_atual[df_atual["Status_Dobro"]=="X"]
+            ant = df_ant[df_ant["Status_Dobro"]=="X"]
+
+            tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
+            restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
+
+            st.image(pizza(len(tratados), len(restantes), "Status 2x"))
+
+    with col3:
+        if "Regiao_Dobro" in df_atual.columns:
+            atual = df_atual[df_atual["Regiao_Dobro"]=="X"]
+            ant = df_ant[df_ant["Regiao_Dobro"]=="X"]
+
+            tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
+            restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
+
+            st.image(pizza(len(tratados), len(restantes), "Região 2x"))
+
     st.divider()
-
-# ==============================
-# GRÁFICO ÚNICO - STATUS DIÁRIOS
-# ==============================
-st.markdown("### 📈 Evolução - Status Diários")
-
-contagem_status = []
-
-for dia_hist in dias:
-
-    df_temp = ler_base(caminho(dia_hist))
-
-    if df_temp.empty or "Status" not in df_temp.columns:
-        continue
-
-    qtd = df_temp[
-        df_temp["Status"].isin(STATUS_DIARIOS)
-    ].shape[0]
-
-    contagem_status.append((dia_hist, qtd))
-
-if contagem_status:
-
-    df_graf = pd.DataFrame(contagem_status, columns=["Data", "Quantidade"])
-    df_graf["Data"] = pd.to_datetime(df_graf["Data"], format="%d-%m-%Y")
-    df_graf = df_graf.sort_values("Data")
-
-    fig, ax = plt.subplots()
-
-    ax.plot(df_graf["Data"], df_graf["Quantidade"])
-
-    ax.set_xlabel("Data")
-    ax.set_ylabel("Quantidade de Pedidos")
-    ax.set_title("Status Diários ao Longo do Tempo")
-
-    st.pyplot(fig)
-    plt.close(fig)
