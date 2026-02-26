@@ -190,6 +190,71 @@ if not df_atual_base.empty and "Carteira" in df_atual_base.columns:
 st.divider()
 
 # ==============================
+# 🚚 EXPEDIÇÃO — 3+ DIAS NO STATUS
+# ==============================
+st.markdown("### 🚚 Expedição (3+ dias no status)")
+
+df_atual_base = ler_base(ARQ_ATUAL)
+
+if not df_atual_base.empty:
+
+    if (
+        "Status" in df_atual_base.columns and
+        "DiasDesdeUltimoStatus" in df_atual_base.columns
+    ):
+
+        df_expedicao = df_atual_base[
+            (df_atual_base["Status"] == "TSP - Aguardando Expedição") &
+            (df_atual_base["DiasDesdeUltimoStatus"] >= 3)
+        ].copy()
+
+        total = len(df_expedicao)
+
+        col1, col2 = st.columns([4, 2])
+
+        with col1:
+            st.write(
+                f"Pedidos aguardando expedição há ≥ 3 dias úteis: **{total}**"
+            )
+
+        with col2:
+            if total > 0:
+
+                colunas_exportar = [
+                    c for c in [
+                        "PedidoFormatado",
+                        "NotaFiscal",
+                        "Armazém",
+                        "Logistica",
+                        "DiasDesdeUltimoStatus"
+                    ] if c in df_expedicao.columns
+                ]
+
+                df_export = df_expedicao[colunas_exportar].copy()
+
+                df_export = df_export.rename(columns={
+                    "DiasDesdeUltimoStatus": "Dias_Parado_no_Status"
+                })
+
+                df_export = df_export.sort_values(
+                    "Dias_Parado_no_Status",
+                    ascending=False
+                )
+
+                buffer = BytesIO()
+                df_export.to_excel(buffer, index=False)
+                buffer.seek(0)
+
+                st.download_button(
+                    label="⬇️ Baixar Expedição (3+ dias)",
+                    data=buffer,
+                    file_name="expedicao_parada_3_dias_ou_mais.xlsx",
+                    key="download_expedicao_3dias"
+                )
+            else:
+                st.write("Nenhum pedido elegível.")
+
+# ==============================
 # BI EXECUTIVO
 # ==============================
 dias = listar_dias()
@@ -216,6 +281,7 @@ if contagem:
     df_graf = pd.DataFrame(contagem, columns=["Data", "Qtd"])
     df_graf["Data"] = pd.to_datetime(df_graf["Data"], format="%d-%m-%Y")
     df_graf = df_graf.sort_values("Data")
+    df_graf = df_graf[df_graf["Data"].dt.day >= 18]
 
     fig, ax = plt.subplots(figsize=(2.2, 1.2))
     ax.plot(df_graf["Data"], df_graf["Qtd"])
@@ -223,7 +289,7 @@ if contagem:
     ax.set_xticklabels(df_graf["Data"].dt.day, fontsize=7)
     ax.set_xlabel("Dia", fontsize=7)
     ax.set_ylabel("Qtde", fontsize=7)
-    ax.set_title("Status Críticos", fontsize=8)
+    ax.set_title("Status Diários", fontsize=8)
 
     st.pyplot(fig)
     plt.close(fig)
