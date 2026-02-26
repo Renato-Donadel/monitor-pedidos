@@ -24,6 +24,24 @@ STATUS_DIARIOS = [
     "TSP - Aguardando Dados do Recebedor"
 ]
 
+STATUS_DEMANDAS = [
+    "TSP - Críticos",
+    "TSP - Reentrega",
+    "TSP - Reentregar/Endereço correto",
+    "Aguardando tratativa transportadora",
+    "TSP - Aguardando Acareação",
+    "TSP - Pendente Transportes - Acareação Solicitada",
+    "TSP - Aguardando Dados do Recebedor",
+    "TSP - Pendente Transportes - Dados do Recebedor Solicitado",
+    "TSP - Item Faltante",
+    "TSP - Item Faltante Solicitado",
+    "TSP - Aguardando Avaliação de Problema de Coleta",
+    "TSP - Coleta Realizada",
+    "TSP - Aguardando Coleta",
+    "TSP - Coleta Agendada",
+    "TSP - Aguardando Envio de Guia de Retenção ao Fiscal"
+]
+
 st.set_page_config(
     page_title="BI Executivo - Monitor",
     layout="wide",
@@ -295,6 +313,78 @@ if contagem:
     plt.close(fig)
 
 st.divider()
+
+# ==============================
+# 📌 DEMANDAS DIÁRIAS (3 CURVAS)
+# ==============================
+
+st.markdown("### 📌 Demandas Diárias")
+
+dados_series = []
+
+for i in range(len(dias)):
+
+    dia_atual = dias[i]
+    df_atual = ler_base(caminho(dia_atual))
+
+    if df_atual.empty:
+        continue
+
+    df_atual = df_atual[
+        df_atual["Status"].isin(STATUS_DEMANDAS)
+    ]
+
+    total = df_atual["PedidoFormatado"].nunique()
+
+    entraram = 0
+    sairam = 0
+
+    if i > 0:
+        dia_ant = dias[i-1]
+        df_ant = ler_base(caminho(dia_ant))
+
+        if not df_ant.empty:
+            df_ant = df_ant[
+                df_ant["Status"].isin(STATUS_DEMANDAS)
+            ]
+
+            set_atual = set(df_atual["PedidoFormatado"])
+            set_ant = set(df_ant["PedidoFormatado"])
+
+            entraram = len(set_atual - set_ant)
+            sairam = len(set_ant - set_atual)
+
+    dados_series.append(
+        (dia_atual, total, entraram, sairam)
+    )
+
+if dados_series:
+
+    df_graf = pd.DataFrame(
+        dados_series,
+        columns=["Data", "Total", "Entraram", "Sairam"]
+    )
+
+    df_graf["Data"] = pd.to_datetime(
+        df_graf["Data"],
+        format="%d-%m-%Y"
+    )
+
+    df_graf = df_graf.sort_values("Data")
+
+    fig, ax = plt.subplots(figsize=(6, 3))
+
+    ax.plot(df_graf["Data"], df_graf["Total"], label="Total")
+    ax.plot(df_graf["Data"], df_graf["Entraram"], label="Entraram")
+    ax.plot(df_graf["Data"], df_graf["Sairam"], label="Saíram")
+
+    ax.set_title("Demandas Diárias")
+    ax.set_xlabel("Data")
+    ax.set_ylabel("Quantidade")
+    ax.legend()
+
+    st.pyplot(fig)
+    plt.close(fig)
 
 # LOOP ORIGINAL COMPLETO
 for i in range(len(dias)-1, 0, -1):
