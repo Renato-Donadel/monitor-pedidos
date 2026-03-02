@@ -5,7 +5,6 @@ from io import BytesIO
 import matplotlib.pyplot as plt
 import re
 import base64
-import matplotlib.dates as mdates
 
 # ==============================
 # CONFIGS
@@ -318,7 +317,7 @@ if contagem:
 st.divider()
 
 # ==============================
-# 📌 Status Manuais (3 CURVAS)
+# 📌 STATUS MANUAIS (3 CURVAS)
 # ==============================
 
 st.markdown("### 📌 Status Manuais")
@@ -375,22 +374,23 @@ if dados_series:
 
     df_graf = df_graf.sort_values("Data")
 
-    fig, ax = plt.subplots(figsize=(18, 12))
+    fig, ax = plt.subplots(figsize=(12, 6))
 
     ax.plot(df_graf["Data"], df_graf["Total"], label="Total")
     ax.plot(df_graf["Data"], df_graf["Entraram"], label="Entraram")
     ax.plot(df_graf["Data"], df_graf["Sairam"], label="Saíram")
 
     ax.set_title("Status Manuais")
-    ax.set_xlabel("Data")
+    ax.set_xlabel("Dia")
     ax.set_ylabel("Quantidade")
     ax.legend()
-    
+
+    # Mostrar apenas o dia no eixo X
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%d'))
 
     st.pyplot(fig)
     plt.close(fig)
-
+    
 # LOOP ORIGINAL COMPLETO
 for i in range(len(dias)-1, 0, -1):
 
