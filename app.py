@@ -5,6 +5,7 @@ from io import BytesIO
 import matplotlib.pyplot as plt
 import re
 import base64
+import matplotlib.dates as mdates
 
 # ==============================
 # CONFIGS
@@ -21,10 +22,12 @@ STATUS_DIARIOS = [
     "TSP - Pendente Transportes - Dados do Recebedor Solicitado",
     "TSP - Item Faltante",
     "TSP - Pendente Transportes - Aguardando Acareação",
+    "TSP - Pendente Transportes - Acareação Solicitada",
+    "TSP - Item Faltante Solicitado",
     "TSP - Aguardando Dados do Recebedor"
 ]
 
-STATUS_DEMANDAS = [
+STATUS_Manuais = [
     "TSP - Críticos",
     "TSP - Reentrega",
     "TSP - Reentregar/Endereço correto",
@@ -301,7 +304,7 @@ if contagem:
     df_graf = df_graf.sort_values("Data")
     df_graf = df_graf[df_graf["Data"].dt.day >= 18]
 
-    fig, ax = plt.subplots(figsize=(2.2, 1.2))
+    fig, ax = plt.subplots(figsize=(4.2, 1.2))
     ax.plot(df_graf["Data"], df_graf["Qtd"])
     ax.set_xticks(df_graf["Data"])
     ax.set_xticklabels(df_graf["Data"].dt.day, fontsize=7)
@@ -315,10 +318,10 @@ if contagem:
 st.divider()
 
 # ==============================
-# 📌 DEMANDAS DIÁRIAS (3 CURVAS)
+# 📌 Status Manuais (3 CURVAS)
 # ==============================
 
-st.markdown("### 📌 Demandas Diárias")
+st.markdown("### 📌 Status Manuais")
 
 dados_series = []
 
@@ -372,16 +375,18 @@ if dados_series:
 
     df_graf = df_graf.sort_values("Data")
 
-    fig, ax = plt.subplots(figsize=(6, 3))
+    fig, ax = plt.subplots(figsize=(18, 12))
 
     ax.plot(df_graf["Data"], df_graf["Total"], label="Total")
     ax.plot(df_graf["Data"], df_graf["Entraram"], label="Entraram")
     ax.plot(df_graf["Data"], df_graf["Sairam"], label="Saíram")
 
-    ax.set_title("Demandas Diárias")
+    ax.set_title("Status Manuais")
     ax.set_xlabel("Data")
     ax.set_ylabel("Quantidade")
     ax.legend()
+    
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%d'))
 
     st.pyplot(fig)
     plt.close(fig)
