@@ -283,10 +283,7 @@ if len(dias) < 2:
     st.warning("Histórico insuficiente na pasta data/historico.")
     st.stop()
 
-dias = dias[-15:]
-
-# GRÁFICO PEQUENO
-st.markdown("### 📈 Status Diários")
+st.markdown("### 📈 Status Diários por Mês")
 
 contagem = []
 
@@ -294,27 +291,46 @@ for dia_hist in dias:
     df_temp = ler_base(caminho(dia_hist))
     if df_temp.empty:
         continue
+
     qtd = df_temp[df_temp["Status"].isin(STATUS_DIARIOS)].shape[0]
     contagem.append((dia_hist, qtd))
 
 if contagem:
+
     df_graf = pd.DataFrame(contagem, columns=["Data", "Qtd"])
     df_graf["Data"] = pd.to_datetime(df_graf["Data"], format="%d-%m-%Y")
     df_graf = df_graf.sort_values("Data")
-    df_graf = df_graf[df_graf["Data"].dt.day >= 18]
 
-    fig, ax = plt.subplots(figsize=(4.2, 1.2))
-    ax.plot(df_graf["Data"], df_graf["Qtd"])
-    ax.set_xticks(df_graf["Data"])
-    ax.set_xticklabels(df_graf["Data"].dt.day, fontsize=7)
-    ax.set_xlabel("Dia", fontsize=7)
-    ax.set_ylabel("Qtde", fontsize=7)
-    ax.set_title("Status Diários", fontsize=8)
+    # Agrupa por Ano + Mês
+    df_graf["AnoMes"] = df_graf["Data"].dt.to_period("M")
 
-    st.pyplot(fig)
-    plt.close(fig)
+    meses = df_graf["AnoMes"].unique()
 
-st.divider()
+    colunas = st.columns(len(meses))
+
+    for i, mes in enumerate(meses):
+
+        df_mes = df_graf[df_graf["AnoMes"] == mes]
+
+        with colunas[i]:
+
+            fig, ax = plt.subplots(figsize=(4.2, 1.4))
+
+            ax.plot(df_mes["Data"], df_mes["Qtd"])
+
+            ax.set_xticks(df_mes["Data"])
+            ax.set_xticklabels(df_mes["Data"].dt.day, fontsize=7)
+
+            ax.set_xlabel("Dia", fontsize=7)
+            ax.set_ylabel("Qtde", fontsize=7)
+
+            nome_mes = df_mes["Data"].dt.strftime("%B").iloc[0].capitalize()
+            ano = df_mes["Data"].dt.year.iloc[0]
+
+            ax.set_title(f"{nome_mes}/{ano}", fontsize=9)
+
+            st.pyplot(fig)
+            plt.close(fig)
 
 # ==============================
 # 📌 STATUS MANUAIS (3 CURVAS)
