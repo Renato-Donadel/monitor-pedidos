@@ -465,20 +465,6 @@ for i in range(len(dias)-1, 0, -1):
                 file_name=f"remanescente_triplo_{dia_atual}.xlsx"
             )
 
-st.markdown(
-    f'<p class="metric-small">Remanescentes: {len(restantes)} | R$ {valor_restantes:,.2f}</p>',
-    unsafe_allow_html=True
-)
-            )
-
-            buf = BytesIO()
-            restantes.to_excel(buf, index=False)
-            st.download_button(
-                "Remanescentes Triplo",
-                buf.getvalue(),
-                file_name=f"remanescente_triplo_{dia_atual}.xlsx"
-            )
-
     # STATUS 2X
     with col2:
         if "Status_Dobro" in df_atual.columns:
