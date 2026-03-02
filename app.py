@@ -5,6 +5,7 @@ from io import BytesIO
 import matplotlib.pyplot as plt
 import re
 import base64
+import matplotlib.dates as mdates
 
 # ==============================
 # CONFIGS
@@ -311,6 +312,10 @@ if contagem:
     for i, mes in enumerate(meses):
 
         df_mes = df_graf[df_graf["AnoMes"] == mes]
+        
+        # Se for fevereiro de 2026 (ajuste o ano se necessário)
+        if mes.month == 2 and mes.year == 2026:
+            df_mes = df_mes[df_mes["Data"].dt.day >= 18]
 
         with colunas[i]:
 
