@@ -349,7 +349,7 @@ for i in range(len(dias)):
         continue
 
     df_atual = df_atual[
-        df_atual["Status"].isin(STATUS_DEMANDAS)
+        df_atual["Status"].isin(STATUS_Manuais)
     ]
 
     total = df_atual["PedidoFormatado"].nunique()
@@ -363,7 +363,7 @@ for i in range(len(dias)):
 
         if not df_ant.empty:
             df_ant = df_ant[
-                df_ant["Status"].isin(STATUS_DEMANDAS)
+                df_ant["Status"].isin(STATUS_Manuais)
             ]
 
             set_atual = set(df_atual["PedidoFormatado"])
@@ -426,15 +426,19 @@ for i in range(len(dias)-1, 0, -1):
 
     col1, col2, col3 = st.columns(3)
 
-    # TRIPLO
+        # TRIPLO
     with col1:
         if "Transportadora_Triplo" in df_atual.columns:
-            atual = df_atual[df_atual["Transportadora_Triplo"]=="X"]
-            ant = df_ant[df_ant["Transportadora_Triplo"]=="X"]
+
+            atual = df_atual[df_atual["Transportadora_Triplo"] == "X"]
+            ant = df_ant[df_ant["Transportadora_Triplo"] == "X"]
 
             tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
             restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
             entrou = atual[~atual["PedidoFormatado"].isin(ant["PedidoFormatado"])]
+
+            valor_entrou = entrou["ValorNota"].sum() if "ValorNota" in entrou.columns else 0
+            valor_restantes = restantes["ValorNota"].sum() if "ValorNota" in restantes.columns else 0
 
             st.image(pizza(len(tratados), len(restantes), "Triplo Transportadora"))
 
@@ -442,9 +446,29 @@ for i in range(len(dias)-1, 0, -1):
                 f'<p class="metric-small">Tratados: {len(tratados)} / {len(ant)}</p>',
                 unsafe_allow_html=True
             )
+
             st.markdown(
-                f'<p class="metric-small">Entraram: {len(entrou)}</p>',
+                f'<p class="metric-small">Entraram: {len(entrou)} | R$ {valor_entrou:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")</p>',
                 unsafe_allow_html=True
+            )
+
+            st.markdown(
+                f'<p class="metric-small">Remanescentes: {len(restantes)} | R$ {valor_restantes:,.2f}</p>',
+                unsafe_allow_html=True
+            )
+
+            buf = BytesIO()
+            restantes.to_excel(buf, index=False)
+            st.download_button(
+                "Remanescentes Triplo",
+                buf.getvalue(),
+                file_name=f"remanescente_triplo_{dia_atual}.xlsx"
+            )
+
+st.markdown(
+    f'<p class="metric-small">Remanescentes: {len(restantes)} | R$ {valor_restantes:,.2f}</p>',
+    unsafe_allow_html=True
+)
             )
 
             buf = BytesIO()
