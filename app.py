@@ -395,7 +395,7 @@ if dados_series:
 
     df_graf = df_graf.sort_values("Data")
 
-    fig, ax = plt.subplots(figsize=(12, 6))
+    fig, ax = plt.subplots(figsize=(36, 18))
 
     ax.plot(df_graf["Data"], df_graf["Total"], label="Total")
     ax.plot(df_graf["Data"], df_graf["Entraram"], label="Entraram")
@@ -430,7 +430,6 @@ for i in range(len(dias)-1, 0, -1):
     )
 
     col1, col2, col3 = st.columns(3)
-
         # TRIPLO
     with col1:
         if "Transportadora_Triplo" in df_atual.columns:
@@ -445,6 +444,10 @@ for i in range(len(dias)-1, 0, -1):
             valor_entrou = entrou["ValorNota"].sum() if "ValorNota" in entrou.columns else 0
             valor_restantes = restantes["ValorNota"].sum() if "ValorNota" in restantes.columns else 0
 
+            # Formatação BRL correta
+            valor_entrou_fmt = f"{valor_entrou:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+            valor_restantes_fmt = f"{valor_restantes:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
             st.image(pizza(len(tratados), len(restantes), "Triplo Transportadora"))
 
             st.markdown(
@@ -453,12 +456,12 @@ for i in range(len(dias)-1, 0, -1):
             )
 
             st.markdown(
-                f'<p class="metric-small">Entraram: {len(entrou)} | R$ {valor_entrou:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")</p>',
+                f'<p class="metric-small">Entraram: {len(entrou)} | R$ {valor_entrou_fmt}</p>',
                 unsafe_allow_html=True
             )
 
             st.markdown(
-                f'<p class="metric-small">Remanescentes: {len(restantes)} | R$ {valor_restantes:,.2f}</p>',
+                f'<p class="metric-small">Remanescentes: {len(restantes)} | R$ {valor_restantes_fmt}</p>',
                 unsafe_allow_html=True
             )
 
