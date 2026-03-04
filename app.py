@@ -95,6 +95,18 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ==============================
+# MENU LATERAL
+# ==============================
+
+pagina = st.sidebar.selectbox(
+    "Painel",
+    [
+        "Monitor de Pedidos",
+        "Indicador de Devolução"
+    ]
+)
+
+# ==============================
 # FUNÇÕES
 # ==============================
 def ler_base(path):
@@ -140,6 +152,8 @@ def pizza(tratados, restantes, titulo):
     plt.close(fig)
     buf.seek(0)
     return buf.getvalue()
+    
+if pagina == "Monitor de Pedidos":
 
 # ==============================
 # DOWNLOAD POR CARTEIRA (COM ABA EXTRA)
@@ -409,7 +423,7 @@ if dados_series:
     # Mostrar apenas o dia no eixo X
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%d'))
 
-    st.pyplot(fig)
+    st.pyplot(fig, use_container_width=True)
     plt.close(fig)
     
 # LOOP ORIGINAL COMPLETO
@@ -532,3 +546,104 @@ for i in range(len(dias)-1, 0, -1):
             )
 
     st.divider()
+    
+# ==============================
+# INDICADOR DE DEVOLUÇÃO
+# ==============================
+
+elif pagina == "Indicador de Devolução":
+
+    st.markdown("## Indicador de Devolução / Extravio / Avaria")
+
+    PASTA_INTELIPOST = r"Z:\9. Transportes\9.2. Business Intelligence\9.2 Monitor_Pedidos\Intelipost"
+
+    if not os.path.exists(PASTA_INTELIPOST):
+        st.warning("Pasta Intelipost não encontrada.")
+        st.stop()
+
+    arquivos = [
+        f for f in os.listdir(PASTA_INTELIPOST)
+        if f.lower().endswith((".xlsx", ".xls"))
+        and f.startswith("transactions_")
+    ]
+
+    lista = []
+
+    for arq in arquivos:
+
+        caminho = os.path.join(PASTA_INTELIPOST, arq)
+
+        try:
+
+            df_temp = pd.read_excel(caminho)
+
+            colunas = [
+                "Pedido de Venda",
+                "Data Pedido",
+                "Transportadora",
+                "Valor da Nota"
+            ]
+
+            if not all(c in df_temp.columns for c in colunas):
+                continue
+
+            df_temp = df_temp[colunas].copy()
+
+            lista.append(df_temp)
+
+        except:
+            continue
+
+    if not lista:
+        st.warning("Nenhum arquivo válido da Intelipost encontrado.")
+        st.stop()
+
+    df_int = pd.concat(lista, ignore_index=True)
+
+    df_int["Pedido"] = (
+        df_int["Pedido de Venda"]
+        .astype(str)
+        .str.strip()
+        .str.upper()
+        .str.replace(r"\.0$", "", regex=True)
+    )
+
+    df_int["DataPedido"] = pd.to_datetime(
+        df_int["Data Pedido"],
+        errors="coerce",
+        dayfirst=True
+    )
+
+    df_int["Mes"] = df_int["DataPedido"].dt.to_period("M")
+
+    df_int["ValorNota"] = df_int["Valor da Nota"]
+
+    # =========================
+    # VENDAS POR MÊS
+    # =========================
+
+    vendas_mes = (
+        df_int
+        .groupby("Mes")["ValorNota"]
+        .sum()
+        .reset_index()
+    )
+
+    st.markdown("### Venda total por mês")
+
+    st.dataframe(vendas_mes)
+
+    # =========================
+    # VENDAS POR TRANSPORTADORA
+    # =========================
+
+    vendas_transp = (
+        df_int
+        .groupby(["Mes", "Transportadora"])["ValorNota"]
+        .sum()
+        .reset_index()
+    )
+
+    st.markdown("### Venda por transportadora")
+
+    st.dataframe(vendas_transp)
