@@ -155,74 +155,74 @@ def pizza(tratados, restantes, titulo):
     
 if pagina == "Monitor de Pedidos":
 
-# ==============================
-# DOWNLOAD POR CARTEIRA (COM ABA EXTRA)
-# ==============================
-st.markdown("### 📥 Exportação por Carteira (300 em 300)")
+    # ==============================
+    # DOWNLOAD POR CARTEIRA (COM ABA EXTRA)
+    # ==============================
+    st.markdown("### 📥 Exportação por Carteira (300 em 300)")
 
-df_atual_base = ler_base(ARQ_ATUAL)
+    df_atual_base = ler_base(ARQ_ATUAL)
 
-if "offsets_carteira" not in st.session_state:
-    st.session_state["offsets_carteira"] = {}
+    if "offsets_carteira" not in st.session_state:
+        st.session_state["offsets_carteira"] = {}
 
-if not df_atual_base.empty and "Carteira" in df_atual_base.columns:
+    if not df_atual_base.empty and "Carteira" in df_atual_base.columns:
 
-    if "Ranking" in df_atual_base.columns:
-        df_atual_base = df_atual_base.sort_values("Ranking").reset_index(drop=True)
+        if "Ranking" in df_atual_base.columns:
+            df_atual_base = df_atual_base.sort_values("Ranking").reset_index(drop=True)
 
-    carteiras = sorted(df_atual_base["Carteira"].dropna().unique())
+        carteiras = sorted(df_atual_base["Carteira"].dropna().unique())
 
-    if "Igor" in df_atual_base["Carteira"].values and "Igor" not in carteiras:
-        carteiras.append("Igor")
+        if "Igor" in df_atual_base["Carteira"].values and "Igor" not in carteiras:
+            carteiras.append("Igor")
 
-    for carteira in carteiras:
+        for carteira in carteiras:
 
-        df_carteira = df_atual_base[
-            df_atual_base["Carteira"] == carteira
-        ].reset_index(drop=True)
+            df_carteira = df_atual_base[
+                df_atual_base["Carteira"] == carteira
+            ].reset_index(drop=True)
 
-        total = len(df_carteira)
-        offset = st.session_state["offsets_carteira"].get(carteira, 0)
+            total = len(df_carteira)
+            offset = st.session_state["offsets_carteira"].get(carteira, 0)
 
-        inicio = offset
-        fim = min(offset + TAMANHO_LOTE, total)
+            inicio = offset
+            fim = min(offset + TAMANHO_LOTE, total)
 
-        lote = df_carteira.iloc[inicio:fim]
+            lote = df_carteira.iloc[inicio:fim]
 
-        if not lote.empty:
-            buffer = BytesIO()
+            if not lote.empty:
+                buffer = BytesIO()
 
-            with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
-                lote.to_excel(writer, index=False, sheet_name="Lote")
+                with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
+                    lote.to_excel(writer, index=False, sheet_name="Lote")
 
-                df_status = df_carteira[
-                    df_carteira["Status"].isin(STATUS_DIARIOS)
-                ]
+                    df_status = df_carteira[
+                        df_carteira["Status"].isin(STATUS_DIARIOS)
+                    ]
 
-                if not df_status.empty:
-                    df_status.to_excel(
-                        writer,
-                        index=False,
-                        sheet_name="Status Diários"
-                    )
+                    if not df_status.empty:
+                        df_status.to_excel(
+                            writer,
+                            index=False,
+                            sheet_name="Status Diários"
+                        )
 
-            buffer.seek(0)
+                buffer.seek(0)
 
-            col1, col2 = st.columns([4, 2])
+                col1, col2 = st.columns([4, 2])
 
-            with col1:
-                st.write(f"**{carteira}** — {inicio+1} até {fim} de {total}")
+                with col1:
+                    st.write(f"**{carteira}** — {inicio+1} até {fim} de {total}")
 
-            with col2:
-                if st.download_button(
-                    label=f"⬇️ Baixar {carteira}",
-                    data=buffer,
-                    file_name=f"{carteira}_{inicio+1}_a_{fim}.xlsx",
-                    key=f"dl_{carteira}_{offset}"
-                ):
-                    st.session_state["offsets_carteira"][carteira] = fim
+                with col2:
+                    if st.download_button(
+                        label=f"⬇️ Baixar {carteira}",
+                        data=buffer,
+                        file_name=f"{carteira}_{inicio+1}_a_{fim}.xlsx",
+                        key=f"dl_{carteira}_{offset}"
+                    ):
+                        st.session_state["offsets_carteira"][carteira] = fim
 
-st.divider()
+    st.divider()
 
 # ==============================
 # 🚚 EXPEDIÇÃO — 3+ DIAS NO STATUS
