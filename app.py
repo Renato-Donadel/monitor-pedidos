@@ -224,328 +224,328 @@ if pagina == "Monitor de Pedidos":
 
     st.divider()
 
-# ==============================
-# 🚚 EXPEDIÇÃO — 3+ DIAS NO STATUS
-# ==============================
-st.markdown("### 🚚 Expedição (3+ dias no status)")
+    # ==============================
+    # 🚚 EXPEDIÇÃO — 3+ DIAS NO STATUS
+    # ==============================
+    st.markdown("### 🚚 Expedição (3+ dias no status)")
 
-df_atual_base = ler_base(ARQ_ATUAL)
+    df_atual_base = ler_base(ARQ_ATUAL)
 
-if not df_atual_base.empty:
+    if not df_atual_base.empty:
 
-    if (
-        "Status" in df_atual_base.columns and
-        "DiasDesdeUltimoStatus" in df_atual_base.columns
-    ):
+        if (
+            "Status" in df_atual_base.columns and
+            "DiasDesdeUltimoStatus" in df_atual_base.columns
+        ):
 
-        df_expedicao = df_atual_base[
-            (df_atual_base["Status"] == "TSP - Aguardando Expedição") &
-            (df_atual_base["DiasDesdeUltimoStatus"] >= 3)
-        ].copy()
+            df_expedicao = df_atual_base[
+                (df_atual_base["Status"] == "TSP - Aguardando Expedição") &
+                (df_atual_base["DiasDesdeUltimoStatus"] >= 3)
+            ].copy()
 
-        total = len(df_expedicao)
+            total = len(df_expedicao)
 
-        col1, col2 = st.columns([4, 2])
+            col1, col2 = st.columns([4, 2])
 
-        with col1:
-            st.write(
-                f"Pedidos aguardando expedição há ≥ 3 dias úteis: **{total}**"
-            )
+            with col1:
+                st.write(
+                    f"Pedidos aguardando expedição há ≥ 3 dias úteis: **{total}**"
+                )
 
-        with col2:
-            if total > 0:
+            with col2:
+                if total > 0:
 
-                colunas_exportar = [
-                    c for c in [
-                        "PedidoFormatado",
-                        "NotaFiscal",
-                        "Armazém",
-                        "Logistica",
-                        "DiasDesdeUltimoStatus"
-                    ] if c in df_expedicao.columns
+                    colunas_exportar = [
+                        c for c in [
+                            "PedidoFormatado",
+                            "NotaFiscal",
+                            "Armazém",
+                            "Logistica",
+                            "DiasDesdeUltimoStatus"
+                        ] if c in df_expedicao.columns
+                    ]
+
+                    df_export = df_expedicao[colunas_exportar].copy()
+
+                    df_export = df_export.rename(columns={
+                        "DiasDesdeUltimoStatus": "Dias_Parado_no_Status"
+                    })
+
+                    df_export = df_export.sort_values(
+                        "Dias_Parado_no_Status",
+                        ascending=False
+                    )
+
+                    buffer = BytesIO()
+                    df_export.to_excel(buffer, index=False)
+                    buffer.seek(0)
+
+                    st.download_button(
+                        label="⬇️ Baixar Expedição (3+ dias)",
+                        data=buffer,
+                        file_name="expedicao_parada_3_dias_ou_mais.xlsx",
+                        key="download_expedicao_3dias"
+                    )
+                else:
+                    st.write("Nenhum pedido elegível.")
+
+    # ==============================
+    # BI EXECUTIVO
+    # ==============================
+    dias = listar_dias()
+
+    if len(dias) < 2:
+        st.warning("Histórico insuficiente na pasta data/historico.")
+        st.stop()
+
+    st.markdown("### 📈 Status Diários por Mês")
+
+    contagem = []
+
+    for dia_hist in dias:
+        df_temp = ler_base(caminho(dia_hist))
+        if df_temp.empty:
+            continue
+
+        qtd = df_temp[df_temp["Status"].isin(STATUS_DIARIOS)].shape[0]
+        contagem.append((dia_hist, qtd))
+
+    if contagem:
+
+        df_graf = pd.DataFrame(contagem, columns=["Data", "Qtd"])
+        df_graf["Data"] = pd.to_datetime(df_graf["Data"], format="%d-%m-%Y")
+        df_graf = df_graf.sort_values("Data")
+
+        # Agrupa por Ano + Mês
+        df_graf["AnoMes"] = df_graf["Data"].dt.to_period("M")
+
+        meses = df_graf["AnoMes"].unique()
+
+        colunas = st.columns(len(meses))
+
+        for i, mes in enumerate(meses):
+
+            df_mes = df_graf[df_graf["AnoMes"] == mes]
+        
+            # Se for fevereiro de 2026 (ajuste o ano se necessário)
+            if mes.month == 2 and mes.year == 2026:
+                df_mes = df_mes[df_mes["Data"].dt.day >= 18]
+
+            with colunas[i]:
+
+                fig, ax = plt.subplots(figsize=(4.2, 1.4))
+
+                ax.plot(df_mes["Data"], df_mes["Qtd"])
+
+                ax.set_xticks(df_mes["Data"])
+                ax.set_xticklabels(df_mes["Data"].dt.day, fontsize=7)
+
+                ax.set_xlabel("Dia", fontsize=7)
+                ax.set_ylabel("Qtde", fontsize=7)
+
+                nome_mes = df_mes["Data"].dt.strftime("%B").iloc[0].capitalize()
+                ano = df_mes["Data"].dt.year.iloc[0]
+
+                ax.set_title(f"{nome_mes}/{ano}", fontsize=9)
+
+                st.pyplot(fig)
+                plt.close(fig)
+
+    # ==============================
+    # 📌 STATUS MANUAIS (3 CURVAS)
+    # ==============================
+
+    st.markdown("### 📌 Status Manuais")
+
+    dados_series = []
+
+    for i in range(len(dias)):
+
+        dia_atual = dias[i]
+        df_atual = ler_base(caminho(dia_atual))
+
+        if df_atual.empty:
+            continue
+
+        df_atual = df_atual[
+            df_atual["Status"].isin(STATUS_Manuais)
+        ]
+
+        total = df_atual["PedidoFormatado"].nunique()
+
+        entraram = 0
+        sairam = 0
+
+        if i > 0:
+            dia_ant = dias[i-1]
+            df_ant = ler_base(caminho(dia_ant))
+
+            if not df_ant.empty:
+                df_ant = df_ant[
+                    df_ant["Status"].isin(STATUS_Manuais)
                 ]
 
-                df_export = df_expedicao[colunas_exportar].copy()
+                set_atual = set(df_atual["PedidoFormatado"])
+                set_ant = set(df_ant["PedidoFormatado"])
 
-                df_export = df_export.rename(columns={
-                    "DiasDesdeUltimoStatus": "Dias_Parado_no_Status"
-                })
+                entraram = len(set_atual - set_ant)
+                sairam = len(set_ant - set_atual)
 
-                df_export = df_export.sort_values(
-                    "Dias_Parado_no_Status",
-                    ascending=False
-                )
+        dados_series.append(
+            (dia_atual, total, entraram, sairam)
+        )
 
-                buffer = BytesIO()
-                df_export.to_excel(buffer, index=False)
-                buffer.seek(0)
+    if dados_series:
 
-                st.download_button(
-                    label="⬇️ Baixar Expedição (3+ dias)",
-                    data=buffer,
-                    file_name="expedicao_parada_3_dias_ou_mais.xlsx",
-                    key="download_expedicao_3dias"
-                )
-            else:
-                st.write("Nenhum pedido elegível.")
+        df_graf = pd.DataFrame(
+            dados_series,
+            columns=["Data", "Total", "Entraram", "Sairam"]
+        )
 
-# ==============================
-# BI EXECUTIVO
-# ==============================
-dias = listar_dias()
+        df_graf["Data"] = pd.to_datetime(
+            df_graf["Data"],
+            format="%d-%m-%Y"
+        )
 
-if len(dias) < 2:
-    st.warning("Histórico insuficiente na pasta data/historico.")
-    st.stop()
+        df_graf = df_graf.sort_values("Data")
+    
+        fig, ax = plt.subplots(figsize=(36, 18))
 
-st.markdown("### 📈 Status Diários por Mês")
+        ax.plot(df_graf["Data"], df_graf["Total"], label="Total")
+        ax.plot(df_graf["Data"], df_graf["Entraram"], label="Entraram")
+        ax.plot(df_graf["Data"], df_graf["Sairam"], label="Saíram")
 
-contagem = []
+        ax.set_title("Status Manuais")
+        ax.set_xlabel("Dia")
+        ax.set_ylabel("Quantidade")
+        ax.legend()
 
-for dia_hist in dias:
-    df_temp = ler_base(caminho(dia_hist))
-    if df_temp.empty:
-        continue
+        # Mostrar apenas o dia no eixo X
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%d'))
 
-    qtd = df_temp[df_temp["Status"].isin(STATUS_DIARIOS)].shape[0]
-    contagem.append((dia_hist, qtd))
+        st.pyplot(fig, use_container_width=True)
+        plt.close(fig)
+    
+    # LOOP ORIGINAL COMPLETO
+    for i in range(len(dias)-1, 0, -1):
 
-if contagem:
-
-    df_graf = pd.DataFrame(contagem, columns=["Data", "Qtd"])
-    df_graf["Data"] = pd.to_datetime(df_graf["Data"], format="%d-%m-%Y")
-    df_graf = df_graf.sort_values("Data")
-
-    # Agrupa por Ano + Mês
-    df_graf["AnoMes"] = df_graf["Data"].dt.to_period("M")
-
-    meses = df_graf["AnoMes"].unique()
-
-    colunas = st.columns(len(meses))
-
-    for i, mes in enumerate(meses):
-
-        df_mes = df_graf[df_graf["AnoMes"] == mes]
-        
-        # Se for fevereiro de 2026 (ajuste o ano se necessário)
-        if mes.month == 2 and mes.year == 2026:
-            df_mes = df_mes[df_mes["Data"].dt.day >= 18]
-
-        with colunas[i]:
-
-            fig, ax = plt.subplots(figsize=(4.2, 1.4))
-
-            ax.plot(df_mes["Data"], df_mes["Qtd"])
-
-            ax.set_xticks(df_mes["Data"])
-            ax.set_xticklabels(df_mes["Data"].dt.day, fontsize=7)
-
-            ax.set_xlabel("Dia", fontsize=7)
-            ax.set_ylabel("Qtde", fontsize=7)
-
-            nome_mes = df_mes["Data"].dt.strftime("%B").iloc[0].capitalize()
-            ano = df_mes["Data"].dt.year.iloc[0]
-
-            ax.set_title(f"{nome_mes}/{ano}", fontsize=9)
-
-            st.pyplot(fig)
-            plt.close(fig)
-
-# ==============================
-# 📌 STATUS MANUAIS (3 CURVAS)
-# ==============================
-
-st.markdown("### 📌 Status Manuais")
-
-dados_series = []
-
-for i in range(len(dias)):
-
-    dia_atual = dias[i]
-    df_atual = ler_base(caminho(dia_atual))
-
-    if df_atual.empty:
-        continue
-
-    df_atual = df_atual[
-        df_atual["Status"].isin(STATUS_Manuais)
-    ]
-
-    total = df_atual["PedidoFormatado"].nunique()
-
-    entraram = 0
-    sairam = 0
-
-    if i > 0:
+        dia_atual = dias[i]
         dia_ant = dias[i-1]
+
+        df_atual = ler_base(caminho(dia_atual))
         df_ant = ler_base(caminho(dia_ant))
 
-        if not df_ant.empty:
-            df_ant = df_ant[
-                df_ant["Status"].isin(STATUS_Manuais)
-            ]
+        if df_atual.empty or df_ant.empty:
+            continue
 
-            set_atual = set(df_atual["PedidoFormatado"])
-            set_ant = set(df_ant["PedidoFormatado"])
+        st.markdown(
+            f'<p class="data-title">📅 {dia_ant} ➜ {dia_atual}</p>',
+            unsafe_allow_html=True
+        )
 
-            entraram = len(set_atual - set_ant)
-            sairam = len(set_ant - set_atual)
+        col1, col2, col3 = st.columns(3)
+            # TRIPLO
+        with col1:
+            if "Transportadora_Triplo" in df_atual.columns:
 
-    dados_series.append(
-        (dia_atual, total, entraram, sairam)
-    )
+                atual = df_atual[df_atual["Transportadora_Triplo"] == "X"]
+                ant = df_ant[df_ant["Transportadora_Triplo"] == "X"]
 
-if dados_series:
+                tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
+                restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
+                entrou = atual[~atual["PedidoFormatado"].isin(ant["PedidoFormatado"])]
 
-    df_graf = pd.DataFrame(
-        dados_series,
-        columns=["Data", "Total", "Entraram", "Sairam"]
-    )
+                valor_entrou = entrou["ValorNota"].sum() if "ValorNota" in entrou.columns else 0
+                valor_restantes = restantes["ValorNota"].sum() if "ValorNota" in restantes.columns else 0
 
-    df_graf["Data"] = pd.to_datetime(
-        df_graf["Data"],
-        format="%d-%m-%Y"
-    )
+                # Formatação BRL correta
+                valor_entrou_fmt = f"{valor_entrou:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+                valor_restantes_fmt = f"{valor_restantes:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
-    df_graf = df_graf.sort_values("Data")
+                st.image(pizza(len(tratados), len(restantes), "Triplo Transportadora"))
 
-    fig, ax = plt.subplots(figsize=(36, 18))
+                st.markdown(
+                    f'<p class="metric-small">Tratados: {len(tratados)} / {len(ant)}</p>',
+                    unsafe_allow_html=True
+                )
 
-    ax.plot(df_graf["Data"], df_graf["Total"], label="Total")
-    ax.plot(df_graf["Data"], df_graf["Entraram"], label="Entraram")
-    ax.plot(df_graf["Data"], df_graf["Sairam"], label="Saíram")
+                st.markdown(
+                    f'<p class="metric-small">Entraram: {len(entrou)} | R$ {valor_entrou_fmt}</p>',
+                    unsafe_allow_html=True
+                )
 
-    ax.set_title("Status Manuais")
-    ax.set_xlabel("Dia")
-    ax.set_ylabel("Quantidade")
-    ax.legend()
+                st.markdown(
+                    f'<p class="metric-small">Remanescentes: {len(restantes)} | R$ {valor_restantes_fmt}</p>',
+                    unsafe_allow_html=True
+                )
 
-    # Mostrar apenas o dia no eixo X
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%d'))
+                buf = BytesIO()
+                restantes.to_excel(buf, index=False)
+                st.download_button(
+                    "Remanescentes Triplo",
+                    buf.getvalue(),
+                    file_name=f"remanescente_triplo_{dia_atual}.xlsx"
+                )
 
-    st.pyplot(fig, use_container_width=True)
-    plt.close(fig)
-    
-# LOOP ORIGINAL COMPLETO
-for i in range(len(dias)-1, 0, -1):
+        # STATUS 2X
+        with col2:
+            if "Status_Dobro" in df_atual.columns:
+                atual = df_atual[df_atual["Status_Dobro"]=="X"]
+                ant = df_ant[df_ant["Status_Dobro"]=="X"]
 
-    dia_atual = dias[i]
-    dia_ant = dias[i-1]
+                tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
+                restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
+                entrou = atual[~atual["PedidoFormatado"].isin(ant["PedidoFormatado"])]
 
-    df_atual = ler_base(caminho(dia_atual))
-    df_ant = ler_base(caminho(dia_ant))
+                st.image(pizza(len(tratados), len(restantes), "Status Específico 2x"))
 
-    if df_atual.empty or df_ant.empty:
-        continue
+                st.markdown(
+                    f'<p class="metric-small">Tratados: {len(tratados)} / {len(ant)}</p>',
+                    unsafe_allow_html=True
+                )
+                st.markdown(
+                    f'<p class="metric-small">Entraram: {len(entrou)}</p>',
+                    unsafe_allow_html=True
+                )
 
-    st.markdown(
-        f'<p class="data-title">📅 {dia_ant} ➜ {dia_atual}</p>',
-        unsafe_allow_html=True
-    )
+                buf = BytesIO()
+                restantes.to_excel(buf, index=False)
+                st.download_button(
+                    "Remanescentes Status 2x",
+                    buf.getvalue(),
+                    file_name=f"remanescente_status_{dia_atual}.xlsx"
+                )
 
-    col1, col2, col3 = st.columns(3)
-        # TRIPLO
-    with col1:
-        if "Transportadora_Triplo" in df_atual.columns:
+        # REGIÃO 2X
+        with col3:
+            if "Regiao_Dobro" in df_atual.columns:
+                atual = df_atual[df_atual["Regiao_Dobro"]=="X"]
+                ant = df_ant[df_ant["Regiao_Dobro"]=="X"]
 
-            atual = df_atual[df_atual["Transportadora_Triplo"] == "X"]
-            ant = df_ant[df_ant["Transportadora_Triplo"] == "X"]
+                tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
+                restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
+                entrou = atual[~atual["PedidoFormatado"].isin(ant["PedidoFormatado"])]
 
-            tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
-            restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
-            entrou = atual[~atual["PedidoFormatado"].isin(ant["PedidoFormatado"])]
+                st.image(pizza(len(tratados), len(restantes), "Região 2x Prazo"))
 
-            valor_entrou = entrou["ValorNota"].sum() if "ValorNota" in entrou.columns else 0
-            valor_restantes = restantes["ValorNota"].sum() if "ValorNota" in restantes.columns else 0
+                st.markdown(
+                    f'<p class="metric-small">Tratados: {len(tratados)} / {len(ant)}</p>',
+                    unsafe_allow_html=True
+                )
+                st.markdown(
+                    f'<p class="metric-small">Entraram: {len(entrou)}</p>',
+                    unsafe_allow_html=True
+                )
 
-            # Formatação BRL correta
-            valor_entrou_fmt = f"{valor_entrou:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-            valor_restantes_fmt = f"{valor_restantes:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+                buf = BytesIO()
+                restantes.to_excel(buf, index=False)
+                st.download_button(
+                    "Remanescentes Região 2x",
+                    buf.getvalue(),
+                    file_name=f"remanescente_regiao_{dia_atual}.xlsx"
+                )
 
-            st.image(pizza(len(tratados), len(restantes), "Triplo Transportadora"))
-
-            st.markdown(
-                f'<p class="metric-small">Tratados: {len(tratados)} / {len(ant)}</p>',
-                unsafe_allow_html=True
-            )
-
-            st.markdown(
-                f'<p class="metric-small">Entraram: {len(entrou)} | R$ {valor_entrou_fmt}</p>',
-                unsafe_allow_html=True
-            )
-
-            st.markdown(
-                f'<p class="metric-small">Remanescentes: {len(restantes)} | R$ {valor_restantes_fmt}</p>',
-                unsafe_allow_html=True
-            )
-
-            buf = BytesIO()
-            restantes.to_excel(buf, index=False)
-            st.download_button(
-                "Remanescentes Triplo",
-                buf.getvalue(),
-                file_name=f"remanescente_triplo_{dia_atual}.xlsx"
-            )
-
-    # STATUS 2X
-    with col2:
-        if "Status_Dobro" in df_atual.columns:
-            atual = df_atual[df_atual["Status_Dobro"]=="X"]
-            ant = df_ant[df_ant["Status_Dobro"]=="X"]
-
-            tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
-            restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
-            entrou = atual[~atual["PedidoFormatado"].isin(ant["PedidoFormatado"])]
-
-            st.image(pizza(len(tratados), len(restantes), "Status Específico 2x"))
-
-            st.markdown(
-                f'<p class="metric-small">Tratados: {len(tratados)} / {len(ant)}</p>',
-                unsafe_allow_html=True
-            )
-            st.markdown(
-                f'<p class="metric-small">Entraram: {len(entrou)}</p>',
-                unsafe_allow_html=True
-            )
-
-            buf = BytesIO()
-            restantes.to_excel(buf, index=False)
-            st.download_button(
-                "Remanescentes Status 2x",
-                buf.getvalue(),
-                file_name=f"remanescente_status_{dia_atual}.xlsx"
-            )
-
-    # REGIÃO 2X
-    with col3:
-        if "Regiao_Dobro" in df_atual.columns:
-            atual = df_atual[df_atual["Regiao_Dobro"]=="X"]
-            ant = df_ant[df_ant["Regiao_Dobro"]=="X"]
-
-            tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
-            restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
-            entrou = atual[~atual["PedidoFormatado"].isin(ant["PedidoFormatado"])]
-
-            st.image(pizza(len(tratados), len(restantes), "Região 2x Prazo"))
-
-            st.markdown(
-                f'<p class="metric-small">Tratados: {len(tratados)} / {len(ant)}</p>',
-                unsafe_allow_html=True
-            )
-            st.markdown(
-                f'<p class="metric-small">Entraram: {len(entrou)}</p>',
-                unsafe_allow_html=True
-            )
-
-            buf = BytesIO()
-            restantes.to_excel(buf, index=False)
-            st.download_button(
-                "Remanescentes Região 2x",
-                buf.getvalue(),
-                file_name=f"remanescente_regiao_{dia_atual}.xlsx"
-            )
-
-    st.divider()
+        st.divider()
     
 # ==============================
 # INDICADOR DE DEVOLUÇÃO
