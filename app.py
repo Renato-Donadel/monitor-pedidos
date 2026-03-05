@@ -13,7 +13,10 @@ import matplotlib.dates as mdates
 BASE_DIR = os.path.dirname(__file__)
 PASTA_DATA = os.path.join(BASE_DIR, "data")
 PASTA_HIST = os.path.join(PASTA_DATA, "historico")
+PASTA_MENSAL = os.path.join(PASTA_DATA, "mensal_status")
+os.makedirs(PASTA_MENSAL, exist_ok=True)
 ARQ_ATUAL = os.path.join(PASTA_DATA, "Monitor_Pedidos_Processado.xlsx")
+ARQ_DEVOLUCAO = os.path.join(PASTA_DATA, "Indicador_Devolucao_Base.xlsx")
 LOGO_PATH = os.path.join(PASTA_DATA, "logo_bravium.png")
 
 TAMANHO_LOTE = 300
@@ -302,19 +305,66 @@ if pagina == "Monitor de Pedidos":
 
     contagem = []
 
+    mes_atual = pd.Timestamp.today().to_period("M")
+
     for dia_hist in dias:
+
+        data = pd.to_datetime(dia_hist, format="%d-%m-%Y")
+        mes = data.to_period("M")
+
+        arquivo_mes = os.path.join(PASTA_MENSAL, f"{mes}.xlsx")
+
+        # Se o mês já estiver congelado
+        if mes != mes_atual and os.path.exists(arquivo_mes):
+
+            df_mes = pd.read_excel(arquivo_mes)
+
+            for _, row in df_mes.iterrows():
+                contagem.append((row["Data"], row["Qtd"]))
+
+            continue
+
+        # Caso contrário calcula normalmente
         df_temp = ler_base(caminho(dia_hist))
+
         if df_temp.empty:
             continue
 
         qtd = df_temp[df_temp["Status"].isin(STATUS_DIARIOS)].shape[0]
-        contagem.append((dia_hist, qtd))
+
+        contagem.append((data, qtd))
 
     if contagem:
 
         df_graf = pd.DataFrame(contagem, columns=["Data", "Qtd"])
         df_graf["Data"] = pd.to_datetime(df_graf["Data"], format="%d-%m-%Y")
         df_graf = df_graf.sort_values("Data")
+        
+        # ==============================
+        # SALVAR MÊS FECHADO AUTOMATICAMENTE
+        # ==============================
+
+        mes_atual = pd.Timestamp.today().to_period("M")
+
+        for mes in df_graf["Data"].dt.to_period("M").unique():
+
+            if mes == mes_atual:
+                continue
+
+            arquivo_mes = os.path.join(PASTA_MENSAL, f"{mes}.xlsx")
+
+            # se ainda não existir, salva
+            if not os.path.exists(arquivo_mes):
+
+                df_mes = df_graf[
+                    df_graf["Data"].dt.to_period("M") == mes
+                ].copy()
+                
+                # ajuste especial fevereiro 2026
+                if mes.month == 2 and mes.year == 2026:
+                    df_mes = df_mes[df_mes["Data"].dt.day >= 18]
+
+                df_mes.to_excel(arquivo_mes, index=False)
 
         # Agrupa por Ano + Mês
         df_graf["AnoMes"] = df_graf["Data"].dt.to_period("M")
@@ -427,10 +477,14 @@ if pagina == "Monitor de Pedidos":
         plt.close(fig)
     
     # LOOP ORIGINAL COMPLETO
-    for i in range(len(dias)-1, 0, -1):
+    dias_pizza = dias[-7:]
+    if len(dias_pizza) < 2:
+        st.warning("Histórico insuficiente para gráfico de pizza.")
+    else:
+    for i in range(len(dias_pizza)-1, 0, -1):
 
-        dia_atual = dias[i]
-        dia_ant = dias[i-1]
+        dia_atual = dias_pizza[i]
+        dia_ant = dias_pizza[i-1]
 
         df_atual = ler_base(caminho(dia_atual))
         df_ant = ler_base(caminho(dia_ant))
@@ -555,95 +609,95 @@ elif pagina == "Indicador de Devolução":
 
     st.markdown("## Indicador de Devolução / Extravio / Avaria")
 
-    PASTA_INTELIPOST = r"Z:\9. Transportes\9.2. Business Intelligence\9.2 Monitor_Pedidos\Intelipost"
-
-    if not os.path.exists(PASTA_INTELIPOST):
-        st.warning("Pasta Intelipost não encontrada.")
+    if not os.path.exists(ARQ_DEVOLUCAO):
+        st.warning("Base de devolução ainda não foi gerada.")
         st.stop()
 
-    arquivos = [
-        f for f in os.listdir(PASTA_INTELIPOST)
-        if f.lower().endswith((".xlsx", ".xls"))
-        and f.startswith("transactions_")
-    ]
+    try:
+        vendas_mes = pd.read_excel(
+            ARQ_DEVOLUCAO,
+            sheet_name="Venda_Mensal"
+        )
 
-    lista = []
+        vendas_transp = pd.read_excel(
+            ARQ_DEVOLUCAO,
+            sheet_name="Venda_Transportadora"
+        )
+        potencial = pd.read_excel(
+            ARQ_DEVOLUCAO,
+            sheet_name="Potencial_Triplo"
+        )
+        devolucao_proc = pd.read_excel(
+            ARQ_DEVOLUCAO,
+            sheet_name="Devolucao_Processo"
+        )
 
-    for arq in arquivos:
+        devolucao_atras = pd.read_excel(
+            ARQ_DEVOLUCAO,
+            sheet_name="Devolucao_Atrasada"
+        )
 
-        caminho = os.path.join(PASTA_INTELIPOST, arq)
-
-        try:
-
-            df_temp = pd.read_excel(caminho)
-
-            colunas = [
-                "Pedido de Venda",
-                "Data Pedido",
-                "Transportadora",
-                "Valor da Nota"
-            ]
-
-            if not all(c in df_temp.columns for c in colunas):
-                continue
-
-            df_temp = df_temp[colunas].copy()
-
-            lista.append(df_temp)
-
-        except:
-            continue
-
-    if not lista:
-        st.warning("Nenhum arquivo válido da Intelipost encontrado.")
+    except Exception:
+        st.error("Erro ao ler base de devolução.")
         st.stop()
 
-    df_int = pd.concat(lista, ignore_index=True)
-
-    df_int["Pedido"] = (
-        df_int["Pedido de Venda"]
-        .astype(str)
-        .str.strip()
-        .str.upper()
-        .str.replace(r"\.0$", "", regex=True)
-    )
-
-    df_int["DataPedido"] = pd.to_datetime(
-        df_int["Data Pedido"],
-        errors="coerce",
-        dayfirst=True
-    )
-
-    df_int["Mes"] = df_int["DataPedido"].dt.to_period("M")
-
-    df_int["ValorNota"] = df_int["Valor da Nota"]
-
-    # =========================
-    # VENDAS POR MÊS
-    # =========================
-
-    vendas_mes = (
-        df_int
-        .groupby("Mes")["ValorNota"]
-        .sum()
-        .reset_index()
-    )
+    # ordenar os dados
+    vendas_mes = vendas_mes.sort_values("Mes")
+    vendas_transp = vendas_transp.sort_values(["Mes", "Transportadora"])
 
     st.markdown("### Venda total por mês")
-
-    st.dataframe(vendas_mes)
-
-    # =========================
-    # VENDAS POR TRANSPORTADORA
-    # =========================
-
-    vendas_transp = (
-        df_int
-        .groupby(["Mes", "Transportadora"])["ValorNota"]
-        .sum()
-        .reset_index()
-    )
+    st.dataframe(vendas_mes, use_container_width=True)
 
     st.markdown("### Venda por transportadora")
+    st.dataframe(vendas_transp, use_container_width=True)
+    st.markdown("### Potencial (Triplo Prazo)")
 
-    st.dataframe(vendas_transp)
+    indicador = vendas_transp.merge(
+        potencial,
+        on=["Mes", "Transportadora"],
+        how="left"
+    )
+
+    indicador["Potencial"] = indicador["Potencial"].fillna(0)
+
+    indicador["Indice_Potencial"] = (
+        indicador["Potencial"] /
+        indicador["ValorNota"]
+    )
+
+    st.dataframe(indicador, use_container_width=True)
+
+    st.markdown("### Devolução em Processo")
+
+    indicador_proc = vendas_transp.merge(
+        devolucao_proc,
+        on=["Mes","Transportadora"],
+        how="left"
+    )
+
+    indicador_proc["Devolucao_Processo"] = indicador_proc["Devolucao_Processo"].fillna(0)
+
+    indicador_proc["Indice_Processo"] = (
+        indicador_proc["Devolucao_Processo"] /
+        indicador_proc["ValorNota"]
+    )
+
+    st.dataframe(indicador_proc, use_container_width=True)
+
+
+    st.markdown("### Devolução Atrasada (>30 dias)")
+
+    indicador_atras = vendas_transp.merge(
+        devolucao_atras,
+        on=["Mes","Transportadora"],
+        how="left"
+    )
+
+    indicador_atras["Devolucao_Atrasada"] = indicador_atras["Devolucao_Atrasada"].fillna(0)
+
+    indicador_atras["Indice_Atrasada"] = (
+        indicador_atras["Devolucao_Atrasada"] /
+        indicador_atras["ValorNota"]
+    )
+
+    st.dataframe(indicador_atras, use_container_width=True)
