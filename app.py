@@ -651,60 +651,100 @@ elif pagina == "Indicador de Devolução":
     # ordenar os dados
     vendas_mes = vendas_mes.sort_values("Mes")
     vendas_transp = vendas_transp.sort_values(["Mes", "Transportadora"])
+    
+    
+    # ==============================
+    # FILTROS
+    # ==============================
+
+    meses = sorted(vendas_transp["Mes"].unique())
+    transportadoras = sorted(vendas_transp["Transportadora"].unique())
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        filtro_mes = st.multiselect(
+            "Filtrar Mês",
+            meses,
+            default=meses
+        )
+
+    with col2:
+        filtro_transportadora = st.multiselect(
+            "Filtrar Transportadora",
+            transportadoras,
+            default=transportadoras
+        )
+
+    # aplicar filtros
+    vendas_transp = vendas_transp[
+        (vendas_transp["Mes"].isin(filtro_mes)) &
+        (vendas_transp["Transportadora"].isin(filtro_transportadora))
+    ]
+    
+    # ==============================
+    # TOTAIS DOS INDICADORES
+    # ==============================
+
+    venda_total = vendas_transp["ValorNota"].sum()
+
+    devolucao_total = devolucao_proc[
+        devolucao_proc["Mes"].isin(filtro_mes) &
+        devolucao_proc["Transportadora"].isin(filtro_transportadora)
+    ]["Devolucao_Processo"].sum()
+
+    potencial_total = potencial[
+        potencial["Mes"].isin(filtro_mes) &
+        potencial["Transportadora"].isin(filtro_transportadora)
+    ]["Potencial"].sum()
+
+    devolucao_atras_total = devolucao_atras[
+        devolucao_atras["Mes"].isin(filtro_mes) &
+        devolucao_atras["Transportadora"].isin(filtro_transportadora)
+    ]["Devolucao_Atrasada"].sum()
+
+
+    # percentuais
+    perc_devolucao = devolucao_total / venda_total if venda_total > 0 else 0
+    perc_potencial = potencial_total / venda_total if venda_total > 0 else 0
+    perc_atrasada = devolucao_atras_total / venda_total if venda_total > 0 else 0
+
+
+    # formatação
+    def moeda(x):
+        return f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+    def perc(x):
+        return f"{x*100:.2f}%".replace(".", ",")
+        
+    # ==============================
+    # PAINEL EXECUTIVO
+    # ==============================
+
+    st.markdown("### Indicadores Gerais")
+
+    c1, c2, c3, c4, c5, c6, c7 = st.columns(7)
+
+    c1.markdown(f"**Venda Total**  \n{moeda(venda_total)}")
+
+    c2.markdown(f"**Devolução em Processo**  \n{moeda(devolucao_total)}")
+
+    c3.markdown(f"**%**  \n{perc(perc_devolucao)}")
+
+    c4.markdown(f"**Potencial (Triplo Prazo)**  \n{moeda(potencial_total)}")
+
+    c5.markdown(f"**%**  \n{perc(perc_potencial)}")
+
+    c6.markdown(f"**Devolução Atrasada**  \n{moeda(devolucao_atras_total)}")
+
+    c7.markdown(f"**%**  \n{perc(perc_atrasada)}")
 
     st.markdown("### Venda total por mês")
-    st.dataframe(vendas_mes, use_container_width=True)
 
-    st.markdown("### Venda por transportadora")
-    st.dataframe(vendas_transp, use_container_width=True)
-    st.markdown("### Potencial (Triplo Prazo)")
-
-    indicador = vendas_transp.merge(
-        potencial,
-        on=["Mes", "Transportadora"],
-        how="left"
-    )
-
-    indicador["Potencial"] = indicador["Potencial"].fillna(0)
-
-    indicador["Indice_Potencial"] = (
-        indicador["Potencial"] /
-        indicador["ValorNota"]
-    )
-
-    st.dataframe(indicador, use_container_width=True)
-
-    st.markdown("### Devolução em Processo")
-
-    indicador_proc = vendas_transp.merge(
-        devolucao_proc,
-        on=["Mes","Transportadora"],
-        how="left"
-    )
-
-    indicador_proc["Devolucao_Processo"] = indicador_proc["Devolucao_Processo"].fillna(0)
-
-    indicador_proc["Indice_Processo"] = (
-        indicador_proc["Devolucao_Processo"] /
-        indicador_proc["ValorNota"]
-    )
-
-    st.dataframe(indicador_proc, use_container_width=True)
-
-
-    st.markdown("### Devolução Atrasada (>30 dias)")
-
-    indicador_atras = vendas_transp.merge(
-        devolucao_atras,
-        on=["Mes","Transportadora"],
-        how="left"
-    )
-
-    indicador_atras["Devolucao_Atrasada"] = indicador_atras["Devolucao_Atrasada"].fillna(0)
-
-    indicador_atras["Indice_Atrasada"] = (
-        indicador_atras["Devolucao_Atrasada"] /
-        indicador_atras["ValorNota"]
-    )
-
-    st.dataframe(indicador_atras, use_container_width=True)
+    for _, row in vendas_mes.iterrows():
+        st.markdown(
+            f"<pre style='font-size:16px'>{row['Mes']}   {row['ValorNota']}</pre>",
+            unsafe_allow_html=True
+        )
+        
+    
