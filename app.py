@@ -630,10 +630,12 @@ elif pagina == "Indicador de Devolução":
             ARQ_DEVOLUCAO,
             sheet_name="Venda_Transportadora"
         )
+
         potencial = pd.read_excel(
             ARQ_DEVOLUCAO,
             sheet_name="Potencial_Triplo"
         )
+
         devolucao_proc = pd.read_excel(
             ARQ_DEVOLUCAO,
             sheet_name="Devolucao_Processo"
@@ -643,13 +645,13 @@ elif pagina == "Indicador de Devolução":
             ARQ_DEVOLUCAO,
             sheet_name="Devolucao_Atrasada"
         )
-        
-        except Exception:
-            st.error("Erro ao ler base de devolução.")
-            st.stop()
-        
-        # PADRONIZAR TRANSPORTADORAS PARA O MERGE
-        vendas_transp["Transportadora"] = (
+
+    except Exception:
+        st.error("Erro ao ler base de devolução.")
+        st.stop()
+
+    # PADRONIZAR TRANSPORTADORAS PARA O MERGE
+    vendas_transp["Transportadora"] = (
         vendas_transp["Transportadora"]
         .astype(str)
         .str.strip()
