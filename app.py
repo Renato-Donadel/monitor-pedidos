@@ -690,7 +690,7 @@ elif pagina == "Indicador de Devolução":
     # FILTROS
     # ==============================
 
-    meses = sorted(vendas_transp["Mes"].unique())
+    meses = sorted(vendas_transp["Mes"].astype(str).unique())
     transportadoras = sorted(vendas_transp["Transportadora"].unique())
 
     with st.expander("Filtros", expanded=False):
@@ -743,7 +743,10 @@ elif pagina == "Indicador de Devolução":
     # TOTAIS DOS INDICADORES
     # ==============================
 
-    venda_total = vendas_transp["ValorNota"].sum()
+    venda_total = vendas_transp[
+        vendas_transp["Mes"].isin(filtro_mes) &
+        vendas_transp["Transportadora"].isin(filtro_transportadora)
+    ]["ValorNota"].sum()
 
     devolucao_total = devolucao_proc[
         devolucao_proc["Mes"].isin(filtro_mes) &
