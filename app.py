@@ -644,6 +644,10 @@ elif pagina == "Indicador de Devolução":
             sheet_name="Devolucao_Atrasada"
         )
         
+        except Exception:
+            st.error("Erro ao ler base de devolução.")
+            st.stop()
+        
         # PADRONIZAR TRANSPORTADORAS PARA O MERGE
         vendas_transp["Transportadora"] = (
         vendas_transp["Transportadora"]
@@ -658,10 +662,6 @@ elif pagina == "Indicador de Devolução":
         .str.strip()
         .str.upper()
     )
-
-    except Exception:
-        st.error("Erro ao ler base de devolução.")
-        st.stop()
 
     # ordenar os dados
     vendas_mes = vendas_mes.sort_values("Mes")
