@@ -652,6 +652,22 @@ elif pagina == "Indicador de Devolução":
     vendas_mes = vendas_mes.sort_values("Mes")
     vendas_transp = vendas_transp.sort_values(["Mes", "Transportadora"])
     
+    # ==============================
+    # FORMATAR NOME DOS MESES
+    # ==============================
+
+    vendas_transp["Mes"] = pd.to_datetime(vendas_transp["Mes"].astype(str))
+    vendas_transp["Mes"] = vendas_transp["Mes"].dt.strftime("%B %Y").str.capitalize()
+
+    potencial["Mes"] = pd.to_datetime(potencial["Mes"].astype(str))
+    potencial["Mes"] = potencial["Mes"].dt.strftime("%B %Y").str.capitalize()
+
+    devolucao_proc["Mes"] = pd.to_datetime(devolucao_proc["Mes"].astype(str))
+    devolucao_proc["Mes"] = devolucao_proc["Mes"].dt.strftime("%B %Y").str.capitalize()
+
+    devolucao_atras["Mes"] = pd.to_datetime(devolucao_atras["Mes"].astype(str))
+    devolucao_atras["Mes"] = devolucao_atras["Mes"].dt.strftime("%B %Y").str.capitalize()
+    
     
     # ==============================
     # FILTROS
@@ -660,28 +676,52 @@ elif pagina == "Indicador de Devolução":
     meses = sorted(vendas_transp["Mes"].unique())
     transportadoras = sorted(vendas_transp["Transportadora"].unique())
 
-    col1, col2 = st.columns(2)
+    with st.expander("Filtros", expanded=False):
 
-    with col1:
-        filtro_mes = st.multiselect(
-            "Filtrar Mês",
-            meses,
-            default=meses
+        # ------------------------------
+        # FILTRO MÊS
+        # ------------------------------
+
+        st.markdown("**Mês**")
+
+        selecionar_todos_mes = st.checkbox(
+            "Selecionar todos os meses",
+            value=True,
+            key="todos_mes"
         )
 
-    with col2:
-        filtro_transportadora = st.multiselect(
-            "Filtrar Transportadora",
-            transportadoras,
-            default=transportadoras
+        if selecionar_todos_mes:
+            filtro_mes = meses
+        else:
+            filtro_mes = []
+
+            for mes in meses:
+                if st.checkbox(mes, key=f"mes_{mes}"):
+                    filtro_mes.append(mes)
+
+        st.divider()
+
+        # ------------------------------
+        # FILTRO TRANSPORTADORA
+        # ------------------------------
+
+        st.markdown("**Transportadora**")
+
+        selecionar_todos_transp = st.checkbox(
+            "Selecionar todas transportadoras",
+            value=True,
+            key="todos_transp"
         )
 
-    # aplicar filtros
-    vendas_transp = vendas_transp[
-        (vendas_transp["Mes"].isin(filtro_mes)) &
-        (vendas_transp["Transportadora"].isin(filtro_transportadora))
-    ]
-    
+        if selecionar_todos_transp:
+            filtro_transportadora = transportadoras
+        else:
+            filtro_transportadora = []
+
+            for t in transportadoras:
+                if st.checkbox(t, key=f"transp_{t}"):
+                    filtro_transportadora.append(t)
+   
     # ==============================
     # TOTAIS DOS INDICADORES
     # ==============================
