@@ -643,6 +643,21 @@ elif pagina == "Indicador de Devolução":
             ARQ_DEVOLUCAO,
             sheet_name="Devolucao_Atrasada"
         )
+        
+        # PADRONIZAR TRANSPORTADORAS PARA O MERGE
+        vendas_transp["Transportadora"] = (
+        vendas_transp["Transportadora"]
+        .astype(str)
+        .str.strip()
+        .str.upper()
+    )
+
+    potencial["Transportadora"] = (
+        potencial["Transportadora"]
+        .astype(str)
+        .str.strip()
+        .str.upper()
+    )
 
     except Exception:
         st.error("Erro ao ler base de devolução.")
