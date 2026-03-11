@@ -156,6 +156,22 @@ pagina = st.sidebar.selectbox(
 # ==============================
 # FUNÇÕES
 # ==============================
+
+@st.cache_data
+def carregar_base_devolucao():
+    return pd.read_excel(
+        ARQ_DEVOLUCAO,
+        sheet_name=[
+            "vendas_mes",
+            "vendas_transportadora",
+            "potencial_triplo",
+            "devolucao_processo",
+            "devolucao_atrasada",
+            "nfd_mes",
+            "nfd_coleta",
+            "base"
+        ]
+    )
 def ler_base(path):
     if not os.path.exists(path):
         return pd.DataFrame()
@@ -666,39 +682,15 @@ elif pagina == "Indicador de Devolução":
 
     try:
         
-        vendas_mes = pd.read_excel(
-            ARQ_DEVOLUCAO,
-            sheet_name="vendas_mes"
-        )
-
-        vendas_transp = pd.read_excel(
-            ARQ_DEVOLUCAO,
-            sheet_name="vendas_transportadora"
-        )
-
-        potencial = pd.read_excel(
-            ARQ_DEVOLUCAO,
-            sheet_name="potencial_triplo"
-        )
-
-        devolucao_proc = pd.read_excel(
-            ARQ_DEVOLUCAO,
-            sheet_name="devolucao_processo"
-        )
-
-        devolucao_atras = pd.read_excel(
-            ARQ_DEVOLUCAO,
-            sheet_name="devolucao_atrasada"
-        )
-        nfd_mes = pd.read_excel(
-            ARQ_DEVOLUCAO,
-            sheet_name="nfd_mes"
-        )
-
-        nfd_coleta = pd.read_excel(
-            ARQ_DEVOLUCAO,
-            sheet_name="nfd_coleta"
-        )
+        bases = carregar_base_devolucao()
+        
+        vendas_mes = bases["vendas_mes"]
+        vendas_transp = bases["vendas_transportadora"]
+        potencial = bases["potencial_triplo"]
+        devolucao_proc = bases["devolucao_processo"]
+        devolucao_atras = bases["devolucao_atrasada"]
+        nfd_mes = bases["nfd_mes"]
+        nfd_coleta = bases["nfd_coleta"]
 
     except Exception:
         st.error("Erro ao ler base de devolução.")
@@ -803,11 +795,11 @@ elif pagina == "Indicador de Devolução":
     col_space1, col_btn1, col_btn2, col_space2 = st.columns([2,1,1,2])
 
     with col_btn1:
-        if st.button("Filtro de Mês"):
+        if st.button("Mês"):
             st.session_state["abrir_filtro_mes"] = not st.session_state["abrir_filtro_mes"]
 
     with col_btn2:
-        if st.button("Filtro de Transportadora"):
+        if st.button("Transportadora"):
             st.session_state["abrir_filtro_transp"] = not st.session_state["abrir_filtro_transp"]
 
 
@@ -846,7 +838,9 @@ elif pagina == "Indicador de Devolução":
             st.session_state["abrir_filtro_transp"] = False
 
     else:
-        filtro_transportadora = transportadoras  
+        filtro_transportadora = transportadoras
+
+    
     
           
     # ==============================
