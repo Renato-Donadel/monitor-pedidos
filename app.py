@@ -621,33 +621,34 @@ elif pagina == "Indicador de Devolução":
         st.stop()
 
     try:
+        
         vendas_mes = pd.read_excel(
             ARQ_DEVOLUCAO,
-            sheet_name="Venda_Mensal"
+            sheet_name="vendas_mes"
         )
 
         vendas_transp = pd.read_excel(
             ARQ_DEVOLUCAO,
-            sheet_name="Venda_Transportadora"
+            sheet_name="vendas_transportadora"
         )
 
         potencial = pd.read_excel(
             ARQ_DEVOLUCAO,
-            sheet_name="Potencial_Triplo"
+            sheet_name="potencial_triplo"
         )
 
         devolucao_proc = pd.read_excel(
             ARQ_DEVOLUCAO,
-            sheet_name="Devolucao_Processo"
+            sheet_name="devolucao_processo"
         )
 
         devolucao_atras = pd.read_excel(
             ARQ_DEVOLUCAO,
-            sheet_name="Devolucao_Atrasada"
+            sheet_name="devolucao_atrasada"
         )
-        nfd_mes = pd.read_excel(
-            ARQ_DEVOLUCAO,
-            sheet_name="nfd_mes"
+            nfd_mes = pd.read_excel(
+                ARQ_DEVOLUCAO,
+                sheet_name="nfd_mes"
         )
 
         nfd_coleta = pd.read_excel(
