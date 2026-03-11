@@ -682,14 +682,14 @@ if pagina == "Monitor de Pedidos":
 
 elif pagina == "Indicador de Devolução":
 
-     if not os.path.exists(ARQ_DEVOLUCAO):
+    if not os.path.exists(ARQ_DEVOLUCAO):
         st.warning("Base de devolução ainda não foi gerada.")
         st.stop()
 
     try:
-        
+
         bases = carregar_base_devolucao()
-        
+
         vendas_mes = bases["vendas_mes"]
         vendas_transp = bases["vendas_transportadora"]
         potencial = bases["potencial_triplo"]
