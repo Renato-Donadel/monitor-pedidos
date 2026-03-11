@@ -666,6 +666,13 @@ elif pagina == "Indicador de Devolução":
         .str.strip()
         .str.upper()
     )
+    
+    vendas_transp["Transportadora"] = (
+        vendas_transp["Transportadora"]
+        .astype(str)
+        .str.strip()
+        .str.upper()
+    )
 
     potencial["Transportadora"] = (
         potencial["Transportadora"]
@@ -684,18 +691,55 @@ elif pagina == "Indicador de Devolução":
 
     vendas_transp["Mes"] = pd.to_datetime(vendas_transp["Mes"].astype(str))
     vendas_transp["Mes"] = vendas_transp["Mes"].dt.strftime("%B %Y").str.capitalize()
+    
+    potencial["Transportadora"] = (
+        potencial["Transportadora"]
+        .astype(str)
+        .str.strip()
+        .str.upper()
+    )
 
     potencial["Mes"] = pd.to_datetime(potencial["Mes"].astype(str))
     potencial["Mes"] = potencial["Mes"].dt.strftime("%B %Y").str.capitalize()
+    
+    devolucao_proc["Transportadora"] = (
+        devolucao_proc["Transportadora"]
+        .astype(str)
+        .str.strip()
+        .str.upper()
+    )
 
     devolucao_proc["Mes"] = pd.to_datetime(devolucao_proc["Mes"].astype(str))
     devolucao_proc["Mes"] = devolucao_proc["Mes"].dt.strftime("%B %Y").str.capitalize()
+    
+    devolucao_atras["Transportadora"] = (
+        devolucao_atras["Transportadora"]
+        .astype(str)
+        .str.strip()
+        .str.upper()
+    )
 
     devolucao_atras["Mes"] = pd.to_datetime(devolucao_atras["Mes"].astype(str))
     devolucao_atras["Mes"] = devolucao_atras["Mes"].dt.strftime("%B %Y").str.capitalize()
     
+    if "Transportadora" in nfd_mes.columns:
+        nfd_mes["Transportadora"] = (
+            nfd_mes["Transportadora"]
+            .astype(str)
+            .str.strip()
+            .str.upper()
+        )
+    
     nfd_mes["Mes_NFD"] = pd.to_datetime(nfd_mes["Mes_NFD"].astype(str))
     nfd_mes["Mes_NFD"] = nfd_mes["Mes_NFD"].dt.strftime("%B %Y").str.capitalize()
+    
+    if "Transportadora" in nfd_coleta.columns:
+        nfd_coleta["Transportadora"] = (
+            nfd_coleta["Transportadora"]
+            .astype(str)
+            .str.strip()
+            .str.upper()
+        )
 
     nfd_coleta["Mes_Coleta"] = pd.to_datetime(nfd_coleta["Mes_Coleta"].astype(str))
     nfd_coleta["Mes_Coleta"] = nfd_coleta["Mes_Coleta"].dt.strftime("%B %Y").str.capitalize()
@@ -707,52 +751,72 @@ elif pagina == "Indicador de Devolução":
 
     meses = sorted(vendas_transp["Mes"].astype(str).unique())
     transportadoras = sorted(vendas_transp["Transportadora"].unique())
+    
+    # ==============================
+    # FILTROS CENTRAIS
+    # ==============================
 
-    with st.expander("Filtros", expanded=False):
+    col_space1, col_btn1, col_btn2, col_space2 = st.columns([2,1,1,2])
 
-        # ------------------------------
-        # FILTRO MÊS
-        # ------------------------------
+    with col_btn1:
+        abrir_mes = st.button("Filtro de Mês")
 
-        st.markdown("**Mês**")
+    with col_btn2:
+        abrir_transp = st.button("Filtro de Transportadora")
 
-        selecionar_todos_mes = st.checkbox(
-            "Selecionar todos os meses",
-            value=True,
-            key="todos_mes"
-        )
+    if "filtro_mes_aberto" not in st.session_state:
+        st.session_state["filtro_mes_aberto"] = False
+
+    if "filtro_transp_aberto" not in st.session_state:
+        st.session_state["filtro_transp_aberto"] = False
+
+    if abrir_mes:
+        st.session_state["filtro_mes_aberto"] = not st.session_state["filtro_mes_aberto"]
+
+    if abrir_transp:
+        st.session_state["filtro_transp_aberto"] = not st.session_state["filtro_transp_aberto"]
+
+
+    # ==============================
+    # FILTRO MÊS
+    # ==============================
+
+    if st.session_state["filtro_mes_aberto"]:
+
+        selecionar_todos_mes = st.checkbox("Selecionar todos os meses", value=True)
 
         if selecionar_todos_mes:
             filtro_mes = meses
         else:
             filtro_mes = []
-
             for mes in meses:
                 if st.checkbox(mes, key=f"mes_{mes}"):
                     filtro_mes.append(mes)
 
-        st.divider()
+    else:
+        filtro_mes = meses
 
-        # ------------------------------
-        # FILTRO TRANSPORTADORA
-        # ------------------------------
 
-        st.markdown("**Transportadora**")
+    # ==============================
+    # FILTRO TRANSPORTADORA
+    # ==============================
 
-        selecionar_todos_transp = st.checkbox(
-            "Selecionar todas transportadoras",
-            value=True,
-            key="todos_transp"
-        )
+    if st.session_state["filtro_transp_aberto"]:
+
+        selecionar_todos_transp = st.checkbox("Selecionar todas transportadoras", value=True)
 
         if selecionar_todos_transp:
             filtro_transportadora = transportadoras
         else:
             filtro_transportadora = []
-
             for t in transportadoras:
                 if st.checkbox(t, key=f"transp_{t}"):
                     filtro_transportadora.append(t)
+
+    else:
+        filtro_transportadora = transportadoras  
+    
+       
    
     # ==============================
     # TOTAIS DOS INDICADORES
@@ -783,6 +847,18 @@ elif pagina == "Indicador de Devolução":
     perc_devolucao = devolucao_total / venda_total if venda_total > 0 else 0
     perc_potencial = potencial_total / venda_total if venda_total > 0 else 0
     perc_atrasada = devolucao_atras_total / venda_total if venda_total > 0 else 0
+    
+    # ==============================
+    # FILTRO NAS NFD POR TRANSPORTADORA
+    # ==============================
+
+    nfd_mes = nfd_mes[
+        nfd_mes["Mes_NFD"].isin(filtro_mes)
+    ]
+
+    nfd_coleta = nfd_coleta[
+        nfd_coleta["Mes_Coleta"].isin(filtro_mes)
+    ]
 
 
     # formatação
@@ -797,37 +873,255 @@ elif pagina == "Indicador de Devolução":
     # ==============================
 
     st.markdown("### Indicadores Gerais")
-
-    c1, c2, c3, c4, c5, c6, c7 = st.columns(7)
-
-    c1.markdown(f"**Venda Total**  \n{moeda(venda_total)}")
-
-    c2.markdown(f"**Devolução em Processo**  \n{moeda(devolucao_total)}")
-
-    c3.markdown(f"**%**  \n{perc(perc_devolucao)}")
-
-    c4.markdown(f"**Potencial (Triplo Prazo)**  \n{moeda(potencial_total)}")
-
-    c5.markdown(f"**%**  \n{perc(perc_potencial)}")
-
-    c6.markdown(f"**Devolução Atrasada**  \n{moeda(devolucao_atras_total)}")
-
-    c7.markdown(f"**%**  \n{perc(perc_atrasada)}")
-
-    st.markdown("### Venda total por mês")
     
-    st.markdown("### NFD geradas por mês")
+    # =====================================
+    # DEVOLUÇÃO - PAINEL TRANSPORTES
+    # =====================================
 
-    for _, row in nfd_mes.iterrows():
-        st.markdown(
-            f"<pre style='font-size:16px'>{row['Mes_NFD']}   R$ {row['Valor_NFD']:,.2f}</pre>",
-            unsafe_allow_html=True
-        )
+    st.markdown("## Devolução - Painel Transportes")
 
-    for _, row in vendas_mes.iterrows():
-        st.markdown(
-            f"<pre style='font-size:16px'>{row['Mes']}   {row['ValorNota']}</pre>",
-            unsafe_allow_html=True
-        )
+    # base completa
+    base_dev = pd.read_excel(
+        ARQ_DEVOLUCAO,
+        sheet_name="base"
+    )
+
+    base_dev["DataColeta"] = pd.to_datetime(base_dev["DataColeta"], errors="coerce")
+    base_dev["DataÚltimoStatus"] = pd.to_datetime(base_dev["DataÚltimoStatus"], errors="coerce")
+
+    hoje = pd.Timestamp.today().normalize()
+
+    # fim do mês
+    fim_mes = hoje + pd.offsets.MonthEnd(0)
+
+    dias_restantes_mes = (fim_mes - hoje).days
+
+    # =====================================
+    # PRAZO DEVOLUÇÃO
+    # =====================================
+
+    base_dev["PrazoFinal"] = base_dev["DataÚltimoStatus"] + pd.Timedelta(days=30)
+
+    base_dev["DiasRestantesPrazo"] = (
+        base_dev["PrazoFinal"] - hoje
+    ).dt.days
+
+    # =====================================
+    # CLASSIFICAÇÃO
+    # =====================================
+
+    atrasado = base_dev[
+        base_dev["DiasRestantesPrazo"] <= 0
+    ]["ValorNota"].sum()
+
+    provavel = base_dev[
+        (base_dev["DiasRestantesPrazo"] > 0)
+        &
+        (base_dev["DiasRestantesPrazo"] <= 10)
+        &
+        (base_dev["DiasRestantesPrazo"] <= dias_restantes_mes)
+    ]["ValorNota"].sum()
+
+    possibilidade = base_dev[
+        (base_dev["DiasRestantesPrazo"] > 10)
+        &
+        (base_dev["DiasRestantesPrazo"] <= 20)
+        &
+        (base_dev["DiasRestantesPrazo"] <= dias_restantes_mes)
+    ]["ValorNota"].sum()
+
+    improvavel = base_dev[
+        (base_dev["DiasRestantesPrazo"] > 20)
+        &
+        (base_dev["DiasRestantesPrazo"] <= 30)
+        &
+        (base_dev["DiasRestantesPrazo"] <= dias_restantes_mes)
+    ]["ValorNota"].sum()
+
+    # =====================================
+    # VENDAS E NFD
+    # =====================================
+
+    venda_mes = vendas_mes["ValorNota"].sum()
+
+    nfd_total = nfd_mes["Valor_NFD"].sum()
+
+    # =====================================
+    # POTENCIAL TRIPLO
+    # =====================================
+
+    triplo_real = potencial["Potencial"].sum()
+
+    # =====================================
+    # FUNÇÕES FORMATAÇÃO
+    # =====================================
+
+    def moeda(x):
+        return f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+    def perc(x):
+        if venda_mes == 0:
+            return "0%"
+        return f"{(x / venda_mes)*100:.2f}%".replace(".", ",")
+
+    # =====================================
+    # INDICES
+    # =====================================
+
+    indice_nfd = nfd_total
+
+    indice_atrasado = nfd_total + atrasado
+
+    indice_provavel = nfd_total + atrasado + provavel
+
+    indice_poss = nfd_total + atrasado + provavel + possibilidade
+
+    indice_improv = nfd_total + atrasado + provavel + possibilidade + improvavel
+
+    indice_triplo = nfd_total + triplo_real
+
+    indice_triplo_atrasado = nfd_total + triplo_real + atrasado
+
+    indice_triplo_provavel = nfd_total + triplo_real + atrasado + provavel
+
+    indice_triplo_poss = nfd_total + triplo_real + atrasado + provavel + possibilidade
+
+    indice_triplo_improv = nfd_total + triplo_real + atrasado + provavel + possibilidade + improvavel
+
+    # =====================================
+    # EXIBIÇÃO
+    # =====================================
+
+    st.markdown("### Venda total do mês")
+    st.write(moeda(venda_mes))
+
+    st.markdown("### NFD gerada")
+    st.write(f"{moeda(nfd_total)} | {perc(indice_nfd)}")
+
+    st.markdown("### Atrasado")
+    st.write(f"{moeda(atrasado)} | {perc(indice_atrasado)}")
+
+    st.markdown("### Retornando")
+
+    st.write(f"Provável: {moeda(provavel)} | {perc(indice_provavel)}")
+
+    st.write(f"Possibilidade: {moeda(possibilidade)} | {perc(indice_poss)}")
+
+    st.write(f"Improvável: {moeda(improvavel)} | {perc(indice_improv)}")
+
+    st.markdown("### Potencial Triplo Prazo")
+
+    st.write(f"Triplo: {moeda(triplo_real)} | {perc(indice_triplo)}")
+
+    st.write(f"Triplo + atrasado: {perc(indice_triplo_atrasado)}")
+
+    st.write(f"Triplo + provável: {perc(indice_triplo_provavel)}")
+
+    st.write(f"Triplo + possibilidade: {perc(indice_triplo_poss)}")
+
+    st.write(f"Triplo + improvável: {perc(indice_triplo_improv)}")
+    
+    # =====================================
+    # DEVOLUÇÃO - PAINEL BRAVIUM
+    # =====================================
+
+    st.markdown("## Devolução - Painel Bravium")
+
+    # ==============================
+    # BASE NFD (empresa)
+    # ==============================
+
+    base_nfd = pd.read_excel(
+        ARQ_DEVOLUCAO,
+        sheet_name="base"
+    )
+
+    base_nfd["DataRetorno"] = pd.to_datetime(base_nfd["DataRetorno"], errors="coerce")
+    base_nfd["DataÚltimoStatus"] = pd.to_datetime(base_nfd["DataÚltimoStatus"], errors="coerce")
+
+    hoje = pd.Timestamp.today().normalize()
+    fim_mes = hoje + pd.offsets.MonthEnd(0)
+
+    dias_restantes_mes = (fim_mes - hoje).days
+
+    # ==============================
+    # PRAZO DEVOLUÇÃO
+    # ==============================
+
+    base_nfd["PrazoFinal"] = base_nfd["DataÚltimoStatus"] + pd.Timedelta(days=30)
+
+    base_nfd["DiasRestantesPrazo"] = (
+        base_nfd["PrazoFinal"] - hoje
+    ).dt.days
+
+    # ==============================
+    # CLASSIFICAÇÃO
+    # ==============================
+
+    atrasado_brav = base_nfd[
+        base_nfd["DiasRestantesPrazo"] <= 0
+    ]["ValorNota"].sum()
+
+    provavel_brav = base_nfd[
+        (base_nfd["DiasRestantesPrazo"] > 0)
+        &
+        (base_nfd["DiasRestantesPrazo"] <= 10)
+        &
+        (base_nfd["DiasRestantesPrazo"] <= dias_restantes_mes)
+    ]["ValorNota"].sum()
+
+    poss_brav = base_nfd[
+        (base_nfd["DiasRestantesPrazo"] > 10)
+        &
+        (base_nfd["DiasRestantesPrazo"] <= 20)
+        &
+        (base_nfd["DiasRestantesPrazo"] <= dias_restantes_mes)
+    ]["ValorNota"].sum()
+
+    improv_brav = base_nfd[
+        (base_nfd["DiasRestantesPrazo"] > 20)
+        &
+        (base_nfd["DiasRestantesPrazo"] <= 30)
+        &
+        (base_nfd["DiasRestantesPrazo"] <= dias_restantes_mes)
+    ]["ValorNota"].sum()
+
+    # ==============================
+    # NFD EMPRESA
+    # ==============================
+
+    nfd_empresa = nfd_mes["Valor_NFD"].sum()
+
+    # ==============================
+    # INDICES
+    # ==============================
+
+    indice_brav_nfd = nfd_empresa
+
+    indice_brav_atras = nfd_empresa + atrasado_brav
+
+    indice_brav_prov = nfd_empresa + atrasado_brav + provavel_brav
+
+    indice_brav_poss = nfd_empresa + atrasado_brav + provavel_brav + poss_brav
+
+    indice_brav_improv = nfd_empresa + atrasado_brav + provavel_brav + poss_brav + improv_brav
+
+    # ==============================
+    # EXIBIÇÃO
+    # ==============================
+
+    st.markdown("### NFD gerada (Empresa)")
+    st.write(f"{moeda(nfd_empresa)} | {perc(indice_brav_nfd)}")
+
+    st.markdown("### Atrasado")
+    st.write(f"{moeda(atrasado_brav)} | {perc(indice_brav_atras)}")
+
+    st.markdown("### Retornando")
+
+    st.write(f"Provável: {moeda(provavel_brav)} | {perc(indice_brav_prov)}")
+
+    st.write(f"Possibilidade: {moeda(poss_brav)} | {perc(indice_brav_poss)}")
+
+    st.write(f"Improvável: {moeda(improv_brav)} | {perc(indice_brav_improv)}")
+
         
-    
