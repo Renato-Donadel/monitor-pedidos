@@ -121,6 +121,18 @@ color: white !important;
 """, unsafe_allow_html=True)
 
 # ==============================
+# MENU LATERAL
+# ==============================
+
+pagina = st.sidebar.selectbox(
+    "Painel",
+    [
+        "Monitor de Pedidos",
+        "Indicador de Devolução"
+    ]
+)
+
+# ==============================
 # HEADER
 # ==============================
 logo_html = ""
@@ -148,18 +160,6 @@ st.markdown(f"""
     </div>
 </div>
 """, unsafe_allow_html=True)
-
-# ==============================
-# MENU LATERAL
-# ==============================
-
-pagina = st.sidebar.selectbox(
-    "Painel",
-    [
-        "Monitor de Pedidos",
-        "Indicador de Devolução"
-    ]
-)
 
 # ==============================
 # FUNÇÕES
