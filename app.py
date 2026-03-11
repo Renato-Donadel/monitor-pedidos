@@ -881,7 +881,8 @@ elif pagina == "Indicador de Devolução":
     )
 
     base_dev["DataColeta"] = pd.to_datetime(base_dev["DataColeta"], errors="coerce")
-    
+    base_dev["DataÚltimoStatus"] = pd.to_datetime(base_dev["DataÚltimoStatus"], errors="coerce")
+
     hoje = pd.Timestamp.today().normalize()
 
     # fim do mês
@@ -893,7 +894,7 @@ elif pagina == "Indicador de Devolução":
     # PRAZO DEVOLUÇÃO
     # =====================================
 
-    base_dev["PrazoFinal"] = base_dev["DataRetorno"] + pd.Timedelta(days=30)
+    base_dev["PrazoFinal"] = base_dev["DataÚltimoStatus"] + pd.Timedelta(days=30)
 
     base_dev["DiasRestantesPrazo"] = (
         base_dev["PrazoFinal"] - hoje
@@ -1030,7 +1031,8 @@ elif pagina == "Indicador de Devolução":
     )
 
     base_nfd["DataRetorno"] = pd.to_datetime(base_nfd["DataRetorno"], errors="coerce")
-    
+    base_nfd["DataÚltimoStatus"] = pd.to_datetime(base_nfd["DataÚltimoStatus"], errors="coerce")
+
     hoje = pd.Timestamp.today().normalize()
     fim_mes = hoje + pd.offsets.MonthEnd(0)
 
@@ -1040,7 +1042,7 @@ elif pagina == "Indicador de Devolução":
     # PRAZO DEVOLUÇÃO
     # ==============================
 
-    base_nfd["PrazoFinal"] = base_nfd["DataRetorno"] + pd.Timedelta(days=30)
+    base_nfd["PrazoFinal"] = base_nfd["DataÚltimoStatus"] + pd.Timedelta(days=30)
 
     base_nfd["DiasRestantesPrazo"] = (
         base_nfd["PrazoFinal"] - hoje
