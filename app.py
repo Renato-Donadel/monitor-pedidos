@@ -791,49 +791,62 @@ elif pagina == "Indicador de Devolução":
     transportadoras = sorted(vendas_transp["Transportadora"].unique())
     
     # ==============================
-    # FILTROS CENTRAIS
+    # CONTROLE DE ABERTURA DOS FILTROS
     # ==============================
+
+    if "abrir_filtro_mes" not in st.session_state:
+        st.session_state["abrir_filtro_mes"] = False
+
+    if "abrir_filtro_transp" not in st.session_state:
+        st.session_state["abrir_filtro_transp"] = False
 
     col_space1, col_btn1, col_btn2, col_space2 = st.columns([2,1,1,2])
 
     with col_btn1:
-        abrir_mes = st.button("Filtro de Mês")
+        if st.button("Filtro de Mês"):
+            st.session_state["abrir_filtro_mes"] = not st.session_state["abrir_filtro_mes"]
 
     with col_btn2:
-        abrir_transp = st.button("Filtro de Transportadora")
-
-    if "filtro_mes_aberto" not in st.session_state:
-        st.session_state["filtro_mes_aberto"] = False
-
-    if "filtro_transp_aberto" not in st.session_state:
-        st.session_state["filtro_transp_aberto"] = False
-
-    if abrir_mes:
-        st.session_state["filtro_mes_aberto"] = not st.session_state["filtro_mes_aberto"]
-
-    if abrir_transp:
-        st.session_state["filtro_transp_aberto"] = not st.session_state["filtro_transp_aberto"]
+        if st.button("Filtro de Transportadora"):
+            st.session_state["abrir_filtro_transp"] = not st.session_state["abrir_filtro_transp"]
 
 
     # ==============================
     # FILTRO MÊS
     # ==============================
 
-    filtro_mes = st.multiselect(
-        "Filtrar mês",
-        options=meses,
-        default=meses
-    )
+    if st.session_state["abrir_filtro_mes"]:
+
+        filtro_mes = st.multiselect(
+            "Filtrar mês",
+            options=meses,
+            default=meses
+        )
+
+        if st.button("Aplicar filtro mês"):
+            st.session_state["abrir_filtro_mes"] = False
+
+    else:
+        filtro_mes = meses
+
 
     # ==============================
     # FILTRO TRANSPORTADORA
     # ==============================
 
-    filtro_transportadora = st.multiselect(
-        "Filtrar transportadora",
-        options=transportadoras,
-        default=transportadoras
-    ) 
+    if st.session_state["abrir_filtro_transp"]:
+
+        filtro_transportadora = st.multiselect(
+            "Filtrar transportadora",
+            options=transportadoras,
+            default=transportadoras
+        )
+
+        if st.button("Aplicar filtro transportadora"):
+            st.session_state["abrir_filtro_transp"] = False
+
+    else:
+        filtro_transportadora = transportadoras  
     
           
     # ==============================
