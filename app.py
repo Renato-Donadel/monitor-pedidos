@@ -165,7 +165,7 @@ st.markdown(f"""
 # FUNÇÕES
 # ==============================
 
-@st.cache_data
+@st.cache_data(ttl=60)
 def carregar_base_devolucao():
     return pd.read_excel(
         ARQ_DEVOLUCAO,
