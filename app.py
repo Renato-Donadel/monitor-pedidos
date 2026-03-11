@@ -646,9 +646,9 @@ elif pagina == "Indicador de Devolução":
             ARQ_DEVOLUCAO,
             sheet_name="devolucao_atrasada"
         )
-            nfd_mes = pd.read_excel(
-                ARQ_DEVOLUCAO,
-                sheet_name="nfd_mes"
+        nfd_mes = pd.read_excel(
+            ARQ_DEVOLUCAO,
+            sheet_name="nfd_mes"
         )
 
         nfd_coleta = pd.read_excel(
