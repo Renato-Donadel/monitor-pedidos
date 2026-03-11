@@ -16,7 +16,7 @@ PASTA_HIST = os.path.join(PASTA_DATA, "historico")
 PASTA_MENSAL = os.path.join(PASTA_DATA, "mensal_status")
 os.makedirs(PASTA_MENSAL, exist_ok=True)
 ARQ_ATUAL = os.path.join(PASTA_DATA, "Monitor_Pedidos_Processado.xlsx")
-ARQ_DEVOLUCAO = r"Z:\9. Transportes\9.2. Business Intelligence\9.2 Monitor_Pedidos\Historico_Dev\Base_Streamlit_Devolucao.xlsx"
+ARQ_DEVOLUCAO = os.path.join(PASTA_DATA, "Base_Streamlit_Devolucao.xlsx")
 LOGO_PATH = os.path.join(PASTA_DATA, "logo_bravium.png")
 
 TAMANHO_LOTE = 300
