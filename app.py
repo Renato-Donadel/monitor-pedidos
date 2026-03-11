@@ -16,7 +16,7 @@ PASTA_HIST = os.path.join(PASTA_DATA, "historico")
 PASTA_MENSAL = os.path.join(PASTA_DATA, "mensal_status")
 os.makedirs(PASTA_MENSAL, exist_ok=True)
 ARQ_ATUAL = os.path.join(PASTA_DATA, "Monitor_Pedidos_Processado.xlsx")
-ARQ_DEVOLUCAO = os.path.join(PASTA_DATA, "Indicador_Devolucao_Base.xlsx")
+ARQ_DEVOLUCAO = r"Z:\9. Transportes\9.2. Business Intelligence\9.2 Monitor_Pedidos\Historico_Dev\Base_Streamlit_Devolucao.xlsx"
 LOGO_PATH = os.path.join(PASTA_DATA, "logo_bravium.png")
 
 TAMANHO_LOTE = 300
@@ -645,6 +645,15 @@ elif pagina == "Indicador de Devolução":
             ARQ_DEVOLUCAO,
             sheet_name="Devolucao_Atrasada"
         )
+        nfd_mes = pd.read_excel(
+            ARQ_DEVOLUCAO,
+            sheet_name="nfd_mes"
+        )
+
+        nfd_coleta = pd.read_excel(
+            ARQ_DEVOLUCAO,
+            sheet_name="nfd_coleta"
+        )
 
     except Exception:
         st.error("Erro ao ler base de devolução.")
@@ -684,6 +693,12 @@ elif pagina == "Indicador de Devolução":
 
     devolucao_atras["Mes"] = pd.to_datetime(devolucao_atras["Mes"].astype(str))
     devolucao_atras["Mes"] = devolucao_atras["Mes"].dt.strftime("%B %Y").str.capitalize()
+    
+    nfd_mes["Mes_NFD"] = pd.to_datetime(nfd_mes["Mes_NFD"].astype(str))
+    nfd_mes["Mes_NFD"] = nfd_mes["Mes_NFD"].dt.strftime("%B %Y").str.capitalize()
+
+    nfd_coleta["Mes_Coleta"] = pd.to_datetime(nfd_coleta["Mes_Coleta"].astype(str))
+    nfd_coleta["Mes_Coleta"] = nfd_coleta["Mes_Coleta"].dt.strftime("%B %Y").str.capitalize()
     
     
     # ==============================
@@ -800,6 +815,14 @@ elif pagina == "Indicador de Devolução":
     c7.markdown(f"**%**  \n{perc(perc_atrasada)}")
 
     st.markdown("### Venda total por mês")
+    
+    st.markdown("### NFD geradas por mês")
+
+    for _, row in nfd_mes.iterrows():
+        st.markdown(
+            f"<pre style='font-size:16px'>{row['Mes_NFD']}   R$ {row['Valor_NFD']:,.2f}</pre>",
+            unsafe_allow_html=True
+        )
 
     for _, row in vendas_mes.iterrows():
         st.markdown(
