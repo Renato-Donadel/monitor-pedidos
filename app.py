@@ -668,13 +668,6 @@ elif pagina == "Indicador de Devolução":
         .str.upper()
     )
     
-    vendas_transp["Transportadora"] = (
-        vendas_transp["Transportadora"]
-        .astype(str)
-        .str.strip()
-        .str.upper()
-    )
-
     potencial["Transportadora"] = (
         potencial["Transportadora"]
         .astype(str)
@@ -750,7 +743,7 @@ elif pagina == "Indicador de Devolução":
     # FILTROS
     # ==============================
 
-    meses = sorted(vendas_transp["Mes"].astype(str).unique())
+    meses = sorted(vendas_transp["Mes"].dropna().unique())
     transportadoras = sorted(vendas_transp["Transportadora"].unique())
     
     # ==============================
@@ -826,7 +819,7 @@ elif pagina == "Indicador de Devolução":
     venda_total = vendas_transp[
         vendas_transp["Mes"].isin(filtro_mes) &
         vendas_transp["Transportadora"].isin(filtro_transportadora)
-    ]["ValorNota"].sum()
+    ]["ValorVenda"].sum()
 
     devolucao_total = devolucao_proc[
         devolucao_proc["Mes"].isin(filtro_mes) &
@@ -943,7 +936,7 @@ elif pagina == "Indicador de Devolução":
     # VENDAS E NFD
     # =====================================
 
-    venda_mes = vendas_mes["ValorNota"].sum()
+    venda_mes = vendas_mes["ValorVenda"].sum()
 
     nfd_total = nfd_mes["Valor_NFD"].sum()
 
