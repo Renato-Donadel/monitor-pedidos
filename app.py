@@ -682,9 +682,7 @@ if pagina == "Monitor de Pedidos":
 
 elif pagina == "Indicador de Devolução":
 
-    st.markdown("## Indicador de Devolução / Extravio / Avaria")
-
-    if not os.path.exists(ARQ_DEVOLUCAO):
+     if not os.path.exists(ARQ_DEVOLUCAO):
         st.warning("Base de devolução ainda não foi gerada.")
         st.stop()
 
