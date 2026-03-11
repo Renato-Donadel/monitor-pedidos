@@ -129,13 +129,21 @@ if os.path.exists(LOGO_PATH):
         logo_base64 = base64.b64encode(f.read()).decode()
     logo_html = f'<img src="data:image/png;base64,{logo_base64}" width="120">'
 
+if pagina == "Monitor de Pedidos":
+    titulo = "Monitor de Pedidos — BI Executivo"
+    subtitulo = "Análise de Risco Logístico • Transportadora • Status • Região • Cliente"
+
+elif pagina == "Indicador de Devolução":
+    titulo = "Painel de Devolução"
+    subtitulo = "Devolução • Extravio • Avaria • Indicadores Logísticos"
+
 st.markdown(f"""
 <div class="header-box">
     {logo_html}
     <div>
-        <p class="header-title">Monitor de Pedidos — BI Executivo</p>
+        <p class="header-title">{titulo}</p>
         <p class="header-sub">
-        Análise de Risco Logístico • Transportadora • Status • Região • Cliente
+        {subtitulo}
         </p>
     </div>
 </div>
@@ -892,13 +900,7 @@ elif pagina == "Indicador de Devolução":
 
     def perc(x):
         return f"{x*100:.2f}%".replace(".", ",")
-        
-    # ==============================
-    # PAINEL EXECUTIVO
-    # ==============================
-
-    st.markdown("### Indicadores Gerais")
-    
+          
     # =====================================
     # DEVOLUÇÃO - PAINEL TRANSPORTES
     # =====================================
