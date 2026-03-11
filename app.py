@@ -60,19 +60,63 @@ st.set_page_config(
 st.markdown("""
 <style>
 .stApp { background-color: #f4f6f9; }
-.header-box { background: linear-gradient(90deg, #0f2a44, #1f4e79);
-padding: 18px 24px; border-radius: 14px; display: flex;
-align-items: center; gap: 20px; margin-bottom: 20px; }
-.header-title { color: white; font-size: 26px; font-weight: 700; margin: 0; }
-.header-sub { color: white; opacity: 0.85; margin: 0; font-size: 14px; }
-img { max-width: 220px !important; }
-.data-title { font-size: 20px; font-weight: 700; color: #0f2a44;
-margin-top: 10px; margin-bottom: 10px; }
-.metric-small { font-size: 16px; font-weight: 600; color: #0f2a44; }
-.stDownloadButton > button {
+
+.header-box { 
 background: linear-gradient(90deg, #0f2a44, #1f4e79);
-color: white; border-radius: 10px; font-weight: 700;
-height: 40px; width: 100%; border: none; }
+padding: 18px 24px; 
+border-radius: 14px; 
+display: flex;
+align-items: center; 
+gap: 20px; 
+margin-bottom: 20px; 
+}
+
+.header-title { 
+color: white; 
+font-size: 26px; 
+font-weight: 700; 
+margin: 0; 
+}
+
+.header-sub { 
+color: white; 
+opacity: 0.85; 
+margin: 0; 
+font-size: 14px; 
+}
+
+img { 
+max-width: 220px !important; 
+}
+
+.data-title { 
+font-size: 20px; 
+font-weight: 700; 
+color: #0f2a44;
+margin-top: 10px; 
+margin-bottom: 10px; 
+}
+
+.metric-small { 
+font-size: 16px; 
+font-weight: 600; 
+color: #0f2a44; 
+}
+
+/* BOTÕES */
+button {
+background: linear-gradient(90deg, #0f2a44, #1f4e79) !important;
+color: white !important;
+border-radius: 10px !important;
+font-weight: 700 !important;
+border: none !important;
+}
+
+button:hover {
+background: linear-gradient(90deg, #1f4e79, #0f2a44) !important;
+color: white !important;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -775,43 +819,23 @@ elif pagina == "Indicador de Devolução":
     # FILTRO MÊS
     # ==============================
 
-    if st.session_state["filtro_mes_aberto"]:
-
-        selecionar_todos_mes = st.checkbox("Selecionar todos os meses", value=True)
-
-        if selecionar_todos_mes:
-            filtro_mes = meses
-        else:
-            filtro_mes = []
-            for mes in meses:
-                if st.checkbox(mes, key=f"mes_{mes}"):
-                    filtro_mes.append(mes)
-
-    else:
-        filtro_mes = meses
-
+    filtro_mes = st.multiselect(
+        "Filtrar mês",
+        options=meses,
+        default=meses
+    )
 
     # ==============================
     # FILTRO TRANSPORTADORA
     # ==============================
 
-    if st.session_state["filtro_transp_aberto"]:
-
-        selecionar_todos_transp = st.checkbox("Selecionar todas transportadoras", value=True)
-
-        if selecionar_todos_transp:
-            filtro_transportadora = transportadoras
-        else:
-            filtro_transportadora = []
-            for t in transportadoras:
-                if st.checkbox(t, key=f"transp_{t}"):
-                    filtro_transportadora.append(t)
-
-    else:
-        filtro_transportadora = transportadoras  
+    filtro_transportadora = st.multiselect(
+        "Filtrar transportadora",
+        options=transportadoras,
+        default=transportadoras
+    ) 
     
-       
-   
+          
     # ==============================
     # TOTAIS DOS INDICADORES
     # ==============================
