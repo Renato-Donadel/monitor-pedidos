@@ -57,7 +57,28 @@ st.set_page_config(
 # ==============================
 # ESTILO
 # ==============================
+
+  
 st.markdown("""
+<style>
+
+    .titulo-painel {
+        background: linear-gradient(90deg,#0f2a44,#1f4e79);
+        color: white;
+        font-size: 20px;
+        font-weight: 700;
+        text-align: center;
+        padding: 12px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+    }
+
+    .separador-colunas {
+        border-right: 6px solid #1f4e79;
+        padding-right: 25px;
+    }
+
+    </style>
 <style>
 .stApp { background-color: #f4f6f9; }
 
@@ -171,6 +192,7 @@ def carregar_base_devolucao():
         ARQ_DEVOLUCAO,
         sheet_name=[
             "vendas_mes",
+            "vendas_mes_pedido",
             "vendas_transportadora",
             "potencial_triplo",
             "devolucao_processo",
@@ -691,6 +713,7 @@ elif pagina == "Indicador de Devolução":
         bases = carregar_base_devolucao()
 
         vendas_mes = bases["vendas_mes"]
+        vendas_mes_pedido = bases["vendas_mes_pedido"]
         vendas_transp = bases["vendas_transportadora"]
         potencial = bases["potencial_triplo"]
         devolucao_proc = bases["devolucao_processo"]
@@ -895,275 +918,504 @@ elif pagina == "Indicador de Devolução":
     # formatação
     def moeda(x):
         return f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-
-    def perc(x):
-        return f"{x*100:.2f}%".replace(".", ",")
+        
+    col_transp, col_brav = st.columns([1,1])
           
     # =====================================
     # DEVOLUÇÃO - PAINEL TRANSPORTES
     # =====================================
 
-    st.markdown("## Devolução - Painel Transportes")
-
-    # base completa
-    base_dev = pd.read_excel(
-        ARQ_DEVOLUCAO,
-        sheet_name="base"
-    )
+    with col_transp:
     
-    base_dev["Transportadora"] = (
-        base_dev["Transportadora"]
-        .astype(str)
-        .str.upper()
-        .str.strip()
-    )
+        st.markdown('<div class="separador-colunas">', unsafe_allow_html=True)
 
-    base_dev = base_dev[
-        base_dev["Transportadora"].isin(filtro_transportadora)
-    ]
+        st.markdown(
+            '<div class="titulo-painel">Devolução - Painel Transportes</div>',
+            unsafe_allow_html=True
+        )
     
-    base_dev["MesFiltro"] = pd.to_datetime(base_dev["DataRetorno"]).dt.strftime("%B %Y").str.capitalize()
+        # base completa
+        base_dev = bases["base"].copy()
+        
+        base_dev["Transportadora"] = (
+            base_dev["Transportadora"]
+            .astype(str)
+            .str.upper()
+            .str.strip()
+        )
 
-    base_dev = base_dev[
-        base_dev["MesFiltro"].isin(filtro_mes)
-    ]
+        base_dev = base_dev[
+            base_dev["Transportadora"].isin(filtro_transportadora)
+        ]
+        
+        base_dev["MesFiltro"] = pd.to_datetime(base_dev["DataRetorno"]).dt.strftime("%B %Y").str.capitalize()
 
-    base_dev["DataColeta"] = pd.to_datetime(base_dev["DataColeta"], errors="coerce")
-    base_dev["DataÚltimoStatus"] = pd.to_datetime(base_dev["DataÚltimoStatus"], errors="coerce")
+        base_dev = base_dev[
+            base_dev["MesFiltro"].isin(filtro_mes)
+        ]
 
-    hoje = pd.Timestamp.today().normalize()
+        base_dev["DataColeta"] = pd.to_datetime(base_dev["DataColeta"], errors="coerce")
+        base_dev["DataÚltimoStatus"] = pd.to_datetime(base_dev["DataÚltimoStatus"], errors="coerce")
 
-    # fim do mês
-    fim_mes = hoje + pd.offsets.MonthEnd(0)
+        hoje = pd.Timestamp.today().normalize()
 
-    dias_restantes_mes = (fim_mes - hoje).days
+        # fim do mês
+        fim_mes = hoje + pd.offsets.MonthEnd(0)
 
-    # =====================================
-    # PRAZO DEVOLUÇÃO
-    # =====================================
+        dias_restantes_mes = (fim_mes - hoje).days
 
-    base_dev["PrazoFinal"] = base_dev["DataÚltimoStatus"] + pd.Timedelta(days=30)
+        # =====================================
+        # PRAZO DEVOLUÇÃO
+        # =====================================
 
-    base_dev["DiasRestantesPrazo"] = (
-        base_dev["PrazoFinal"] - hoje
-    ).dt.days
+        base_dev["PrazoFinal"] = base_dev["DataÚltimoStatus"] + pd.Timedelta(days=30)
 
-    # =====================================
-    # CLASSIFICAÇÃO
-    # =====================================
+        base_dev["DiasRestantesPrazo"] = (
+            base_dev["PrazoFinal"] - hoje
+        ).dt.days
 
-    atrasado = base_dev[
-        base_dev["DiasRestantesPrazo"] <= 0
-    ]["ValorNota"].sum()
+        # =====================================
+        # CLASSIFICAÇÃO
+        # =====================================
 
-    provavel = base_dev[
-        (base_dev["DiasRestantesPrazo"] > 0)
-        &
-        (base_dev["DiasRestantesPrazo"] <= 10)
-        &
-        (base_dev["DiasRestantesPrazo"] <= dias_restantes_mes)
-    ]["ValorNota"].sum()
+        atrasado = base_dev[
+            base_dev["DiasRestantesPrazo"] <= 0
+        ]["ValorNota"].sum()
 
-    possibilidade = base_dev[
-        (base_dev["DiasRestantesPrazo"] > 10)
-        &
-        (base_dev["DiasRestantesPrazo"] <= 20)
-        &
-        (base_dev["DiasRestantesPrazo"] <= dias_restantes_mes)
-    ]["ValorNota"].sum()
+        provavel = base_dev[
+            (base_dev["DiasRestantesPrazo"] > 0)
+            &
+            (base_dev["DiasRestantesPrazo"] <= 10)
+            &
+            (base_dev["DiasRestantesPrazo"] <= dias_restantes_mes)
+        ]["ValorNota"].sum()
 
-    improvavel = base_dev[
-        (base_dev["DiasRestantesPrazo"] > 20)
-        &
-        (base_dev["DiasRestantesPrazo"] <= 30)
-        &
-        (base_dev["DiasRestantesPrazo"] <= dias_restantes_mes)
-    ]["ValorNota"].sum()
+        possibilidade = base_dev[
+            (base_dev["DiasRestantesPrazo"] > 10)
+            &
+            (base_dev["DiasRestantesPrazo"] <= 20)
+            &
+            (base_dev["DiasRestantesPrazo"] <= dias_restantes_mes)
+        ]["ValorNota"].sum()
 
-    # =====================================
-    # VENDAS E NFD
-    # =====================================
+        improvavel = base_dev[
+            (base_dev["DiasRestantesPrazo"] > 20)
+            &
+            (base_dev["DiasRestantesPrazo"] <= 30)
+            &
+            (base_dev["DiasRestantesPrazo"] <= dias_restantes_mes)
+        ]["ValorNota"].sum()
 
-    venda_mes = vendas_transp[
-        vendas_transp["Mes"].isin(filtro_mes) &
-        vendas_transp["Transportadora"].isin(filtro_transportadora)
-    ]["ValorVenda"].sum()
+        # =====================================
+        # VENDAS E NFD
+        # =====================================
 
-    nfd_total = nfd_mes["Valor_NFD"].sum()
+        venda_mes = vendas_transp[
+            vendas_transp["Mes"].isin(filtro_mes) &
+            vendas_transp["Transportadora"].isin(filtro_transportadora)
+        ]["ValorVenda"].sum()
 
-    # =====================================
-    # POTENCIAL TRIPLO
-    # =====================================
+        nfd_total = nfd_mes["Valor_NFD"].sum()
+        
+        # ==============================
+        # NFD POR MÊS DE COLETA
+        # ==============================
 
-    triplo_real = potencial["Potencial"].sum()
+        nfd_por_mes = (
+            nfd_coleta
+            .groupby("Mes_Coleta")["Valor_NFD"]
+            .sum()
+            .reset_index()
+        )
 
-    # =====================================
-    # FUNÇÕES FORMATAÇÃO
-    # =====================================
+        nfd_por_mes = nfd_por_mes.rename(
+            columns={
+                "Mes_Coleta": "Mes",
+                "Valor_NFD": "NFD"
+            }
+        )
 
-    def moeda(x):
-        return f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        # =====================================
+        # POTENCIAL TRIPLO
+        # =====================================
 
-    def perc(x):
-        if venda_mes == 0:
-            return "0%"
-        return f"{(x / venda_mes)*100:.2f}%".replace(".", ",")
+        triplo_real = potencial["Potencial"].sum()
+        
+        # ==============================
+        # IMPACTO POR MÊS DE COLETA
+        # ==============================
 
-    # =====================================
-    # INDICES
-    # =====================================
+        impacto_mes = (
+            base_dev
+            .dropna(subset=["DataColeta"])
+            .assign(
+                MesColeta=lambda df: df["DataColeta"].dt.to_period("M")
+            )
+            .groupby("MesColeta")["ValorNota"]
+            .sum()
+            .reset_index()
+        )   
 
-    indice_nfd = nfd_total
+        # =====================================
+        # FUNÇÕES FORMATAÇÃO
+        # =====================================
 
-    indice_atrasado = nfd_total + atrasado
+        # formatação
+        def moeda(x):
+            return f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
-    indice_provavel = nfd_total + atrasado + provavel
+        def perc_transportes(x):
+            return f"{x*100:.2f}%".replace(".", ",")
 
-    indice_poss = nfd_total + atrasado + provavel + possibilidade
+        # =====================================
+        # INDICES
+        # =====================================
 
-    indice_improv = nfd_total + atrasado + provavel + possibilidade + improvavel
+        indice_nfd = nfd_total
 
-    indice_triplo = nfd_total + triplo_real
+        indice_atrasado = nfd_total + atrasado
 
-    indice_triplo_atrasado = nfd_total + triplo_real + atrasado
+        indice_provavel = nfd_total + atrasado + provavel
 
-    indice_triplo_provavel = nfd_total + triplo_real + atrasado + provavel
+        indice_poss = nfd_total + atrasado + provavel + possibilidade
 
-    indice_triplo_poss = nfd_total + triplo_real + atrasado + provavel + possibilidade
+        indice_improv = nfd_total + atrasado + provavel + possibilidade + improvavel
 
-    indice_triplo_improv = nfd_total + triplo_real + atrasado + provavel + possibilidade + improvavel
+        indice_triplo = nfd_total + triplo_real
 
-    # =====================================
-    # EXIBIÇÃO
-    # =====================================
+        indice_triplo_atrasado = nfd_total + triplo_real + atrasado
 
-    st.markdown("### Venda total do mês")
-    st.write(moeda(venda_mes))
+        indice_triplo_provavel = nfd_total + triplo_real + atrasado + provavel
 
-    st.markdown("### NFD gerada")
-    st.write(f"{moeda(nfd_total)} | {perc(indice_nfd)}")
+        indice_triplo_poss = nfd_total + triplo_real + atrasado + provavel + possibilidade
 
-    st.markdown("### Atrasado")
-    st.write(f"{moeda(atrasado)} | {perc(indice_atrasado)}")
+        indice_triplo_improv = nfd_total + triplo_real + atrasado + provavel + possibilidade + improvavel
 
-    st.markdown("### Retornando")
+        # =====================================
+        # EXIBIÇÃO
+        # =====================================
 
-    st.write(f"Provável: {moeda(provavel)} | {perc(indice_provavel)}")
+        st.markdown("### Venda total do mês")
 
-    st.write(f"Possibilidade: {moeda(possibilidade)} | {perc(indice_poss)}")
+        st.markdown(
+            f"""
+            <div style="
+                background:white;
+                padding:20px;
+                border-radius:12px;
+                box-shadow:0 2px 8px rgba(0,0,0,0.08);
+                text-align:center;
+            ">
+                <div style="font-size:16px;color:#6b7280;">Venda Total</div>
+                <div style="font-size:46px;font-weight:800;color:#0f2a44;">
+                    {moeda(venda_mes)}
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+        
+        # ==============================
+        # GRÁFICO VENDAS POR MÊS - TRANSPORTES
+        # ==============================
 
-    st.write(f"Improvável: {moeda(improvavel)} | {perc(indice_improv)}")
+        graf_vendas = vendas_mes.copy()
 
-    st.markdown("### Potencial Triplo Prazo")
+        graf_vendas["Mes"] = pd.to_datetime(graf_vendas["Mes"].astype(str))
 
-    st.write(f"Triplo: {moeda(triplo_real)} | {perc(indice_triplo)}")
+        graf_vendas = graf_vendas.sort_values("Mes")
 
-    st.write(f"Triplo + atrasado: {perc(indice_triplo_atrasado)}")
+        fig, ax = plt.subplots(figsize=(8,4))
 
-    st.write(f"Triplo + provável: {perc(indice_triplo_provavel)}")
+        ax.plot(
+            graf_vendas["Mes"],
+            graf_vendas["ValorVenda"],
+            marker="o"
+        )
 
-    st.write(f"Triplo + possibilidade: {perc(indice_triplo_poss)}")
+        ax.set_title("Venda mensal - Transportadoras")
+        ax.set_xlabel("Mês")
+        ax.set_ylabel("Valor")
 
-    st.write(f"Triplo + improvável: {perc(indice_triplo_improv)}")
-    
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%b/%Y'))
+
+        plt.xticks(rotation=45)
+
+        st.pyplot(fig)
+        plt.close(fig)
+
+        st.markdown("### NFD gerada")
+        st.write(f"{moeda(nfd_total)} | {perc_transportes(indice_nfd)}")
+
+        st.markdown("### Atrasado")
+        st.write(f"{moeda(atrasado)} | {perc_transportes(indice_atrasado)}")
+
+        st.markdown("### Retornando")
+
+        st.write(f"Provável: {moeda(provavel)} | {perc_transportes(indice_provavel)}")
+
+        st.write(f"Possibilidade: {moeda(possibilidade)} | {perc_transportes(indice_poss)}")
+
+        st.write(f"Improvável: {moeda(improvavel)} | {perc_transportes(indice_improv)}")
+        
+        st.markdown("### Potencial Triplo Prazo")
+
+        st.write(f"Total potencial: {moeda(triplo_real)}")
+
+        for _, row in impacto_mes.iterrows():
+
+            impacto_valor = row["ValorNota"]
+
+            indice_atual = indice_nfd / venda_mes if venda_mes > 0 else 0
+            indice_novo = (indice_nfd + impacto_valor) / venda_mes if venda_mes > 0 else 0
+
+            st.write(
+                f"Impacto {row['MesColeta']}: "
+                f"{moeda(impacto_valor)} | "
+                f"{perc_transportes(indice_atual)} → {perc_transportes(indice_novo)}"
+            )
+
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+        # ==============================
+        # GRÁFICO IMPACTO POTENCIAL
+        # ==============================
+
+        graf_indice = vendas_mes.copy()
+
+        graf_indice["Mes"] = pd.to_datetime(graf_indice["Mes"].astype(str))
+
+        graf_indice = graf_indice.sort_values("Mes")
+
+        # transformar mes em periodo
+        graf_indice["MesPeriodo"] = graf_indice["Mes"].dt.to_period("M")
+
+        # mapa impacto por mes de coleta
+        impacto_map = dict(
+            zip(impacto_mes["MesColeta"], impacto_mes["ValorNota"])
+        )
+
+        graf_indice["Impacto"] = graf_indice["MesPeriodo"].map(impacto_map).fillna(0)
+
+        # índice atual (NFD daquele mês / venda daquele mês)
+        graf_indice = graf_indice.merge(
+            nfd_por_mes,
+            on="Mes",
+            how="left"
+        )
+
+        graf_indice["NFD"] = graf_indice["NFD"].fillna(0)
+
+        graf_indice["IndiceAtual"] = graf_indice["NFD"] / graf_indice["ValorVenda"]
+
+        # índice considerando potencial
+        graf_indice["IndicePotencial"] = (
+            (graf_indice["NFD"] + graf_indice["Impacto"]) /
+            graf_indice["ValorVenda"]
+        )
+
+        # ==============================
+        # PLOT
+        # ==============================
+
+        fig, ax = plt.subplots(figsize=(8,4))
+
+        ax.plot(
+            graf_indice["Mes"],
+            graf_indice["IndiceAtual"] * 100,
+            label="Índice atual"
+        )
+
+        ax.plot(
+            graf_indice["Mes"],
+            graf_indice["IndicePotencial"] * 100,
+            label="Índice com potencial"
+        )
+
+        ax.set_title("Impacto Potencial Triplo no Índice de Devolução")
+        ax.set_ylabel("Índice %")
+
+        ax.legend()
+
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%b/%Y'))
+
+        plt.xticks(rotation=45)
+
+        st.pyplot(fig)
+
+        plt.close(fig)
     # =====================================
     # DEVOLUÇÃO - PAINEL BRAVIUM
     # =====================================
 
-    st.markdown("## Devolução - Painel Bravium")
+    with col_brav:
 
-    # ==============================
-    # BASE NFD (empresa)
-    # ==============================
+        st.markdown(
+            '<div class="titulo-painel">Devolução - Painel Bravium</div>',
+            unsafe_allow_html=True
+        )
 
-    base_nfd = base_dev.copy()
+        # ==============================
+        # BASE NFD (empresa)
+        # ==============================
 
-    base_nfd["DataRetorno"] = pd.to_datetime(base_nfd["DataRetorno"], errors="coerce")
-    base_nfd["DataÚltimoStatus"] = pd.to_datetime(base_nfd["DataÚltimoStatus"], errors="coerce")
+        base_nfd = base_dev.copy()
 
-    hoje = pd.Timestamp.today().normalize()
-    fim_mes = hoje + pd.offsets.MonthEnd(0)
+        base_nfd["DataRetorno"] = pd.to_datetime(base_nfd["DataRetorno"], errors="coerce")
+        base_nfd["DataÚltimoStatus"] = pd.to_datetime(base_nfd["DataÚltimoStatus"], errors="coerce")
 
-    dias_restantes_mes = (fim_mes - hoje).days
+        hoje = pd.Timestamp.today().normalize()
+        fim_mes = hoje + pd.offsets.MonthEnd(0)
 
-    # ==============================
-    # PRAZO DEVOLUÇÃO
-    # ==============================
+        dias_restantes_mes = (fim_mes - hoje).days
 
-    base_nfd["PrazoFinal"] = base_nfd["DataÚltimoStatus"] + pd.Timedelta(days=30)
+        # ==============================
+        # PRAZO DEVOLUÇÃO
+        # ==============================
 
-    base_nfd["DiasRestantesPrazo"] = (
-        base_nfd["PrazoFinal"] - hoje
-    ).dt.days
+        base_nfd["PrazoFinal"] = base_nfd["DataÚltimoStatus"] + pd.Timedelta(days=30)
 
-    # ==============================
-    # CLASSIFICAÇÃO
-    # ==============================
+        base_nfd["DiasRestantesPrazo"] = (
+            base_nfd["PrazoFinal"] - hoje
+        ).dt.days
 
-    atrasado_brav = base_nfd[
-        base_nfd["DiasRestantesPrazo"] <= 0
-    ]["ValorNota"].sum()
+        # ==============================
+        # CLASSIFICAÇÃO
+        # ==============================
 
-    provavel_brav = base_nfd[
-        (base_nfd["DiasRestantesPrazo"] > 0)
-        &
-        (base_nfd["DiasRestantesPrazo"] <= 10)
-        &
-        (base_nfd["DiasRestantesPrazo"] <= dias_restantes_mes)
-    ]["ValorNota"].sum()
+        atrasado_brav = base_nfd[
+            base_nfd["DiasRestantesPrazo"] <= 0
+        ]["ValorNota"].sum()
 
-    poss_brav = base_nfd[
-        (base_nfd["DiasRestantesPrazo"] > 10)
-        &
-        (base_nfd["DiasRestantesPrazo"] <= 20)
-        &
-        (base_nfd["DiasRestantesPrazo"] <= dias_restantes_mes)
-    ]["ValorNota"].sum()
+        provavel_brav = base_nfd[
+            (base_nfd["DiasRestantesPrazo"] > 0)
+            &
+            (base_nfd["DiasRestantesPrazo"] <= 10)
+            &
+            (base_nfd["DiasRestantesPrazo"] <= dias_restantes_mes)
+        ]["ValorNota"].sum()
 
-    improv_brav = base_nfd[
-        (base_nfd["DiasRestantesPrazo"] > 20)
-        &
-        (base_nfd["DiasRestantesPrazo"] <= 30)
-        &
-        (base_nfd["DiasRestantesPrazo"] <= dias_restantes_mes)
-    ]["ValorNota"].sum()
+        poss_brav = base_nfd[
+            (base_nfd["DiasRestantesPrazo"] > 10)
+            &
+            (base_nfd["DiasRestantesPrazo"] <= 20)
+            &
+            (base_nfd["DiasRestantesPrazo"] <= dias_restantes_mes)
+        ]["ValorNota"].sum()
 
-    # ==============================
-    # NFD EMPRESA
-    # ==============================
+        improv_brav = base_nfd[
+            (base_nfd["DiasRestantesPrazo"] > 20)
+            &
+            (base_nfd["DiasRestantesPrazo"] <= 30)
+            &
+            (base_nfd["DiasRestantesPrazo"] <= dias_restantes_mes)
+        ]["ValorNota"].sum()
 
-    nfd_empresa = nfd_mes["Valor_NFD"].sum()
-
-    # ==============================
-    # INDICES
-    # ==============================
-
-    indice_brav_nfd = nfd_empresa
-
-    indice_brav_atras = nfd_empresa + atrasado_brav
-
-    indice_brav_prov = nfd_empresa + atrasado_brav + provavel_brav
-
-    indice_brav_poss = nfd_empresa + atrasado_brav + provavel_brav + poss_brav
-
-    indice_brav_improv = nfd_empresa + atrasado_brav + provavel_brav + poss_brav + improv_brav
-
-    # ==============================
-    # EXIBIÇÃO
-    # ==============================
-
-    st.markdown("### NFD gerada (Empresa)")
-    st.write(f"{moeda(nfd_empresa)} | {perc(indice_brav_nfd)}")
-
-    st.markdown("### Atrasado")
-    st.write(f"{moeda(atrasado_brav)} | {perc(indice_brav_atras)}")
-
-    st.markdown("### Retornando")
-
-    st.write(f"Provável: {moeda(provavel_brav)} | {perc(indice_brav_prov)}")
-
-    st.write(f"Possibilidade: {moeda(poss_brav)} | {perc(indice_brav_poss)}")
-
-    st.write(f"Improvável: {moeda(improv_brav)} | {perc(indice_brav_improv)}")
-
+        # ==============================
+        # NFD EMPRESA
+        # ==============================
         
+        vendas_mes_pedido["Mes_Pedido"] = pd.to_datetime(
+            vendas_mes_pedido["Mes_Pedido"].astype(str)
+        )
+        vendas_mes_pedido["Mes_Pedido"] = vendas_mes_pedido["Mes_Pedido"].dt.strftime("%B %Y").str.capitalize()
+
+        venda_mes = vendas_mes_pedido[
+            vendas_mes_pedido["Mes_Pedido"].isin(filtro_mes)
+        ]["ValorVenda"].sum()
+
+        nfd_empresa = nfd_mes["Valor_NFD"].sum()
+
+        # ==============================
+        # INDICES
+        # ==============================
+
+        indice_brav_nfd = nfd_empresa
+
+        indice_brav_atras = nfd_empresa + atrasado_brav
+
+        indice_brav_prov = nfd_empresa + atrasado_brav + provavel_brav
+
+        indice_brav_poss = nfd_empresa + atrasado_brav + provavel_brav + poss_brav
+
+        indice_brav_improv = nfd_empresa + atrasado_brav + provavel_brav + poss_brav + improv_brav
+        
+        # ==============================
+        # FUNÇÃO PERCENTUAL BRAVIUM
+        # ==============================
+
+        def perc_bravium(x):
+            if venda_mes == 0:
+                return "0%"
+            return f"{(x / venda_mes)*100:.2f}%".replace(".", ",")
+
+        # ==============================
+        # EXIBIÇÃO
+        # ==============================
+        
+        st.markdown("### Venda total do mês (Empresa)")
+
+        st.markdown(
+            f"""
+            <div style="
+                background:white;
+                padding:20px;
+                border-radius:12px;
+                box-shadow:0 2px 8px rgba(0,0,0,0.08);
+                text-align:center;
+            ">
+                <div style="font-size:16px;color:#6b7280;">Venda Total</div>
+                <div style="font-size:46px;font-weight:800;color:#0f2a44;">
+                    {moeda(venda_mes)}
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+        
+        # ==============================
+        # GRÁFICO VENDAS POR MÊS - BRAVIUM
+        # ==============================
+        
+        graf_bravium = bases["vendas_mes_pedido"].copy()
+
+        graf_bravium["Mes_Pedido"] = pd.to_datetime(
+            graf_bravium["Mes_Pedido"].astype(str)
+        )
+
+        graf_bravium = graf_bravium.sort_values("Mes_Pedido")
+
+        fig, ax = plt.subplots(figsize=(8,4))
+
+        ax.plot(
+            graf_bravium["Mes_Pedido"],
+            graf_bravium["ValorVenda"],
+            marker="o"
+        )
+
+        ax.set_title("Venda mensal - Bravium")
+        ax.set_xlabel("Mês")
+        ax.set_ylabel("Valor")
+
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%b/%Y'))
+
+        plt.xticks(rotation=45)
+
+        st.pyplot(fig)
+        plt.close(fig)
+
+        st.markdown("### NFD gerada (Empresa)")
+        st.write(f"{moeda(nfd_empresa)} | {perc_bravium(indice_brav_nfd)}")
+
+        st.markdown("### Atrasado")
+        st.write(f"{moeda(atrasado_brav)} | {perc_bravium(indice_brav_atras)}")
+
+        st.markdown("### Retornando")
+
+        st.write(f"Provável: {moeda(provavel_brav)} | {perc_bravium(indice_brav_prov)}")
+
+        st.write(f"Possibilidade: {moeda(poss_brav)} | {perc_bravium(indice_brav_poss)}")
+
+        st.write(f"Improvável: {moeda(improv_brav)} | {perc_bravium(indice_brav_improv)}")
+
+            
