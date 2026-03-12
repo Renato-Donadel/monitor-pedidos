@@ -910,6 +910,23 @@ elif pagina == "Indicador de Devolução":
         ARQ_DEVOLUCAO,
         sheet_name="base"
     )
+    
+    base_dev["Transportadora"] = (
+        base_dev["Transportadora"]
+        .astype(str)
+        .str.upper()
+        .str.strip()
+    )
+
+    base_dev = base_dev[
+        base_dev["Transportadora"].isin(filtro_transportadora)
+    ]
+    
+    base_dev["MesFiltro"] = pd.to_datetime(base_dev["DataRetorno"]).dt.strftime("%B %Y").str.capitalize()
+
+    base_dev = base_dev[
+        base_dev["MesFiltro"].isin(filtro_mes)
+    ]
 
     base_dev["DataColeta"] = pd.to_datetime(base_dev["DataColeta"], errors="coerce")
     base_dev["DataÚltimoStatus"] = pd.to_datetime(base_dev["DataÚltimoStatus"], errors="coerce")
@@ -967,7 +984,10 @@ elif pagina == "Indicador de Devolução":
     # VENDAS E NFD
     # =====================================
 
-    venda_mes = vendas_mes["ValorVenda"].sum()
+    venda_mes = vendas_transp[
+        vendas_transp["Mes"].isin(filtro_mes) &
+        vendas_transp["Transportadora"].isin(filtro_transportadora)
+    ]["ValorVenda"].sum()
 
     nfd_total = nfd_mes["Valor_NFD"].sum()
 
@@ -1056,10 +1076,7 @@ elif pagina == "Indicador de Devolução":
     # BASE NFD (empresa)
     # ==============================
 
-    base_nfd = pd.read_excel(
-        ARQ_DEVOLUCAO,
-        sheet_name="base"
-    )
+    base_nfd = base_dev.copy()
 
     base_nfd["DataRetorno"] = pd.to_datetime(base_nfd["DataRetorno"], errors="coerce")
     base_nfd["DataÚltimoStatus"] = pd.to_datetime(base_nfd["DataÚltimoStatus"], errors="coerce")
