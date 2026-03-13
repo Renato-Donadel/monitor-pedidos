@@ -948,7 +948,7 @@ elif pagina == "Indicador de Devolução":
             base_dev["Transportadora"].isin(filtro_transportadora)
         ]
         
-        base_dev["MesFiltro"] = pd.to_datetime(base_dev["DataRetorno"]).dt.strftime("%B %Y").str.capitalize()
+        base_dev["MesFiltro"] = pd.to_datetime(base_dev["DataÚltimoStatus"]).dt.strftime("%B %Y").str.capitalize()
 
         base_dev = base_dev[
             base_dev["MesFiltro"].isin(filtro_mes)
@@ -1046,14 +1046,17 @@ elif pagina == "Indicador de Devolução":
         # ==============================
 
         impacto_mes = (
-            base_dev
-            .dropna(subset=["DataColeta"])
-            .assign(
-                MesColeta=lambda df: df["DataColeta"].dt.to_period("M")
-            )
-            .groupby("MesColeta")["ValorNota"]
+            potencial
+            .groupby("Mes")["Potencial"]
             .sum()
             .reset_index()
+        )
+
+        impacto_mes = impacto_mes.rename(
+            columns={
+                "Mes": "MesColeta",
+                "Potencial": "ValorNota"
+            }
         )   
 
         # =====================================
@@ -1065,7 +1068,9 @@ elif pagina == "Indicador de Devolução":
             return f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
         def perc_transportes(x):
-            return f"{x*100:.2f}%".replace(".", ",")
+            if venda_mes == 0:
+                return "0%"
+            return f"{(x / venda_mes)*100:.2f}%".replace(".", ",")
 
         # =====================================
         # INDICES
@@ -1095,7 +1100,7 @@ elif pagina == "Indicador de Devolução":
         # EXIBIÇÃO
         # =====================================
 
-        st.markdown("### Venda total do mês")
+        st.markdown("### Venda total")
 
         st.markdown(
             f"""
@@ -1107,7 +1112,7 @@ elif pagina == "Indicador de Devolução":
                 text-align:center;
             ">
                 <div style="font-size:16px;color:#6b7280;">Venda Total</div>
-                <div style="font-size:46px;font-weight:800;color:#0f2a44;">
+                <div style="font-size:26px;font-weight:800;color:#0f2a44;">
                     {moeda(venda_mes)}
                 </div>
             </div>
@@ -1125,7 +1130,7 @@ elif pagina == "Indicador de Devolução":
 
         graf_vendas = graf_vendas.sort_values("Mes")
 
-        fig, ax = plt.subplots(figsize=(8,4))
+        fig, ax = plt.subplots(figsize=(16,7))
 
         ax.plot(
             graf_vendas["Mes"],
@@ -1198,6 +1203,9 @@ elif pagina == "Indicador de Devolução":
         graf_indice["Impacto"] = graf_indice["MesPeriodo"].map(impacto_map).fillna(0)
 
         # índice atual (NFD daquele mês / venda daquele mês)
+        
+        graf_indice["Mes"] = graf_indice["Mes"].astype(str)
+        nfd_por_mes["Mes"] = nfd_por_mes["Mes"].astype(str)
         graf_indice = graf_indice.merge(
             nfd_por_mes,
             on="Mes",
@@ -1353,7 +1361,7 @@ elif pagina == "Indicador de Devolução":
         # EXIBIÇÃO
         # ==============================
         
-        st.markdown("### Venda total do mês (Empresa)")
+        st.markdown("### Venda total(Empresa)")
 
         st.markdown(
             f"""
@@ -1365,7 +1373,7 @@ elif pagina == "Indicador de Devolução":
                 text-align:center;
             ">
                 <div style="font-size:16px;color:#6b7280;">Venda Total</div>
-                <div style="font-size:46px;font-weight:800;color:#0f2a44;">
+                <div style="font-size:26px;font-weight:800;color:#0f2a44;">
                     {moeda(venda_mes)}
                 </div>
             </div>
@@ -1385,7 +1393,7 @@ elif pagina == "Indicador de Devolução":
 
         graf_bravium = graf_bravium.sort_values("Mes_Pedido")
 
-        fig, ax = plt.subplots(figsize=(8,4))
+        fig, ax = plt.subplots(figsize=(16,7))
 
         ax.plot(
             graf_bravium["Mes_Pedido"],
