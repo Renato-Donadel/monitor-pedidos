@@ -1106,7 +1106,6 @@ elif pagina == "Indicador de Devolução":
                     min-width:220px;
                     margin-bottom:30px;
                 ">
-                st.write("")
                     <div style="font-size:12px;color:#6b7280;">Venda Total</div>
                     <div style="font-size:18px;font-weight:800;color:#0f2a44;">
                         {moeda(venda_mes)}
@@ -1379,7 +1378,6 @@ elif pagina == "Indicador de Devolução":
                     min-width:220px;
                     margin-bottom:30px;
                 ">
-                st.write("")
                     <div style="font-size:12px;color:#6b7280;">Venda Total</div>
                     <div style="font-size:18px;font-weight:800;color:#0f2a44;">
                         {moeda(venda_mes)}
