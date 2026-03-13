@@ -948,7 +948,10 @@ elif pagina == "Indicador de Devolução":
             base_dev["Transportadora"].isin(filtro_transportadora)
         ]
         
-        base_dev["MesFiltro"] = pd.to_datetime(base_dev["DataÚltimoStatus"]).dt.strftime("%B %Y").str.capitalize()
+        base_dev["MesFiltro"] = pd.to_datetime(
+            base_dev["DataÚltimoStatus"],
+            errors="coerce"
+        ).dt.strftime("%B %Y").str.capitalize()
 
         base_dev = base_dev[
             base_dev["MesFiltro"].isin(filtro_mes)
