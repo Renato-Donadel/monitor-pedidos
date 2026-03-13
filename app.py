@@ -194,6 +194,11 @@ def normalizar_pedido(col):
         .str.replace(r"\.0$", "", regex=True)
         .str.replace(r"\D", "", regex=True)
     )
+    
+def perc_transportes(x, venda_mes):
+    if venda_mes == 0:
+        return "0%"
+    return f"{(x / venda_mes)*100:.2f}%".replace(".", ",")
 
 @st.cache_data(ttl=60)
 def carregar_base_devolucao():
@@ -965,7 +970,7 @@ elif pagina == "Indicador de Devolução":
             indice_nfd = nfd_total
             atrasado = devolucao_atras_total
             indice_atrasado = nfd_total + atrasado
-
+                        
             st.markdown("### Retornando (Impacto por mês de coleta)")
 
             for _, row in ret.iterrows():
@@ -978,7 +983,7 @@ elif pagina == "Indicador de Devolução":
                 st.write(
                     f"Impacto {row['Mes']}: "
                     f"{moeda(impacto_valor)} | "
-                    f"{perc_transportes(indice_atual)} → {perc_transportes(indice_novo)}"
+                    f"{perc_transportes(indice_atual, venda_mes)} → {perc_transportes(indice_novo, venda_mes)}"
                 )
             # converter datas
             base_dev["DataColeta"] = pd.to_datetime(base_dev["DataColeta"], errors="coerce")
@@ -1067,11 +1072,6 @@ elif pagina == "Indicador de Devolução":
             # formatação
             def moeda(x):
                 return f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-
-            def perc_transportes(x):
-                if venda_mes == 0:
-                    return "0%"
-                return f"{(x / venda_mes)*100:.2f}%".replace(".", ",")
             
             # =====================================
             # EXIBIÇÃO
@@ -1129,10 +1129,10 @@ elif pagina == "Indicador de Devolução":
             plt.close(fig)
 
             st.markdown("### NFD gerada")
-            st.write(f"{moeda(nfd_total)} | {perc_transportes(indice_nfd)}")
+            st.write(f"{moeda(nfd_total)} | {perc_transportes(indice_nfd, venda_mes)}")
 
             st.markdown("### Atrasado")
-            st.write(f"{moeda(atrasado)} | {perc_transportes(indice_atrasado)}")          
+            st.write(f"{moeda(atrasado)} | {perc_transportes(indice_atrasado, venda_mes)}")          
             
 
             st.markdown("### Retornando (Impacto por mês de coleta)")
@@ -1147,7 +1147,7 @@ elif pagina == "Indicador de Devolução":
                 st.write(
                     f"Impacto {row['MesColeta']}: "
                     f"{moeda(impacto_valor)} | "
-                    f"{perc_transportes(indice_atual)} → {perc_transportes(indice_novo)}"
+                    f"{perc_transportes(indice_atual, venda_mes)} → {perc_transportes(indice_novo, venda_mes)}"
                 )
             
             st.markdown("### Potencial Triplo Prazo")
@@ -1164,7 +1164,7 @@ elif pagina == "Indicador de Devolução":
                 st.write(
                     f"Impacto {row['MesColeta']}: "
                     f"{moeda(impacto_valor)} | "
-                    f"{perc_transportes(indice_atual)} → {perc_transportes(indice_novo)}"
+                    f"{perc_transportes(indice_atual, venda_mes)} → {perc_transportes(indice_novo, venda_mes)}"
                 )
 
             st.markdown("</div>", unsafe_allow_html=True)
