@@ -953,6 +953,18 @@ elif pagina == "Indicador de Devolução":
                 ret["Mes"].isin(filtro_mes) &
                 ret["Transportadora"].isin(filtro_transportadora)
             ]
+            
+            venda_mes = vendas_transp[
+                vendas_transp["Mes"].isin(filtro_mes) &
+                vendas_transp["Transportadora"].isin(filtro_transportadora)
+            ]["ValorVenda"].sum()
+
+            nfd_total = nfd_coleta["Valor_NFD"].sum()
+            
+            # ===== ADICIONE ESTAS 3 LINHAS =====
+            indice_nfd = nfd_total
+            atrasado = devolucao_atras_total
+            indice_atrasado = nfd_total + atrasado
 
             st.markdown("### Retornando (Impacto por mês de coleta)")
 
@@ -1005,18 +1017,7 @@ elif pagina == "Indicador de Devolução":
             impacto_retornando = impacto_retornando.rename(
                 columns={"ValorNota": "Impacto"}
             )            
-
-            # =====================================
-            # VENDAS E NFD
-            # =====================================
-
-            venda_mes = vendas_transp[
-                vendas_transp["Mes"].isin(filtro_mes) &
-                vendas_transp["Transportadora"].isin(filtro_transportadora)
-            ]["ValorVenda"].sum()
-
-            nfd_total = nfd_coleta["Valor_NFD"].sum()
-            
+                      
             # ==============================
             # NFD POR MÊS DE COLETA
             # ==============================
@@ -1131,7 +1132,8 @@ elif pagina == "Indicador de Devolução":
             st.write(f"{moeda(nfd_total)} | {perc_transportes(indice_nfd)}")
 
             st.markdown("### Atrasado")
-            st.write(f"{moeda(atrasado)} | {perc_transportes(indice_atrasado)}")
+            st.write(f"{moeda(atrasado)} | {perc_transportes(indice_atrasado)}")          
+            
 
             st.markdown("### Retornando (Impacto por mês de coleta)")
 
