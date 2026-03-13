@@ -167,11 +167,7 @@ st.markdown(
     f"""
     <style>
     .stApp {{
-        background-image: url("data:image/png;base64,{logo_base64}");
-        background-repeat: no-repeat;
-        background-position: center;
-        background-size: 700px;
-        background-attachment: fixed;
+        background-color: #f4f6f9;
     }}
 
     .stApp::before {{
@@ -185,7 +181,7 @@ st.markdown(
         background-repeat: no-repeat;
         background-position: center;
         background-size: 700px;
-        opacity: 0.04;
+        opacity: 0.03;
         pointer-events: none;
         z-index: 0;
     }}
