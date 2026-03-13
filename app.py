@@ -157,10 +157,42 @@ pagina = st.sidebar.selectbox(
 # HEADER
 # ==============================
 logo_html = ""
+logo_base64 = ""
 if os.path.exists(LOGO_PATH):
     with open(LOGO_PATH, "rb") as f:
         logo_base64 = base64.b64encode(f.read()).decode()
     logo_html = f'<img src="data:image/png;base64,{logo_base64}" width="120">'
+    
+st.markdown(
+    f"""
+    <style>
+    .stApp {{
+        background-image: url("data:image/png;base64,{logo_base64}");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: 700px;
+        background-attachment: fixed;
+    }}
+
+    .stApp::before {{
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url("data:image/png;base64,{logo_base64}");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: 700px;
+        opacity: 0.04;
+        pointer-events: none;
+        z-index: 0;
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 if pagina == "Monitor de Pedidos":
     titulo = "Monitor de Pedidos — BI Executivo"
@@ -483,7 +515,7 @@ if pagina == "Monitor de Pedidos":
 
             with colunas[i]:
 
-                fig, ax = plt.subplots(figsize=(4.2, 1.4))
+                fig, ax = plt.subplots(figsize=(3.2, 1.2))
 
                 ax.plot(df_mes["Data"], df_mes["Qtd"])
 
@@ -559,7 +591,7 @@ if pagina == "Monitor de Pedidos":
 
         df_graf = df_graf.sort_values("Data")
 
-        fig, ax = plt.subplots(figsize=(12, 6))
+        fig, ax = plt.subplots(figsize=(8, 3))
 
         ax.plot(df_graf["Data"], df_graf["Total"], label="Total")
         ax.plot(df_graf["Data"], df_graf["Entraram"], label="Entraram")
@@ -1076,7 +1108,9 @@ elif pagina == "Indicador de Devolução":
                     text-align:center;
                     display:inline-block;
                     min-width:220px;
+                    margin-bottom:30px;
                 ">
+                st.write("")
                     <div style="font-size:12px;color:#6b7280;">Venda Total</div>
                     <div style="font-size:18px;font-weight:800;color:#0f2a44;">
                         {moeda(venda_mes)}
@@ -1096,7 +1130,7 @@ elif pagina == "Indicador de Devolução":
 
             graf_vendas = graf_vendas.sort_values("Mes")
 
-            fig, ax = plt.subplots(figsize=(12,8))
+            fig, ax = plt.subplots(figsize=(20,8))
 
             ax.plot(
                 graf_vendas["Mes"],
@@ -1112,7 +1146,7 @@ elif pagina == "Indicador de Devolução":
 
             plt.xticks(rotation=45)
 
-            st.pyplot(fig)
+            st.pyplot(fig, use_container_width=True)
             plt.close(fig)
 
             st.markdown("### NFD gerada")
@@ -1128,8 +1162,8 @@ elif pagina == "Indicador de Devolução":
 
                 impacto_valor = row["Impacto"]
 
-                indice_atual = indice_nfd / venda_mes if venda_mes > 0 else 0
-                indice_novo = (indice_nfd + impacto_valor) / venda_mes if venda_mes > 0 else 0
+                indice_atual = indice_nfd
+                indice_novo = indice_nfd + impacto_valor
 
                 st.write(
                     f"Impacto {row['MesColeta']}: "
@@ -1145,8 +1179,8 @@ elif pagina == "Indicador de Devolução":
 
                 impacto_valor = row["ValorNota"]
 
-                indice_atual = indice_nfd / venda_mes if venda_mes > 0 else 0
-                indice_novo = (indice_nfd + impacto_valor) / venda_mes if venda_mes > 0 else 0
+                indice_atual = indice_nfd
+                indice_novo = indice_nfd + impacto_valor
 
                 st.write(
                     f"Impacto {row['MesColeta']}: "
@@ -1223,7 +1257,7 @@ elif pagina == "Indicador de Devolução":
 
             plt.xticks(rotation=45)
 
-            st.pyplot(fig)
+            st.pyplot(fig, use_container_width=True)
 
             plt.close(fig)
     # =====================================
@@ -1347,7 +1381,9 @@ elif pagina == "Indicador de Devolução":
                     text-align:center;
                     display:inline-block;
                     min-width:220px;
+                    margin-bottom:30px;
                 ">
+                st.write("")
                     <div style="font-size:12px;color:#6b7280;">Venda Total</div>
                     <div style="font-size:18px;font-weight:800;color:#0f2a44;">
                         {moeda(venda_mes)}
