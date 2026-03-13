@@ -106,7 +106,7 @@ margin: 0;
 font-size: 14px; 
 }
 
-img { 
+.header-box img {
 max-width: 220px !important; 
 }
 
@@ -205,6 +205,7 @@ def carregar_base_devolucao():
             "vendas_transportadora",
             "potencial_triplo",
             "devolucao_processo",
+            "retornando_transportes",
             "devolucao_atrasada",
             "nfd_mes",
             "nfd_coleta",
@@ -553,7 +554,7 @@ if pagina == "Monitor de Pedidos":
 
         df_graf = df_graf.sort_values("Data")
 
-        fig, ax = plt.subplots(figsize=(36, 18))
+        fig, ax = plt.subplots(figsize=(12, 6))
 
         ax.plot(df_graf["Data"], df_graf["Total"], label="Total")
         ax.plot(df_graf["Data"], df_graf["Entraram"], label="Entraram")
@@ -721,6 +722,7 @@ elif pagina == "Indicador de Devolução":
         vendas_transp = bases["vendas_transportadora"]
         potencial = bases["potencial_triplo"]
         devolucao_proc = bases["devolucao_processo"]
+        retornando_transp = bases["retornando_transportes"]
         devolucao_atras = bases["devolucao_atrasada"]
         nfd_mes = bases["nfd_mes"]
         nfd_coleta = bases["nfd_coleta"]
@@ -923,7 +925,7 @@ elif pagina == "Indicador de Devolução":
     def moeda(x):
         return f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
         
-    col_transp, col_brav = st.columns([1,1])
+    col_transp, col_brav = st.columns([2,2])
     
     hoje = pd.Timestamp.today().normalize()
     fim_mes = hoje + pd.offsets.MonthEnd(0)
@@ -941,19 +943,31 @@ elif pagina == "Indicador de Devolução":
             )
         
             # base completa
+            ret = retornando_transp.copy()
             base_dev = bases["base"].copy()
 
-            base_dev["Transportadora"] = (
-                base_dev["Transportadora"]
-                .astype(str)
-                .str.upper()
-                .str.strip()
-            )
+            ret["Mes"] = pd.to_datetime(ret["Mes"].astype(str))
+            ret["Mes"] = ret["Mes"].dt.strftime("%B %Y").str.capitalize()
 
-            base_dev = base_dev[
-                base_dev["Transportadora"].isin(filtro_transportadora)
+            ret = ret[
+                ret["Mes"].isin(filtro_mes) &
+                ret["Transportadora"].isin(filtro_transportadora)
             ]
 
+            st.markdown("### Retornando (Impacto por mês de coleta)")
+
+            for _, row in ret.iterrows():
+
+                impacto_valor = row["Impacto"]
+
+                indice_atual = indice_nfd / venda_mes if venda_mes > 0 else 0
+                indice_novo = (indice_nfd + impacto_valor) / venda_mes if venda_mes > 0 else 0
+
+                st.write(
+                    f"Impacto {row['Mes']}: "
+                    f"{moeda(impacto_valor)} | "
+                    f"{perc_transportes(indice_atual)} → {perc_transportes(indice_novo)}"
+                )
             # converter datas
             base_dev["DataColeta"] = pd.to_datetime(base_dev["DataColeta"], errors="coerce")
             base_dev["DataÚltimoStatus"] = pd.to_datetime(base_dev["DataÚltimoStatus"], errors="coerce")
@@ -976,36 +990,21 @@ elif pagina == "Indicador de Devolução":
             ).dt.days
 
             # =====================================
-            # CLASSIFICAÇÃO
+            # IMPACTO RETORNANDO POR MÊS DE COLETA
             # =====================================
 
-            atrasado = base_dev[
-                base_dev["DiasRestantesPrazo"] <= 0
-            ]["ValorNota"].sum()
+            base_dev["MesColeta"] = base_dev["DataColeta"].dt.to_period("M")
 
-            provavel = base_dev[
-                (base_dev["DiasRestantesPrazo"] > 0)
-                &
-                (base_dev["DiasRestantesPrazo"] <= 10)
-                &
-                (base_dev["DiasRestantesPrazo"] <= dias_restantes_mes)
-            ]["ValorNota"].sum()
+            impacto_retornando = (
+                base_dev
+                .groupby("MesColeta")["ValorNota"]
+                .sum()
+                .reset_index()
+            )
 
-            possibilidade = base_dev[
-                (base_dev["DiasRestantesPrazo"] > 10)
-                &
-                (base_dev["DiasRestantesPrazo"] <= 20)
-                &
-                (base_dev["DiasRestantesPrazo"] <= dias_restantes_mes)
-            ]["ValorNota"].sum()
-
-            improvavel = base_dev[
-                (base_dev["DiasRestantesPrazo"] > 20)
-                &
-                (base_dev["DiasRestantesPrazo"] <= 30)
-                &
-                (base_dev["DiasRestantesPrazo"] <= dias_restantes_mes)
-            ]["ValorNota"].sum()
+            impacto_retornando = impacto_retornando.rename(
+                columns={"ValorNota": "Impacto"}
+            )            
 
             # =====================================
             # VENDAS E NFD
@@ -1072,31 +1071,7 @@ elif pagina == "Indicador de Devolução":
                 if venda_mes == 0:
                     return "0%"
                 return f"{(x / venda_mes)*100:.2f}%".replace(".", ",")
-
-            # =====================================
-            # INDICES
-            # =====================================
-
-            indice_nfd = nfd_total
-
-            indice_atrasado = nfd_total + atrasado
-
-            indice_provavel = nfd_total + atrasado + provavel
-
-            indice_poss = nfd_total + atrasado + provavel + possibilidade
-
-            indice_improv = nfd_total + atrasado + provavel + possibilidade + improvavel
-
-            indice_triplo = nfd_total + triplo_real
-
-            indice_triplo_atrasado = nfd_total + triplo_real + atrasado
-
-            indice_triplo_provavel = nfd_total + triplo_real + atrasado + provavel
-
-            indice_triplo_poss = nfd_total + triplo_real + atrasado + provavel + possibilidade
-
-            indice_triplo_improv = nfd_total + triplo_real + atrasado + provavel + possibilidade + improvavel
-
+            
             # =====================================
             # EXIBIÇÃO
             # =====================================
@@ -1133,7 +1108,7 @@ elif pagina == "Indicador de Devolução":
 
             graf_vendas = graf_vendas.sort_values("Mes")
 
-            fig, ax = plt.subplots(figsize=(20,8))
+            fig, ax = plt.subplots(figsize=(12,8))
 
             ax.plot(
                 graf_vendas["Mes"],
@@ -1149,7 +1124,7 @@ elif pagina == "Indicador de Devolução":
 
             plt.xticks(rotation=45)
 
-            st.pyplot(fig, use_container_width=True)
+            st.pyplot(fig)
             plt.close(fig)
 
             st.markdown("### NFD gerada")
@@ -1158,13 +1133,20 @@ elif pagina == "Indicador de Devolução":
             st.markdown("### Atrasado")
             st.write(f"{moeda(atrasado)} | {perc_transportes(indice_atrasado)}")
 
-            st.markdown("### Retornando")
+            st.markdown("### Retornando (Impacto por mês de coleta)")
 
-            st.write(f"Provável: {moeda(provavel)} | {perc_transportes(indice_provavel)}")
+            for _, row in impacto_retornando.iterrows():
 
-            st.write(f"Possibilidade: {moeda(possibilidade)} | {perc_transportes(indice_poss)}")
+                impacto_valor = row["Impacto"]
 
-            st.write(f"Improvável: {moeda(improvavel)} | {perc_transportes(indice_improv)}")
+                indice_atual = indice_nfd / venda_mes if venda_mes > 0 else 0
+                indice_novo = (indice_nfd + impacto_valor) / venda_mes if venda_mes > 0 else 0
+
+                st.write(
+                    f"Impacto {row['MesColeta']}: "
+                    f"{moeda(impacto_valor)} | "
+                    f"{perc_transportes(indice_atual)} → {perc_transportes(indice_novo)}"
+                )
             
             st.markdown("### Potencial Triplo Prazo")
 
