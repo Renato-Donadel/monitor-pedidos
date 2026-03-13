@@ -971,20 +971,7 @@ elif pagina == "Indicador de Devolução":
             atrasado = devolucao_atras_total
             indice_atrasado = nfd_total + atrasado
                         
-            st.markdown("### Retornando (Impacto por mês de coleta)")
-
-            for _, row in ret.iterrows():
-
-                impacto_valor = row["Impacto"]
-
-                indice_atual = indice_nfd / venda_mes if venda_mes > 0 else 0
-                indice_novo = (indice_nfd + impacto_valor) / venda_mes if venda_mes > 0 else 0
-
-                st.write(
-                    f"Impacto {row['Mes']}: "
-                    f"{moeda(impacto_valor)} | "
-                    f"{perc_transportes(indice_atual, venda_mes)} → {perc_transportes(indice_novo, venda_mes)}"
-                )
+            
             # converter datas
             base_dev["DataColeta"] = pd.to_datetime(base_dev["DataColeta"], errors="coerce")
             base_dev["DataÚltimoStatus"] = pd.to_datetime(base_dev["DataÚltimoStatus"], errors="coerce")
