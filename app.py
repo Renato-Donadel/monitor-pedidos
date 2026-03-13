@@ -119,7 +119,7 @@ margin-bottom: 10px;
 }
 
 .metric-small { 
-font-size: 16px; 
+font-size: 16px !important; 
 font-weight: 600; 
 color: #0f2a44; 
 }
@@ -185,6 +185,15 @@ st.markdown(f"""
 # ==============================
 # FUNÇÕES
 # ==============================
+
+def normalizar_pedido(col):
+    return (
+        col.astype(str)
+        .str.upper()
+        .str.strip()
+        .str.replace(r"\.0$", "", regex=True)
+        .str.replace(r"\D", "", regex=True)
+    )
 
 @st.cache_data(ttl=60)
 def carregar_base_devolucao():
@@ -920,6 +929,10 @@ elif pagina == "Indicador de Devolução":
         return f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
         
     col_transp, col_brav = st.columns([1,1])
+    
+    hoje = pd.Timestamp.today().normalize()
+    fim_mes = hoje + pd.offsets.MonthEnd(0)
+    dias_restantes_mes = (fim_mes - hoje).days
           
     # =====================================
     # DEVOLUÇÃO - PAINEL TRANSPORTES
@@ -927,8 +940,6 @@ elif pagina == "Indicador de Devolução":
 
     with col_transp:
     
-        st.markdown('<div class="separador-colunas">', unsafe_allow_html=True)
-
         st.markdown(
             '<div class="titulo-painel">Devolução - Painel Transportes</div>',
             unsafe_allow_html=True
@@ -936,7 +947,7 @@ elif pagina == "Indicador de Devolução":
     
         # base completa
         base_dev = bases["base"].copy()
-        
+
         base_dev["Transportadora"] = (
             base_dev["Transportadora"]
             .astype(str)
@@ -947,26 +958,18 @@ elif pagina == "Indicador de Devolução":
         base_dev = base_dev[
             base_dev["Transportadora"].isin(filtro_transportadora)
         ]
-        
-        base_dev["MesFiltro"] = pd.to_datetime(
-            base_dev["DataÚltimoStatus"],
-            errors="coerce"
-        ).dt.strftime("%B %Y").str.capitalize()
 
-        base_dev = base_dev[
-            base_dev["MesFiltro"].isin(filtro_mes)
-        ]
-
+        # converter datas
         base_dev["DataColeta"] = pd.to_datetime(base_dev["DataColeta"], errors="coerce")
         base_dev["DataÚltimoStatus"] = pd.to_datetime(base_dev["DataÚltimoStatus"], errors="coerce")
 
-        hoje = pd.Timestamp.today().normalize()
+        # mês baseado na coleta (Intelipost)
+        base_dev["MesFiltro"] = base_dev["DataColeta"].dt.strftime("%B %Y").str.capitalize()
 
-        # fim do mês
-        fim_mes = hoje + pd.offsets.MonthEnd(0)
-
-        dias_restantes_mes = (fim_mes - hoje).days
-
+        # aplicar filtro de mês
+        base_dev = base_dev[
+            base_dev["MesFiltro"].isin(filtro_mes)
+        ]
         # =====================================
         # PRAZO DEVOLUÇÃO
         # =====================================
@@ -1018,7 +1021,7 @@ elif pagina == "Indicador de Devolução":
             vendas_transp["Transportadora"].isin(filtro_transportadora)
         ]["ValorVenda"].sum()
 
-        nfd_total = nfd_mes["Valor_NFD"].sum()
+        nfd_total = nfd_coleta["Valor_NFD"].sum()
         
         # ==============================
         # NFD POR MÊS DE COLETA
@@ -1115,7 +1118,7 @@ elif pagina == "Indicador de Devolução":
                 text-align:center;
             ">
                 <div style="font-size:16px;color:#6b7280;">Venda Total</div>
-                <div style="font-size:26px;font-weight:800;color:#0f2a44;">
+                <div style="font-size:16px !important;font-weight:800;color:#0f2a44;">
                     {moeda(venda_mes)}
                 </div>
             </div>
@@ -1149,7 +1152,7 @@ elif pagina == "Indicador de Devolução":
 
         plt.xticks(rotation=45)
 
-        st.pyplot(fig)
+        st.pyplot(fig, use_container_width=True)
         plt.close(fig)
 
         st.markdown("### NFD gerada")
@@ -1376,7 +1379,7 @@ elif pagina == "Indicador de Devolução":
                 text-align:center;
             ">
                 <div style="font-size:16px;color:#6b7280;">Venda Total</div>
-                <div style="font-size:26px;font-weight:800;color:#0f2a44;">
+                <div style="font-size:16px !important;font-weight:800;color:#0f2a44;">
                     {moeda(venda_mes)}
                 </div>
             </div>
@@ -1412,7 +1415,7 @@ elif pagina == "Indicador de Devolução":
 
         plt.xticks(rotation=45)
 
-        st.pyplot(fig)
+        st.pyplot(fig, use_container_width=True)
         plt.close(fig)
 
         st.markdown("### NFD gerada (Empresa)")
