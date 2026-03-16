@@ -959,7 +959,6 @@ elif pagina == "Indicador de Devolução":
         return f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
         
     col_transp, col_brav = st.columns([2,2])
-    base_dev = bases["base"].copy()
     
     hoje = pd.Timestamp.today().normalize()
     fim_mes = hoje + pd.offsets.MonthEnd(0)
@@ -978,7 +977,8 @@ elif pagina == "Indicador de Devolução":
         
             # base completa
             ret = retornando_transp.copy()
-            
+            base_dev = bases["base"].copy()
+
             ret["Mes"] = pd.to_datetime(ret["Mes"].astype(str))
             ret["Mes"] = ret["Mes"].dt.strftime("%B %Y").str.capitalize()
 
@@ -1008,17 +1008,17 @@ elif pagina == "Indicador de Devolução":
             base_dev["MesFiltro"] = base_dev["DataColeta"].dt.strftime("%B %Y").str.capitalize()
 
             # aplicar filtro de mês
-            base_dev_transp = base_dev[
+            base_dev = base_dev[
                 base_dev["MesFiltro"].isin(filtro_mes)
-            ].copy()
+            ]
             # =====================================
             # PRAZO DEVOLUÇÃO
             # =====================================
 
-            base_dev_transp["PrazoFinal"] = base_dev_transp["DataÚltimoStatus"] + pd.Timedelta(days=30)
+            base_dev["PrazoFinal"] = base_dev["DataÚltimoStatus"] + pd.Timedelta(days=30)
 
-            base_dev_transp["DiasRestantesPrazo"] = (
-                (base_dev["DataÚltimoStatus"] + pd.Timedelta(days=30)) - hoje
+            base_dev["DiasRestantesPrazo"] = (
+                base_dev["PrazoFinal"] - hoje
             ).dt.days
 
             # =====================================
@@ -1034,11 +1034,7 @@ elif pagina == "Indicador de Devolução":
 
             impacto_retornando = impacto_retornando.rename(
                 columns={"Mes": "MesColeta"}
-            )
-
-            impacto_retornando["MesColeta"] = pd.to_datetime(
-                impacto_retornando["MesColeta"]
-            ).dt.to_period("M")           
+            )           
                       
             # ==============================
             # NFD POR MÊS DE COLETA
@@ -1057,8 +1053,6 @@ elif pagina == "Indicador de Devolução":
                     "Valor_NFD": "NFD"
                 }
             )
-            
-            nfd_por_mes["Mes"] = pd.to_datetime(nfd_por_mes["Mes"]).dt.to_period("M")
 
             # =====================================
             # POTENCIAL TRIPLO
@@ -1082,11 +1076,7 @@ elif pagina == "Indicador de Devolução":
                     "Mes": "MesColeta",
                     "Potencial": "ValorNota"
                 }
-            )
-
-            impacto_mes["MesColeta"] = pd.to_datetime(
-                impacto_mes["MesColeta"]
-            ).dt.to_period("M")
+            )   
 
             # =====================================
             # FUNÇÕES FORMATAÇÃO
@@ -1163,11 +1153,11 @@ elif pagina == "Indicador de Devolução":
 
             for _, row in impacto_retornando.iterrows():
 
-                mes = row["MesColeta"]
+                mes = str(row["MesColeta"])
                 impacto_valor = row["Impacto"]
 
                 venda_mes_base = graf_vendas[
-                    graf_vendas["Mes"].dt.to_period("M") == mes
+                    graf_vendas["Mes"].dt.to_period("M") == pd.Period(mes)
                 ]["ValorVenda"].sum()
 
                 nfd_mes_base = nfd_por_mes[
@@ -1190,31 +1180,18 @@ elif pagina == "Indicador de Devolução":
 
             for _, row in impacto_mes.iterrows():
 
-                mes = row["MesColeta"]
                 impacto_valor = row["ValorNota"]
 
-                venda_mes_base = graf_vendas[
-                    graf_vendas["Mes"].dt.to_period("M") == mes
-                ]["ValorVenda"].sum()
-
-                nfd_mes_base = nfd_por_mes[
-                    nfd_por_mes["Mes"] == mes
-                ]["NFD"].sum()
-
-                indice_atual = nfd_mes_base
-                indice_novo = nfd_mes_base + impacto_valor
+                indice_atual = indice_nfd
+                indice_novo = indice_nfd + impacto_valor
 
                 st.write(
-                    f"Impacto {mes}: "
+                    f"Impacto {row['MesColeta']}: "
                     f"{moeda(impacto_valor)} | "
-                    f"{perc_transportes(indice_atual, venda_mes_base)} → {perc_transportes(indice_novo, venda_mes_base)}"
+                    f"{perc_transportes(indice_atual, venda_mes)} → {perc_transportes(indice_novo, venda_mes)}"
                 )
 
             st.markdown("</div>", unsafe_allow_html=True)
-            
-            impacto_map = dict(
-                zip(impacto_mes["MesColeta"], impacto_mes["ValorNota"])
-            )
             
             # ==============================
             # GRÁFICO IMPACTO POTENCIAL
@@ -1230,24 +1207,22 @@ elif pagina == "Indicador de Devolução":
             graf_indice["MesPeriodo"] = graf_indice["Mes"].dt.to_period("M")
 
             # mapa impacto por mes de coleta
-            graf_indice["MesPeriodo"]
+            impacto_map = dict(
+                zip(impacto_mes["MesColeta"], impacto_mes["ValorNota"])
+            )
 
             graf_indice["Impacto"] = graf_indice["MesPeriodo"].map(impacto_map).fillna(0)
 
             # índice atual (NFD daquele mês / venda daquele mês)
             
-            graf_indice["MesPeriodo"] = graf_indice["Mes"].dt.to_period("M")
-
-            nfd_por_mes["Mes"] = pd.to_datetime(
-                nfd_por_mes["Mes"]
-            ).dt.to_period("M")
-
+            graf_indice["Mes"] = graf_indice["Mes"].astype(str)
+            nfd_por_mes["Mes"] = nfd_por_mes["Mes"].astype(str)
             graf_indice = graf_indice.merge(
                 nfd_por_mes,
-                left_on="MesPeriodo",
-                right_on="Mes",
+                on="Mes",
                 how="left"
             )
+
             graf_indice["NFD"] = graf_indice["NFD"].fillna(0)
 
             graf_indice["IndiceAtual"] = graf_indice["NFD"] / graf_indice["ValorVenda"]
