@@ -1153,11 +1153,11 @@ elif pagina == "Indicador de Devolução":
 
             for _, row in impacto_retornando.iterrows():
 
-                mes = str(row["MesColeta"])
+                mes = row["MesColeta"]
                 impacto_valor = row["Impacto"]
 
                 venda_mes_base = graf_vendas[
-                    graf_vendas["Mes"].dt.to_period("M") == pd.Period(mes)
+                    graf_vendas["Mes"].dt.strftime("%B %Y").str.capitalize() == mes
                 ]["ValorVenda"].sum()
 
                 nfd_mes_base = nfd_por_mes[
