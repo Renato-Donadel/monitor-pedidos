@@ -959,6 +959,7 @@ elif pagina == "Indicador de Devolução":
         return f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
         
     col_transp, col_brav = st.columns([2,2])
+    base_dev = bases["base"].copy()
     
     hoje = pd.Timestamp.today().normalize()
     fim_mes = hoje + pd.offsets.MonthEnd(0)
@@ -977,8 +978,7 @@ elif pagina == "Indicador de Devolução":
         
             # base completa
             ret = retornando_transp.copy()
-            base_dev = bases["base"].copy()
-
+            
             ret["Mes"] = pd.to_datetime(ret["Mes"].astype(str))
             ret["Mes"] = ret["Mes"].dt.strftime("%B %Y").str.capitalize()
 
