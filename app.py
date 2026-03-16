@@ -1037,7 +1037,14 @@ elif pagina == "Indicador de Devolução":
 
             impacto_retornando = impacto_retornando.rename(
                 columns={"Mes": "MesColeta"}
-            )           
+            )  
+
+            impacto_retornando = (
+                impacto_retornando
+                .groupby("MesColeta")["Impacto"]
+                .sum()
+                .reset_index()
+            )
                       
             # ==============================
             # NFD POR MÊS DE COLETA
