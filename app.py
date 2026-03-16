@@ -1008,16 +1008,16 @@ elif pagina == "Indicador de Devolução":
             base_dev["MesFiltro"] = base_dev["DataColeta"].dt.strftime("%B %Y").str.capitalize()
 
             # aplicar filtro de mês
-            base_dev = base_dev[
+            base_dev_transp = base_dev[
                 base_dev["MesFiltro"].isin(filtro_mes)
-            ]
+            ].copy()
             # =====================================
             # PRAZO DEVOLUÇÃO
             # =====================================
 
-            base_dev["PrazoFinal"] = base_dev["DataÚltimoStatus"] + pd.Timedelta(days=30)
+            base_dev_transp["PrazoFinal"] = base_dev_transp["DataÚltimoStatus"] + pd.Timedelta(days=30)
 
-            base_dev["DiasRestantesPrazo"] = (
+            base_dev_transp["DiasRestantesPrazo"] = (
                 base_dev["PrazoFinal"] - hoje
             ).dt.days
 
