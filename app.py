@@ -1187,18 +1187,28 @@ elif pagina == "Indicador de Devolução":
             st.markdown("### Potencial Triplo Prazo")
 
             st.write(f"Total potencial: {moeda(triplo_real)}")
-
+            
             for _, row in impacto_mes.iterrows():
 
+                mes = row["MesColeta"]
                 impacto_valor = row["ValorNota"]
 
-                indice_atual = indice_nfd
-                indice_novo = indice_nfd + impacto_valor
+                venda_mes_base = graf_vendas[
+                    graf_vendas["Mes"].dt.strftime("%B %Y").str.capitalize() == mes
+                ]["ValorVenda"].sum()
+
+                nfd_mes_base = nfd_por_mes[
+                    nfd_por_mes["Mes"] == mes
+                ]["NFD"].sum()
+
+                indice_atual = nfd_mes_base
+                indice_novo = nfd_mes_base + impacto_valor
 
                 st.write(
-                    f"Impacto {row['MesColeta']}: "
+                    f"Impacto {mes}: "
                     f"{moeda(impacto_valor)} | "
-                    f"{perc_transportes(indice_atual, venda_mes)} → {perc_transportes(indice_novo, venda_mes)}"
+                    f"{perc_transportes(indice_atual, venda_mes_base)} → "
+                    f"{perc_transportes(indice_novo, venda_mes_base)}"
                 )
 
             st.markdown("</div>", unsafe_allow_html=True)
