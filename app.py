@@ -1026,6 +1026,9 @@ elif pagina == "Indicador de Devolução":
             # =====================================
 
             impacto_retornando = retornando_transp.copy()
+            
+            impacto_retornando["Mes"] = pd.to_datetime(impacto_retornando["Mes"].astype(str))
+            impacto_retornando["Mes"] = impacto_retornando["Mes"].dt.strftime("%B %Y").str.capitalize()
 
             impacto_retornando = impacto_retornando[
                 impacto_retornando["Mes"].isin(filtro_mes) &
