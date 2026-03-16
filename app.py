@@ -1018,7 +1018,7 @@ elif pagina == "Indicador de Devolução":
             base_dev_transp["PrazoFinal"] = base_dev_transp["DataÚltimoStatus"] + pd.Timedelta(days=30)
 
             base_dev_transp["DiasRestantesPrazo"] = (
-                base_dev["PrazoFinal"] - hoje
+                (base_dev["DataÚltimoStatus"] + pd.Timedelta(days=30)) - hoje
             ).dt.days
 
             # =====================================
