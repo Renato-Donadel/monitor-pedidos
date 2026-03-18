@@ -1285,11 +1285,12 @@ elif pagina == "Indicador de Devolução":
             st.pyplot(fig, use_container_width=True)
 
             plt.close(fig)
-    # =====================================
-    # DEVOLUÇÃO - PAINEL BRAVIUM
-    # =====================================
+            
+        # =====================================
+        # DEVOLUÇÃO - PAINEL BRAVIUM
+        # =====================================
 
-    with col_brav:
+        with col_brav:
 
             st.markdown(
                 '<div class="titulo-painel">Devolução - Painel Bravium</div>',
@@ -1305,16 +1306,8 @@ elif pagina == "Indicador de Devolução":
             base_nfd["DataRetorno"] = pd.to_datetime(base_nfd["DataRetorno"], errors="coerce")
             base_nfd["DataÚltimoStatus"] = pd.to_datetime(base_nfd["DataÚltimoStatus"], errors="coerce")
 
-            base_nfd["MesFiltro"] = base_nfd["DataÚltimoStatus"].dt.strftime("%B %Y").str.capitalize()
-
-            base_nfd = base_nfd[
-                (base_nfd["MesFiltro"].isin(filtro_mes)) &
-                (base_nfd["Transportadora"].isin(filtro_transportadora))
-            ]
-
             hoje = pd.Timestamp.today().normalize()
             fim_mes = hoje + pd.offsets.MonthEnd(0)
-
             dias_restantes_mes = (fim_mes - hoje).days
 
             # ==============================
@@ -1326,6 +1319,17 @@ elif pagina == "Indicador de Devolução":
             base_nfd["DiasRestantesPrazo"] = (
                 base_nfd["PrazoFinal"] - hoje
             ).dt.days
+
+            # ==============================
+            # FILTRO CORRETO (POR PRAZO)
+            # ==============================
+
+            base_nfd["MesFiltro"] = base_nfd["PrazoFinal"].dt.strftime("%B %Y").str.capitalize()
+
+            base_nfd = base_nfd[
+                (base_nfd["MesFiltro"].isin(filtro_mes)) &
+                (base_nfd["Transportadora"].isin(filtro_transportadora))
+            ]
 
             # ==============================
             # CLASSIFICAÇÃO
@@ -1362,7 +1366,7 @@ elif pagina == "Indicador de Devolução":
             # ==============================
             # NFD EMPRESA
             # ==============================
-            
+
             vendas_mes_pedido["Mes_Pedido"] = pd.to_datetime(
                 vendas_mes_pedido["Mes_Pedido"].astype(str)
             )
@@ -1387,9 +1391,11 @@ elif pagina == "Indicador de Devolução":
             indice_brav_poss = nfd_empresa + atrasado_brav + provavel_brav + poss_brav
 
             indice_brav_improv = nfd_empresa + atrasado_brav + provavel_brav + poss_brav + improv_brav
+
             potencial_brav = potencial[
                 potencial["Mes"].isin(filtro_mes)
             ]["Potencial"].sum()
+
             indice_brav_potencial_1 = (
                 nfd_empresa
                 + atrasado_brav
@@ -1402,13 +1408,14 @@ elif pagina == "Indicador de Devolução":
                 + provavel_brav
                 + potencial_brav
             )
+
             indice_brav_potencial_poss = (
-            nfd_empresa
-            + atrasado_brav
-            + provavel_brav
-            + poss_brav
-            + potencial_brav
-        )
+                nfd_empresa
+                + atrasado_brav
+                + provavel_brav
+                + poss_brav
+                + potencial_brav
+            )
             # ==============================
             # FUNÇÃO PERCENTUAL BRAVIUM
             # ==============================
@@ -1484,31 +1491,23 @@ elif pagina == "Indicador de Devolução":
 
             st.markdown("### Retornando")
 
-            st.write(
-                f"Provável: {moeda(provavel_brav)} | "
-                f"{perc_bravium(indice_brav_atras)} → {perc_bravium(indice_brav_prov)}"
-            )
-
-            st.write(
-                f"Possibilidade: {moeda(poss_brav)} | "
-                f"{perc_bravium(indice_brav_prov)} → {perc_bravium(indice_brav_poss)}"
-            )
-
-            st.write(
-                f"Improvável: {moeda(improv_brav)} | "
-                f"{perc_bravium(indice_brav_poss)} → {perc_bravium(indice_brav_improv)}"
-            )
-            
             st.markdown("### Potencial no mês (Bravium)")
 
+            # 1. Potencial puro
             st.write(
-                f"Cenário Provável + Potencial: {moeda(potencial_brav)} | "
-                f"{perc_bravium(indice_brav_prov)} → {perc_bravium(indice_brav_potencial_1)}"
+                f"Cenário Potencial: {moeda(potencial_brav)} | "
+                f"{perc_bravium(indice_brav_atras)} → {perc_bravium(indice_brav_potencial_1)}"
             )
 
+            # 2. Potencial + provável
             st.write(
-                f"Cenário Possível + Potencial: {moeda(potencial_brav)} | "
-                f"{perc_bravium(indice_brav_poss)} → {perc_bravium(indice_brav_potencial_2)}"
+                f"Cenário Potencial + Provável: {moeda(potencial_brav)} | "
+                f"{perc_bravium(indice_brav_potencial_1)} → {perc_bravium(indice_brav_potencial_2)}"
             )
 
-                
+            # 3. Potencial + provável + possível
+            st.write(
+                f"Cenário Potencial + Provável + Possível: {moeda(potencial_brav)} | "
+                f"{perc_bravium(indice_brav_potencial_2)} → {perc_bravium(indice_brav_potencial_poss)}"
+            )
+                    
