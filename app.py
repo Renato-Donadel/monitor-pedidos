@@ -1286,228 +1286,228 @@ elif pagina == "Indicador de Devolução":
 
             plt.close(fig)
             
-        # =====================================
-        # DEVOLUÇÃO - PAINEL BRAVIUM
-        # =====================================
+    # =====================================
+    # DEVOLUÇÃO - PAINEL BRAVIUM
+    # =====================================
 
-        with col_brav:
+    with col_brav:
 
-            st.markdown(
-                '<div class="titulo-painel">Devolução - Painel Bravium</div>',
-                unsafe_allow_html=True
-            )
+        st.markdown(
+            '<div class="titulo-painel">Devolução - Painel Bravium</div>',
+            unsafe_allow_html=True
+        )
 
-            # ==============================
-            # BASE NFD (empresa)
-            # ==============================
+        # ==============================
+        # BASE NFD (empresa)
+        # ==============================
 
-            base_nfd = base_dev_bravium.copy()
+        base_nfd = base_dev_bravium.copy()
 
-            base_nfd["DataRetorno"] = pd.to_datetime(base_nfd["DataRetorno"], errors="coerce")
-            base_nfd["DataÚltimoStatus"] = pd.to_datetime(base_nfd["DataÚltimoStatus"], errors="coerce")
+        base_nfd["DataRetorno"] = pd.to_datetime(base_nfd["DataRetorno"], errors="coerce")
+        base_nfd["DataÚltimoStatus"] = pd.to_datetime(base_nfd["DataÚltimoStatus"], errors="coerce")
 
-            hoje = pd.Timestamp.today().normalize()
-            fim_mes = hoje + pd.offsets.MonthEnd(0)
-            dias_restantes_mes = (fim_mes - hoje).days
+        hoje = pd.Timestamp.today().normalize()
+        fim_mes = hoje + pd.offsets.MonthEnd(0)
+        dias_restantes_mes = (fim_mes - hoje).days
 
-            # ==============================
-            # PRAZO DEVOLUÇÃO
-            # ==============================
+        # ==============================
+        # PRAZO DEVOLUÇÃO
+        # ==============================
 
-            base_nfd["PrazoFinal"] = base_nfd["DataÚltimoStatus"] + pd.Timedelta(days=30)
+        base_nfd["PrazoFinal"] = base_nfd["DataÚltimoStatus"] + pd.Timedelta(days=30)
 
-            base_nfd["DiasRestantesPrazo"] = (
-                base_nfd["PrazoFinal"] - hoje
-            ).dt.days
+        base_nfd["DiasRestantesPrazo"] = (
+            base_nfd["PrazoFinal"] - hoje
+        ).dt.days
 
-            # ==============================
-            # FILTRO CORRETO (POR PRAZO)
-            # ==============================
+        # ==============================
+        # FILTRO CORRETO (POR PRAZO)
+        # ==============================
 
-            base_nfd["MesFiltro"] = base_nfd["PrazoFinal"].dt.strftime("%B %Y").str.capitalize()
+        base_nfd["MesFiltro"] = base_nfd["PrazoFinal"].dt.strftime("%B %Y").str.capitalize()
 
-            base_nfd = base_nfd[
-                (base_nfd["MesFiltro"].isin(filtro_mes)) &
-                (base_nfd["Transportadora"].isin(filtro_transportadora))
-            ]
+        base_nfd = base_nfd[
+            (base_nfd["MesFiltro"].isin(filtro_mes)) &
+            (base_nfd["Transportadora"].isin(filtro_transportadora))
+        ]
 
-            # ==============================
-            # CLASSIFICAÇÃO
-            # ==============================
+        # ==============================
+        # CLASSIFICAÇÃO
+        # ==============================
 
-            atrasado_brav = base_nfd[
-                base_nfd["DiasRestantesPrazo"] <= 0
-            ]["ValorNota"].sum()
+        atrasado_brav = base_nfd[
+            base_nfd["DiasRestantesPrazo"] <= 0
+        ]["ValorNota"].sum()
 
-            provavel_brav = base_nfd[
-                (base_nfd["DiasRestantesPrazo"] > 0)
-                &
-                (base_nfd["DiasRestantesPrazo"] <= 10)
-                &
-                (base_nfd["DiasRestantesPrazo"] <= dias_restantes_mes)
-            ]["ValorNota"].sum()
+        provavel_brav = base_nfd[
+            (base_nfd["DiasRestantesPrazo"] > 0)
+            &
+            (base_nfd["DiasRestantesPrazo"] <= 10)
+            &
+            (base_nfd["DiasRestantesPrazo"] <= dias_restantes_mes)
+        ]["ValorNota"].sum()
 
-            poss_brav = base_nfd[
-                (base_nfd["DiasRestantesPrazo"] > 10)
-                &
-                (base_nfd["DiasRestantesPrazo"] <= 20)
-                &
-                (base_nfd["DiasRestantesPrazo"] <= dias_restantes_mes)
-            ]["ValorNota"].sum()
+        poss_brav = base_nfd[
+            (base_nfd["DiasRestantesPrazo"] > 10)
+            &
+            (base_nfd["DiasRestantesPrazo"] <= 20)
+            &
+            (base_nfd["DiasRestantesPrazo"] <= dias_restantes_mes)
+        ]["ValorNota"].sum()
 
-            improv_brav = base_nfd[
-                (base_nfd["DiasRestantesPrazo"] > 20)
-                &
-                (base_nfd["DiasRestantesPrazo"] <= 30)
-                &
-                (base_nfd["DiasRestantesPrazo"] <= dias_restantes_mes)
-            ]["ValorNota"].sum()
+        improv_brav = base_nfd[
+            (base_nfd["DiasRestantesPrazo"] > 20)
+            &
+            (base_nfd["DiasRestantesPrazo"] <= 30)
+            &
+            (base_nfd["DiasRestantesPrazo"] <= dias_restantes_mes)
+        ]["ValorNota"].sum()
 
-            # ==============================
-            # NFD EMPRESA
-            # ==============================
+        # ==============================
+        # NFD EMPRESA
+        # ==============================
 
-            vendas_mes_pedido["Mes_Pedido"] = pd.to_datetime(
-                vendas_mes_pedido["Mes_Pedido"].astype(str)
-            )
-            vendas_mes_pedido["Mes_Pedido"] = vendas_mes_pedido["Mes_Pedido"].dt.strftime("%B %Y").str.capitalize()
+        vendas_mes_pedido["Mes_Pedido"] = pd.to_datetime(
+            vendas_mes_pedido["Mes_Pedido"].astype(str)
+        )
+        vendas_mes_pedido["Mes_Pedido"] = vendas_mes_pedido["Mes_Pedido"].dt.strftime("%B %Y").str.capitalize()
 
-            venda_mes = vendas_mes_pedido[
-                vendas_mes_pedido["Mes_Pedido"].isin(filtro_mes)
-            ]["ValorVenda"].sum()
+        venda_mes = vendas_mes_pedido[
+            vendas_mes_pedido["Mes_Pedido"].isin(filtro_mes)
+        ]["ValorVenda"].sum()
 
-            nfd_empresa = nfd_mes["Valor_NFD"].sum()
+        nfd_empresa = nfd_mes["Valor_NFD"].sum()
 
-            # ==============================
-            # INDICES
-            # ==============================
+        # ==============================
+        # INDICES
+        # ==============================
 
-            indice_brav_nfd = nfd_empresa
+        indice_brav_nfd = nfd_empresa
 
-            indice_brav_atras = nfd_empresa + atrasado_brav
+        indice_brav_atras = nfd_empresa + atrasado_brav
 
-            indice_brav_prov = nfd_empresa + atrasado_brav + provavel_brav
+        indice_brav_prov = nfd_empresa + atrasado_brav + provavel_brav
 
-            indice_brav_poss = nfd_empresa + atrasado_brav + provavel_brav + poss_brav
+        indice_brav_poss = nfd_empresa + atrasado_brav + provavel_brav + poss_brav
 
-            indice_brav_improv = nfd_empresa + atrasado_brav + provavel_brav + poss_brav + improv_brav
+        indice_brav_improv = nfd_empresa + atrasado_brav + provavel_brav + poss_brav + improv_brav
 
-            potencial_brav = potencial[
-                potencial["Mes"].isin(filtro_mes)
-            ]["Potencial"].sum()
+        potencial_brav = potencial[
+            potencial["Mes"].isin(filtro_mes)
+        ]["Potencial"].sum()
 
-            indice_brav_potencial_1 = (
-                nfd_empresa
-                + atrasado_brav
-                + potencial_brav
-            )
+        indice_brav_potencial_1 = (
+            nfd_empresa
+            + atrasado_brav
+            + potencial_brav
+        )
 
-            indice_brav_potencial_2 = (
-                nfd_empresa
-                + atrasado_brav
-                + provavel_brav
-                + potencial_brav
-            )
+        indice_brav_potencial_2 = (
+            nfd_empresa
+            + atrasado_brav
+            + provavel_brav
+            + potencial_brav
+        )
 
-            indice_brav_potencial_poss = (
-                nfd_empresa
-                + atrasado_brav
-                + provavel_brav
-                + poss_brav
-                + potencial_brav
-            )
-            # ==============================
-            # FUNÇÃO PERCENTUAL BRAVIUM
-            # ==============================
+        indice_brav_potencial_poss = (
+            nfd_empresa
+            + atrasado_brav
+            + provavel_brav
+            + poss_brav
+            + potencial_brav
+        )
+        # ==============================
+        # FUNÇÃO PERCENTUAL BRAVIUM
+        # ==============================
 
-            def perc_bravium(x):
-                if venda_mes == 0:
-                    return "0%"
-                return f"{(x / venda_mes)*100:.2f}%".replace(".", ",")
+        def perc_bravium(x):
+            if venda_mes == 0:
+                return "0%"
+            return f"{(x / venda_mes)*100:.2f}%".replace(".", ",")
 
-            # ==============================
-            # EXIBIÇÃO
-            # ==============================
-            
-            st.markdown("### Venda total(Empresa)")
+        # ==============================
+        # EXIBIÇÃO
+        # ==============================
+        
+        st.markdown("### Venda total(Empresa)")
 
-            st.markdown(
-                f"""
-                <div style="
-                    background:white;
-                    padding:8px 12px;
-                    border-radius:10px;
-                    box-shadow:0 2px 6px rgba(0,0,0,0.06);
-                    text-align:center;
-                    display:inline-block;
-                    min-width:220px;
-                    margin-bottom:30px;
-                ">
-                    <div style="font-size:12px;color:#6b7280;">Venda Total</div>
-                    <div style="font-size:18px;font-weight:800;color:#0f2a44;">
-                        {moeda(venda_mes)}
-                    </div>
+        st.markdown(
+            f"""
+            <div style="
+                background:white;
+                padding:8px 12px;
+                border-radius:10px;
+                box-shadow:0 2px 6px rgba(0,0,0,0.06);
+                text-align:center;
+                display:inline-block;
+                min-width:220px;
+                margin-bottom:30px;
+            ">
+                <div style="font-size:12px;color:#6b7280;">Venda Total</div>
+                <div style="font-size:18px;font-weight:800;color:#0f2a44;">
+                    {moeda(venda_mes)}
                 </div>
-                """,
-                unsafe_allow_html=True
-            )
-            
-            # ==============================
-            # GRÁFICO VENDAS POR MÊS - BRAVIUM
-            # ==============================
-            
-            graf_bravium = bases["vendas_mes_pedido"].copy()
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+        
+        # ==============================
+        # GRÁFICO VENDAS POR MÊS - BRAVIUM
+        # ==============================
+        
+        graf_bravium = bases["vendas_mes_pedido"].copy()
 
-            graf_bravium["Mes_Pedido"] = pd.to_datetime(
-                graf_bravium["Mes_Pedido"].astype(str)
-            )
+        graf_bravium["Mes_Pedido"] = pd.to_datetime(
+            graf_bravium["Mes_Pedido"].astype(str)
+        )
 
-            graf_bravium = graf_bravium.sort_values("Mes_Pedido")
+        graf_bravium = graf_bravium.sort_values("Mes_Pedido")
 
-            fig, ax = plt.subplots(figsize=(20,8))
+        fig, ax = plt.subplots(figsize=(20,8))
 
-            ax.plot(
-                graf_bravium["Mes_Pedido"],
-                graf_bravium["ValorVenda"],
-                marker="o"
-            )
+        ax.plot(
+            graf_bravium["Mes_Pedido"],
+            graf_bravium["ValorVenda"],
+            marker="o"
+        )
 
-            ax.set_title("Venda mensal - Bravium")
-            ax.set_xlabel("Mês")
-            ax.set_ylabel("Valor")
+        ax.set_title("Venda mensal - Bravium")
+        ax.set_xlabel("Mês")
+        ax.set_ylabel("Valor")
 
-            ax.xaxis.set_major_formatter(mdates.DateFormatter('%b/%Y'))
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%b/%Y'))
 
-            plt.xticks(rotation=45)
+        plt.xticks(rotation=45)
 
-            st.pyplot(fig, use_container_width=True)
-            plt.close(fig)
+        st.pyplot(fig, use_container_width=True)
+        plt.close(fig)
 
-            st.markdown("### NFD gerada (Empresa)")
-            st.write(f"{moeda(nfd_empresa)} | {perc_bravium(indice_brav_nfd)}")
+        st.markdown("### NFD gerada (Empresa)")
+        st.write(f"{moeda(nfd_empresa)} | {perc_bravium(indice_brav_nfd)}")
 
-            st.markdown("### Atrasado")
-            st.write(f"{moeda(atrasado_brav)} | {perc_bravium(indice_brav_atras)}")
+        st.markdown("### Atrasado")
+        st.write(f"{moeda(atrasado_brav)} | {perc_bravium(indice_brav_atras)}")
 
-            st.markdown("### Retornando")
+        st.markdown("### Retornando")
 
-            st.markdown("### Potencial no mês (Bravium)")
+        st.markdown("### Potencial no mês (Bravium)")
 
-            # 1. Potencial puro
-            st.write(
-                f"Cenário Potencial: {moeda(potencial_brav)} | "
-                f"{perc_bravium(indice_brav_atras)} → {perc_bravium(indice_brav_potencial_1)}"
-            )
+        # 1. Potencial puro
+        st.write(
+            f"Cenário Potencial: {moeda(potencial_brav)} | "
+            f"{perc_bravium(indice_brav_atras)} → {perc_bravium(indice_brav_potencial_1)}"
+        )
 
-            # 2. Potencial + provável
-            st.write(
-                f"Cenário Potencial + Provável: {moeda(potencial_brav)} | "
-                f"{perc_bravium(indice_brav_potencial_1)} → {perc_bravium(indice_brav_potencial_2)}"
-            )
+        # 2. Potencial + provável
+        st.write(
+            f"Cenário Potencial + Provável: {moeda(potencial_brav)} | "
+            f"{perc_bravium(indice_brav_potencial_1)} → {perc_bravium(indice_brav_potencial_2)}"
+        )
 
-            # 3. Potencial + provável + possível
-            st.write(
-                f"Cenário Potencial + Provável + Possível: {moeda(potencial_brav)} | "
-                f"{perc_bravium(indice_brav_potencial_2)} → {perc_bravium(indice_brav_potencial_poss)}"
-            )
+        # 3. Potencial + provável + possível
+        st.write(
+            f"Cenário Potencial + Provável + Possível: {moeda(potencial_brav)} | "
+            f"{perc_bravium(indice_brav_potencial_2)} → {perc_bravium(indice_brav_potencial_poss)}"
+        )
                     
