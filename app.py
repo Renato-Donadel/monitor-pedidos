@@ -749,6 +749,7 @@ elif pagina == "Indicador de Devolução":
     try:
 
         bases = carregar_base_devolucao()
+        retornando_det = bases["retornando_detalhado"]
 
         vendas_mes = bases["vendas_mes"]
         vendas_mes_pedido = bases["vendas_mes_pedido"]
@@ -1301,7 +1302,10 @@ elif pagina == "Indicador de Devolução":
         # BASE NFD (empresa)
         # ==============================
 
-        base_nfd = base_dev_bravium.copy()
+        base_nfd = retornando_det.copy()
+        
+        base_nfd["DataÚltimoStatus"] = pd.to_datetime(base_nfd["DataÚltimoStatus"], errors="coerce")
+        base_nfd["DataColeta"] = pd.to_datetime(base_nfd["DataColeta"], errors="coerce")
 
         base_nfd["DataRetorno"] = pd.to_datetime(base_nfd["DataRetorno"], errors="coerce")
         base_nfd["DataÚltimoStatus"] = pd.to_datetime(base_nfd["DataÚltimoStatus"], errors="coerce")
@@ -1324,7 +1328,7 @@ elif pagina == "Indicador de Devolução":
         # FILTRO CORRETO (POR PRAZO)
         # ==============================
 
-        base_nfd["MesFiltro"] = base_nfd["PrazoFinal"].dt.strftime("%B %Y").str.capitalize()
+        base_nfd["MesFiltro"] = base_nfd["DataColeta"].dt.strftime("%B %Y").str.capitalize()
 
         base_nfd = base_nfd[
             (base_nfd["MesFiltro"].isin(filtro_mes)) &
@@ -1393,8 +1397,7 @@ elif pagina == "Indicador de Devolução":
         indice_brav_improv = nfd_empresa + atrasado_brav + provavel_brav + poss_brav + improv_brav
 
         potencial_brav = potencial[
-            (potencial["Mes"].isin(filtro_mes)) &
-            (potencial["Transportadora"].isin(filtro_transportadora))
+            potencial["Mes"].isin(filtro_mes)
         ]["Potencial"].sum()
 
         indice_brav_potencial_1 = (
