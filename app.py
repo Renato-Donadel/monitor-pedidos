@@ -1387,7 +1387,28 @@ elif pagina == "Indicador de Devolução":
             indice_brav_poss = nfd_empresa + atrasado_brav + provavel_brav + poss_brav
 
             indice_brav_improv = nfd_empresa + atrasado_brav + provavel_brav + poss_brav + improv_brav
-            
+            potencial_brav = potencial[
+                potencial["Mes"].isin(filtro_mes)
+            ]["Potencial"].sum()
+            indice_brav_potencial_1 = (
+                nfd_empresa
+                + atrasado_brav
+                + potencial_brav
+            )
+
+            indice_brav_potencial_2 = (
+                nfd_empresa
+                + atrasado_brav
+                + provavel_brav
+                + potencial_brav
+            )
+            indice_brav_potencial_poss = (
+            nfd_empresa
+            + atrasado_brav
+            + provavel_brav
+            + poss_brav
+            + potencial_brav
+        )
             # ==============================
             # FUNÇÃO PERCENTUAL BRAVIUM
             # ==============================
@@ -1476,6 +1497,18 @@ elif pagina == "Indicador de Devolução":
             st.write(
                 f"Improvável: {moeda(improv_brav)} | "
                 f"{perc_bravium(indice_brav_poss)} → {perc_bravium(indice_brav_improv)}"
+            )
+            
+            st.markdown("### Potencial no mês (Bravium)")
+
+            st.write(
+                f"Cenário Provável + Potencial: {moeda(potencial_brav)} | "
+                f"{perc_bravium(indice_brav_prov)} → {perc_bravium(indice_brav_potencial_1)}"
+            )
+
+            st.write(
+                f"Cenário Possível + Potencial: {moeda(potencial_brav)} | "
+                f"{perc_bravium(indice_brav_poss)} → {perc_bravium(indice_brav_potencial_2)}"
             )
 
                 
