@@ -1393,7 +1393,8 @@ elif pagina == "Indicador de Devolução":
         indice_brav_improv = nfd_empresa + atrasado_brav + provavel_brav + poss_brav + improv_brav
 
         potencial_brav = potencial[
-            potencial["Mes"].isin(filtro_mes)
+            (potencial["Mes"].isin(filtro_mes)) &
+            (potencial["Transportadora"].isin(filtro_transportadora))
         ]["Potencial"].sum()
 
         indice_brav_potencial_1 = (
@@ -1490,6 +1491,21 @@ elif pagina == "Indicador de Devolução":
         st.write(f"{moeda(atrasado_brav)} | {perc_bravium(indice_brav_atras)}")
 
         st.markdown("### Retornando")
+        
+        st.write(
+            f"Provável: {moeda(provavel_brav)} | "
+            f"{perc_bravium(indice_brav_atras)} → {perc_bravium(indice_brav_prov)}"
+        )
+
+        st.write(
+            f"Possível: {moeda(poss_brav)} | "
+            f"{perc_bravium(indice_brav_prov)} → {perc_bravium(indice_brav_poss)}"
+        )
+
+        st.write(
+            f"Improvável: {moeda(improv_brav)} | "
+            f"{perc_bravium(indice_brav_poss)} → {perc_bravium(indice_brav_improv)}"
+        )
 
         st.markdown("### Potencial no mês (Bravium)")
 
