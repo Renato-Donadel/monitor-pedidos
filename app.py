@@ -977,7 +977,9 @@ elif pagina == "Indicador de Devolução":
         
             # base completa
             ret = retornando_transp.copy()
-            base_dev = bases["base"].copy()
+            base_dev_transportes = bases["base"].copy()
+            base_dev_bravium = bases["base"].copy()
+            base_dev = base_dev_transportes
 
             ret["Mes"] = pd.to_datetime(ret["Mes"].astype(str))
             ret["Mes"] = ret["Mes"].dt.strftime("%B %Y").str.capitalize()
@@ -1298,10 +1300,17 @@ elif pagina == "Indicador de Devolução":
             # BASE NFD (empresa)
             # ==============================
 
-            base_nfd = base_dev.copy()
+            base_nfd = base_dev_bravium.copy()
 
             base_nfd["DataRetorno"] = pd.to_datetime(base_nfd["DataRetorno"], errors="coerce")
             base_nfd["DataÚltimoStatus"] = pd.to_datetime(base_nfd["DataÚltimoStatus"], errors="coerce")
+
+            base_nfd["MesFiltro"] = base_nfd["DataÚltimoStatus"].dt.strftime("%B %Y").str.capitalize()
+
+            base_nfd = base_nfd[
+                (base_nfd["MesFiltro"].isin(filtro_mes)) &
+                (base_nfd["Transportadora"].isin(filtro_transportadora))
+            ]
 
             hoje = pd.Timestamp.today().normalize()
             fim_mes = hoje + pd.offsets.MonthEnd(0)
@@ -1454,10 +1463,19 @@ elif pagina == "Indicador de Devolução":
 
             st.markdown("### Retornando")
 
-            st.write(f"Provável: {moeda(provavel_brav)} | {perc_bravium(indice_brav_prov)}")
+            st.write(
+                f"Provável: {moeda(provavel_brav)} | "
+                f"{perc_bravium(indice_brav_atras)} → {perc_bravium(indice_brav_prov)}"
+            )
 
-            st.write(f"Possibilidade: {moeda(poss_brav)} | {perc_bravium(indice_brav_poss)}")
+            st.write(
+                f"Possibilidade: {moeda(poss_brav)} | "
+                f"{perc_bravium(indice_brav_prov)} → {perc_bravium(indice_brav_poss)}"
+            )
 
-            st.write(f"Improvável: {moeda(improv_brav)} | {perc_bravium(indice_brav_improv)}")
+            st.write(
+                f"Improvável: {moeda(improv_brav)} | "
+                f"{perc_bravium(indice_brav_poss)} → {perc_bravium(indice_brav_improv)}"
+            )
 
                 
