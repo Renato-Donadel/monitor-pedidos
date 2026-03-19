@@ -650,7 +650,7 @@ if pagina == "Monitor de Pedidos":
                 unsafe_allow_html=True
             )
 
-            col1, col2, col3 = st.columns(3)
+            col1, col2, col3, col4 = st.columns(4)
 
             # TRIPLO
             with col1:
@@ -754,6 +754,63 @@ if pagina == "Monitor de Pedidos":
                         "Remanescentes Região 2x",
                         buf.getvalue(),
                         file_name=f"remanescente_regiao_{dia_atual}.xlsx"
+                    )
+                    
+            # CARTEIRA (TOP 300 DE CADA)
+
+            with col4:
+
+                if "Carteira" in df_atual.columns:
+
+                    # ordenar se tiver ranking
+                    if "Ranking" in df_atual.columns:
+                        df_atual = df_atual.sort_values("Ranking")
+                        df_ant = df_ant.sort_values("Ranking")
+
+                    # pegar carteiras
+                    carteiras = df_atual["Carteira"].dropna().unique()
+
+                    lista_atual = []
+                    lista_ant = []
+
+                    for c in carteiras:
+
+                        atual_carteira = df_atual[df_atual["Carteira"] == c].head(300)
+                        ant_carteira = df_ant[df_ant["Carteira"] == c].head(300)
+
+                        lista_atual.append(atual_carteira)
+                        lista_ant.append(ant_carteira)
+
+                    atual = pd.concat(lista_atual)
+                    ant = pd.concat(lista_ant)
+
+                    # cálculo
+                    tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
+                    restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
+                    entrou = atual[~atual["PedidoFormatado"].isin(ant["PedidoFormatado"])]
+
+                    # gráfico
+                    st.image(pizza(len(tratados), len(restantes), "Carteiras (Top 300)"))
+
+                    # métricas
+                    st.markdown(
+                        f'<p class="metric-small">Tratados: {len(tratados)} / {len(ant)}</p>',
+                        unsafe_allow_html=True
+                    )
+
+                    st.markdown(
+                        f'<p class="metric-small">Entraram: {len(entrou)}</p>',
+                        unsafe_allow_html=True
+                    )
+
+                    # exportar restantes
+                    buf = BytesIO()
+                    restantes.to_excel(buf, index=False)
+
+                    st.download_button(
+                        "Remanescentes Carteiras",
+                        buf.getvalue(),
+                        file_name=f"remanescente_carteiras_{dia_atual}.xlsx"
                     )
 
             st.divider()
