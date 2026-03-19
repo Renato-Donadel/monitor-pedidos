@@ -801,7 +801,7 @@ if pagina == "Monitor de Pedidos":
                     st.markdown(
                         f'<p class="metric-small">Entraram: {len(entrou)}</p>',
                         unsafe_allow_html=True
-                    )
+                    )   
 
                     # exportar restantes
                     buf = BytesIO()
@@ -1387,7 +1387,6 @@ elif pagina == "Indicador de Devolução":
         base_nfd["DataÚltimoStatus"] = pd.to_datetime(base_nfd["DataÚltimoStatus"], errors="coerce")
         base_nfd["DataColeta"] = pd.to_datetime(base_nfd["DataColeta"], errors="coerce")
 
-        base_nfd["DataRetorno"] = pd.to_datetime(base_nfd["DataRetorno"], errors="coerce")
         base_nfd["DataÚltimoStatus"] = pd.to_datetime(base_nfd["DataÚltimoStatus"], errors="coerce")
 
         hoje = pd.Timestamp.today().normalize()
