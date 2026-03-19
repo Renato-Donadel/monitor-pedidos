@@ -138,6 +138,27 @@ background: linear-gradient(90deg, #1f4e79, #0f2a44) !important;
 color: white !important;
 }
 
+/* ============================= */
+/* BOTÃO SIDEBAR (COR + ÍCONE) */
+/* ============================= */
+
+/* BOTÃO SIDEBAR (VERSÃO QUE FUNCIONA) */
+
+[data-testid="collapsedControl"] {
+    background-color: #0f2a44 !important;
+    border-radius: 8px !important;
+}
+
+/* seta branca */
+[data-testid="collapsedControl"] svg {
+    fill: white !important;
+}
+
+/* hover */
+[data-testid="collapsedControl"]:hover {
+    background-color: #1f4e79 !important;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -228,7 +249,6 @@ def perc_transportes(x, venda_mes):
         return "0%"
     return f"{(x / venda_mes)*100:.2f}%".replace(".", ",")
 
-@st.cache_data(ttl=60)
 def carregar_base_devolucao():
     return pd.read_excel(
         ARQ_DEVOLUCAO,
@@ -242,7 +262,9 @@ def carregar_base_devolucao():
             "devolucao_atrasada",
             "nfd_mes",
             "nfd_coleta",
-            "base"
+            "base",
+            "retornando_detalhado",
+            "dev_atrasada_detalhado"
         ]
     )
 def ler_base(path):
@@ -749,6 +771,7 @@ elif pagina == "Indicador de Devolução":
     try:
 
         bases = carregar_base_devolucao()
+        dev_atrasada_det = bases["dev_atrasada_detalhado"]
         retornando_det = bases["retornando_detalhado"]
 
         vendas_mes = bases["vendas_mes"]
@@ -1339,9 +1362,14 @@ elif pagina == "Indicador de Devolução":
         # CLASSIFICAÇÃO
         # ==============================
 
-        atrasado_brav = base_nfd[
-            base_nfd["DiasRestantesPrazo"] <= 0
-        ]["ValorNota"].sum()
+        base_atrasado = devolucao_atras.copy()
+
+        base_atrasado = base_atrasado[
+            base_atrasado["Mes"].isin(filtro_mes) &
+            base_atrasado["Transportadora"].isin(filtro_transportadora)
+        ]
+
+        atrasado_brav = base_atrasado["Devolucao_Atrasada"].sum()
 
         provavel_brav = base_nfd[
             (base_nfd["DiasRestantesPrazo"] > 0)
