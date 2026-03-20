@@ -1073,8 +1073,6 @@ elif pagina == "Indicador de Devolução":
             )
         
             # base completa
-            st.markdown("### Retornando (Total)")
-            st.write(moeda(retornando_total))
             ret = retornando_transp.copy()
             base_dev_transportes = bases["base"].copy()
             base_dev_bravium = bases["base"].copy()
@@ -1257,10 +1255,11 @@ elif pagina == "Indicador de Devolução":
             st.write(f"{moeda(nfd_total)} | {perc_transportes(indice_nfd, venda_mes)}")
 
             st.markdown("### Atrasado")
-            st.write(f"{moeda(atrasado)} | {perc_transportes(indice_atrasado, venda_mes)}")          
-            
+            st.write(f"{moeda(atrasado)} | {perc_transportes(indice_atrasado, venda_mes)}")
 
-            st.markdown("### Retornando (Impacto por mês de coleta)")
+            st.markdown("### Retornando")
+            
+            st.write(f"Total: {moeda(retornando_total)}")
 
             for _, row in impacto_retornando.iterrows():
 
@@ -1442,9 +1441,6 @@ elif pagina == "Indicador de Devolução":
 
         atrasado_brav = base_atrasado["Devolucao_Atrasada"].sum()
         
-        st.markdown("### Retornando (Total)")
-        st.write(moeda(retornando_total))
-
         # PROVÁVEL
         provavel_brav = base_nfd[
             (base_nfd["DiasNoStatus"] >= 20) &
@@ -1592,6 +1588,23 @@ elif pagina == "Indicador de Devolução":
         st.write(f"{moeda(atrasado_brav)} | {perc_bravium(indice_brav_atras)}")
 
         st.markdown("### Retornando")
+
+        st.write(f"Total: {moeda(retornando_total)}")
+
+        st.write(
+            f"Provável: {moeda(provavel_brav)} | "
+            f"{perc_bravium(indice_brav_atras)} → {perc_bravium(indice_brav_prov)}"
+        )
+
+        st.write(
+            f"Possível: {moeda(poss_brav)} | "
+            f"{perc_bravium(indice_brav_prov)} → {perc_bravium(indice_brav_poss)}"
+        )
+
+        st.write(
+            f"Improvável: {moeda(improv_brav)} | "
+            f"{perc_bravium(indice_brav_poss)} → {perc_bravium(indice_brav_improv)}"
+        )
         
         st.write(
             f"Provável: {moeda(provavel_brav)} | "
