@@ -142,20 +142,20 @@ color: white !important;
 /* BOTÃO SIDEBAR (COR + ÍCONE) */
 /* ============================= */
 
-/* BOTÃO SIDEBAR (VERSÃO QUE FUNCIONA) */
-
-[data-testid="collapsedControl"] {
+/* botão */
+button[data-testid="collapsedControl"] {
     background-color: #0f2a44 !important;
     border-radius: 8px !important;
 }
 
-/* seta branca */
-[data-testid="collapsedControl"] svg {
+/* ícone (seta) */
+button[data-testid="collapsedControl"] svg {
     fill: white !important;
+    color: white !important;
 }
 
 /* hover */
-[data-testid="collapsedControl"]:hover {
+button[data-testid="collapsedControl"]:hover {
     background-color: #1f4e79 !important;
 }
 
@@ -830,6 +830,12 @@ elif pagina == "Indicador de Devolução":
         bases = carregar_base_devolucao()
         dev_atrasada_det = bases["dev_atrasada_detalhado"]
         retornando_det = bases["retornando_detalhado"]
+        retornando_det["ValorNota"] = retornando_det["ValorNota"].fillna(0)
+
+        retornando_total = retornando_det[
+            retornando_det["Mes"].isin(filtro_mes) &
+            retornando_det["Transportadora"].isin(filtro_transportadora)
+        ]["ValorNota"].sum()
 
         vendas_mes = bases["vendas_mes"]
         vendas_mes_pedido = bases["vendas_mes_pedido"]
@@ -1057,6 +1063,8 @@ elif pagina == "Indicador de Devolução":
             )
         
             # base completa
+            st.markdown("### Retornando (Total)")
+            st.write(moeda(retornando_total))
             ret = retornando_transp.copy()
             base_dev_transportes = bases["base"].copy()
             base_dev_bravium = bases["base"].copy()
@@ -1387,24 +1395,12 @@ elif pagina == "Indicador de Devolução":
         base_nfd["DataÚltimoStatus"] = pd.to_datetime(base_nfd["DataÚltimoStatus"], errors="coerce")
         base_nfd["DataColeta"] = pd.to_datetime(base_nfd["DataColeta"], errors="coerce")
 
-        base_nfd["DataÚltimoStatus"] = pd.to_datetime(base_nfd["DataÚltimoStatus"], errors="coerce")
-
         hoje = pd.Timestamp.today().normalize()
         fim_mes = hoje + pd.offsets.MonthEnd(0)
         dias_restantes_mes = (fim_mes - hoje).days
 
         # ==============================
-        # PRAZO DEVOLUÇÃO
-        # ==============================
-
-        base_nfd["PrazoFinal"] = base_nfd["DataÚltimoStatus"] + pd.Timedelta(days=30)
-
-        base_nfd["DiasRestantesPrazo"] = (
-            base_nfd["PrazoFinal"] - hoje
-        ).dt.days
-
-        # ==============================
-        # FILTRO CORRETO (POR PRAZO)
+        # FILTRO (POR COLETA)
         # ==============================
 
         base_nfd["MesFiltro"] = base_nfd["DataColeta"].dt.strftime("%B %Y").str.capitalize()
@@ -1415,9 +1411,18 @@ elif pagina == "Indicador de Devolução":
         ]
 
         # ==============================
-        # CLASSIFICAÇÃO
+        # DIAS NO STATUS (BASE DA REGRA)
         # ==============================
 
+        base_nfd["DiasNoStatus"] = (
+            hoje - base_nfd["DataÚltimoStatus"]
+        ).dt.days
+
+        # ==============================
+        # CLASSIFICAÇÃO CORRETA
+        # ==============================
+
+        # atrasado (já existente)
         base_atrasado = devolucao_atras.copy()
 
         base_atrasado = base_atrasado[
@@ -1426,29 +1431,28 @@ elif pagina == "Indicador de Devolução":
         ]
 
         atrasado_brav = base_atrasado["Devolucao_Atrasada"].sum()
+        
+        st.markdown("### Retornando (Total)")
+        st.write(moeda(retornando_total))
 
+        # PROVÁVEL
         provavel_brav = base_nfd[
-            (base_nfd["DiasRestantesPrazo"] > 0)
-            &
-            (base_nfd["DiasRestantesPrazo"] <= 10)
-            &
-            (base_nfd["DiasRestantesPrazo"] <= dias_restantes_mes)
+            (base_nfd["DiasNoStatus"] >= 20) &
+            (dias_restantes_mes >= 10)
         ]["ValorNota"].sum()
 
-        poss_brav = base_nfd[
-            (base_nfd["DiasRestantesPrazo"] > 10)
-            &
-            (base_nfd["DiasRestantesPrazo"] <= 20)
-            &
-            (base_nfd["DiasRestantesPrazo"] <= dias_restantes_mes)
-        ]["ValorNota"].sum()
-
+        # IMPROVÁVEL
         improv_brav = base_nfd[
-            (base_nfd["DiasRestantesPrazo"] > 20)
-            &
-            (base_nfd["DiasRestantesPrazo"] <= 30)
-            &
-            (base_nfd["DiasRestantesPrazo"] <= dias_restantes_mes)
+            (base_nfd["DiasNoStatus"] < 10) &
+            (dias_restantes_mes <= 10)
+        ]["ValorNota"].sum()
+
+        # POSSÍVEL = resto
+        poss_brav = base_nfd[
+            ~(
+                ((base_nfd["DiasNoStatus"] >= 20) & (dias_restantes_mes >= 10)) |
+                ((base_nfd["DiasNoStatus"] < 10) & (dias_restantes_mes <= 10))
+            )
         ]["ValorNota"].sum()
 
         # ==============================
