@@ -379,8 +379,6 @@ if pagina == "Monitor de Pedidos":
                     ):
                         st.session_state["offsets_carteira"][carteira] = fim
                         
-    st.markdown("### 👤 Augusto (ATRUS INTERMEDIAÇÃO)")
-
     # pegar hoje e D-2
     dias_hist = listar_dias()
 
