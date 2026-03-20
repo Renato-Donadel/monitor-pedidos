@@ -830,12 +830,7 @@ elif pagina == "Indicador de Devolução":
         bases = carregar_base_devolucao()
         dev_atrasada_det = bases["dev_atrasada_detalhado"]
         retornando_det = bases["retornando_detalhado"]
-        retornando_det["ValorNota"] = retornando_det["ValorNota"].fillna(0)
-
-        retornando_total = retornando_det[
-            retornando_det["Mes"].isin(filtro_mes) &
-            retornando_det["Transportadora"].isin(filtro_transportadora)
-        ]["ValorNota"].sum()
+        
 
         vendas_mes = bases["vendas_mes"]
         vendas_mes_pedido = bases["vendas_mes_pedido"]
@@ -994,8 +989,23 @@ elif pagina == "Indicador de Devolução":
 
     else:
         filtro_transportadora = transportadoras
+        
+    # filtros já existem aqui
 
-    
+    retornando_det["ValorNota"] = retornando_det["ValorNota"].fillna(0)
+
+    retornando_det["DataColeta"] = pd.to_datetime(retornando_det["DataColeta"], errors="coerce")
+
+    retornando_det["Mes"] = (
+        retornando_det["DataColeta"]
+        .dt.strftime("%B %Y")
+        .str.capitalize()
+    )
+
+    retornando_total = retornando_det[
+        retornando_det["Mes"].isin(filtro_mes) &
+        retornando_det["Transportadora"].isin(filtro_transportadora)
+    ]["ValorNota"].sum()   
     
           
     # ==============================
