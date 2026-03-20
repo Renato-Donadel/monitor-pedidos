@@ -770,42 +770,55 @@ if pagina == "Monitor de Pedidos":
                     # pegar carteiras
                     carteiras = df_atual["Carteira"].dropna().unique()
 
-                    lista_atual = []
-                    lista_ant = []
+                    tratados_total = 0
+                    restantes_total = 0
+                    entrou_total = 0
 
                     for c in carteiras:
 
                         atual_carteira = df_atual[df_atual["Carteira"] == c].head(300)
                         ant_carteira = df_ant[df_ant["Carteira"] == c].head(300)
 
-                        lista_atual.append(atual_carteira)
-                        lista_ant.append(ant_carteira)
+                        set_atual = set(atual_carteira["PedidoFormatado"])
+                        set_ant = set(ant_carteira["PedidoFormatado"])
 
-                    atual = pd.concat(lista_atual)
-                    ant = pd.concat(lista_ant)
+                        tratados = set_ant - set_atual
+                        restantes = set_ant & set_atual
+                        entrou = set_atual - set_ant
 
-                    # cálculo
-                    tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
-                    restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
-                    entrou = atual[~atual["PedidoFormatado"].isin(ant["PedidoFormatado"])]
-
+                        tratados_total += len(tratados)
+                        restantes_total += len(restantes)
+                        entrou_total += len(entrou)
                     # gráfico
-                    st.image(pizza(len(tratados), len(restantes), "Carteiras (Top 300)"))
-
-                    # métricas
+                    st.image(pizza(tratados_total, restantes_total, "Carteiras (Top 300)"))
+                    # métricas corretas
                     st.markdown(
-                        f'<p class="metric-small">Tratados: {len(tratados)} / {len(ant)}</p>',
+                        f'<p class="metric-small">Tratados: {tratados_total} / {tratados_total + restantes_total}</p>',
                         unsafe_allow_html=True
                     )
 
                     st.markdown(
-                        f'<p class="metric-small">Entraram: {len(entrou)}</p>',
+                        f'<p class="metric-small">Entraram: {entrou_total}</p>',
                         unsafe_allow_html=True
-                    )   
+                    )
 
-                    # exportar restantes
+                    # exportação correta
+                    restantes_df = pd.DataFrame()
+
+                    for c in carteiras:
+
+                        atual_carteira = df_atual[df_atual["Carteira"] == c].head(300)
+                        ant_carteira = df_ant[df_ant["Carteira"] == c].head(300)
+
+                        restantes_ids = set(ant_carteira["PedidoFormatado"]) & set(atual_carteira["PedidoFormatado"])
+
+                        restantes_df = pd.concat([
+                            restantes_df,
+                            ant_carteira[ant_carteira["PedidoFormatado"].isin(restantes_ids)]
+                        ])
+
                     buf = BytesIO()
-                    restantes.to_excel(buf, index=False)
+                    restantes_df.to_excel(buf, index=False)
 
                     st.download_button(
                         "Remanescentes Carteiras",
@@ -1605,21 +1618,7 @@ elif pagina == "Indicador de Devolução":
             f"Improvável: {moeda(improv_brav)} | "
             f"{perc_bravium(indice_brav_poss)} → {perc_bravium(indice_brav_improv)}"
         )
-        
-        st.write(
-            f"Provável: {moeda(provavel_brav)} | "
-            f"{perc_bravium(indice_brav_atras)} → {perc_bravium(indice_brav_prov)}"
-        )
-
-        st.write(
-            f"Possível: {moeda(poss_brav)} | "
-            f"{perc_bravium(indice_brav_prov)} → {perc_bravium(indice_brav_poss)}"
-        )
-
-        st.write(
-            f"Improvável: {moeda(improv_brav)} | "
-            f"{perc_bravium(indice_brav_poss)} → {perc_bravium(indice_brav_improv)}"
-        )
+       
 
         st.markdown("### Potencial no mês (Bravium)")
 
