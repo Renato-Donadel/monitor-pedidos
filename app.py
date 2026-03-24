@@ -1154,6 +1154,7 @@ elif pagina == "Indicador de Devolução":
         
             # base completa
             ret = retornando_transp.copy()
+            ret["Mes"] = ret["Mes"].replace("Sem_Data_Coleta", "1977-07-01")
             base_dev_transportes = bases["base"].copy()
             base_dev_bravium = bases["base"].copy()
             base_dev = base_dev_transportes
@@ -1205,6 +1206,7 @@ elif pagina == "Indicador de Devolução":
             # =====================================
 
             impacto_retornando = retornando_transp.copy()
+            impacto_retornando["Mes"] = impacto_retornando["Mes"].replace("Sem_Data_Coleta", "1977-07-01")
             
             impacto_retornando["Mes"] = pd.to_datetime(impacto_retornando["Mes"].astype(str))
             impacto_retornando["Mes"] = impacto_retornando["Mes"].dt.strftime("%B %Y").str.capitalize()
