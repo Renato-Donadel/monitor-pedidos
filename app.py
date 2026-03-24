@@ -994,7 +994,13 @@ elif pagina == "Indicador de Devolução":
     nfd_coleta["Mes_Coleta"] = pd.to_datetime(nfd_coleta["Mes_Coleta"].astype(str))
     nfd_coleta["Mes_Coleta"] = nfd_coleta["Mes_Coleta"].dt.strftime("%B %Y").str.capitalize()
     
-  
+    
+    # ==============================
+    # FILTROS
+    # ==============================
+
+    meses = sorted(vendas_transp["Mes"].dropna().unique())
+    transportadoras = sorted(vendas_transp["Transportadora"].unique())
     
     # ==============================
     # CONTROLE DE ABERTURA DOS FILTROS
