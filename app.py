@@ -1150,7 +1150,10 @@ elif pagina == "Indicador de Devolução":
             base_dev_bravium = bases["base"].copy()
             base_dev = base_dev_transportes
 
-            ret["Mes"] = pd.to_datetime(ret["Mes"].astype(str))
+            ret["Mes"] = pd.to_datetime(
+                ret["Mes"].astype(str),
+                errors="coerce"
+            )
             ret["Mes"] = ret["Mes"].dt.strftime("%B %Y").str.capitalize()
 
             ret = ret[
