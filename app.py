@@ -901,6 +901,14 @@ elif pagina == "Indicador de Devolução":
         dev_atrasada_det = bases["dev_atrasada_detalhado"]
         retornando_det = bases["retornando_detalhado"]
         
+        # ==============================
+        # AJUSTE Sem_Data_Coleta
+        # ==============================
+
+        for df in [retornando_det, dev_atrasada_det, retornando_transp]:
+            if "Mes" in df.columns:
+                df["Mes"] = df["Mes"].replace("Sem_Data_Coleta", "1977-07-01")
+        
 
         vendas_mes = bases["vendas_mes"]
         vendas_mes_pedido = bases["vendas_mes_pedido"]
