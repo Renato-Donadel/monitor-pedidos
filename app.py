@@ -999,7 +999,7 @@ elif pagina == "Indicador de Devolução":
     # FILTROS
     # ==============================
 
-    meses = sorted(vendas_transp["Mes"].dropna().unique())
+    meses = sorted(retornando_det["Mes"].dropna().unique())
     transportadoras = sorted(vendas_transp["Transportadora"].unique())
     
     # ==============================
@@ -1067,10 +1067,12 @@ elif pagina == "Indicador de Devolução":
     retornando_det["DataColeta"] = pd.to_datetime(retornando_det["DataColeta"], errors="coerce")
 
     retornando_det["Mes"] = (
-        retornando_det["DataColeta"]
-        .dt.strftime("%B %Y")
-        .str.capitalize()
+    retornando_det["DataColeta"]
+    .dt.strftime("%B %Y")
     )
+
+    retornando_det["Mes"] = retornando_det["Mes"].fillna("Sem_Data_Coleta")
+    retornando_det["Mes"] = retornando_det["Mes"].str.capitalize()
 
     retornando_total = retornando_det[
         retornando_det["Mes"].isin(filtro_mes) &
