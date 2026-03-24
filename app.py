@@ -920,8 +920,8 @@ elif pagina == "Indicador de Devolução":
         nfd_mes = bases["nfd_mes"]
         nfd_coleta = bases["nfd_coleta"]
 
-    except Exception:
-        st.error("Erro ao ler base de devolução.")
+    except Exception as e:
+        st.error(f"Erro ao ler base de devolução: {e}")
         st.stop()
 
     # PADRONIZAR TRANSPORTADORAS PARA O MERGE
