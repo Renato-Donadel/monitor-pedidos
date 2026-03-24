@@ -994,13 +994,7 @@ elif pagina == "Indicador de Devolução":
     nfd_coleta["Mes_Coleta"] = pd.to_datetime(nfd_coleta["Mes_Coleta"].astype(str))
     nfd_coleta["Mes_Coleta"] = nfd_coleta["Mes_Coleta"].dt.strftime("%B %Y").str.capitalize()
     
-    
-    # ==============================
-    # FILTROS
-    # ==============================
-
-    meses = sorted(retornando_det["Mes"].dropna().unique())
-    transportadoras = sorted(vendas_transp["Transportadora"].unique())
+  
     
     # ==============================
     # CONTROLE DE ABERTURA DOS FILTROS
@@ -1067,12 +1061,10 @@ elif pagina == "Indicador de Devolução":
     retornando_det["DataColeta"] = pd.to_datetime(retornando_det["DataColeta"], errors="coerce")
 
     retornando_det["Mes"] = (
-    retornando_det["DataColeta"]
-    .dt.strftime("%B %Y")
+        retornando_det["DataColeta"]
+        .dt.strftime("%B %Y")
+        .str.capitalize()
     )
-
-    retornando_det["Mes"] = retornando_det["Mes"].fillna("Sem_Data_Coleta")
-    retornando_det["Mes"] = retornando_det["Mes"].str.capitalize()
 
     retornando_total = retornando_det[
         retornando_det["Mes"].isin(filtro_mes) &
@@ -1150,7 +1142,8 @@ elif pagina == "Indicador de Devolução":
             base_dev_bravium = bases["base"].copy()
             base_dev = base_dev_transportes
 
-            ret["Mes"] = ret["Mes"].astype(str)
+            ret["Mes"] = pd.to_datetime(ret["Mes"].astype(str))
+            ret["Mes"] = ret["Mes"].dt.strftime("%B %Y").str.capitalize()
 
             ret = ret[
                 ret["Mes"].isin(filtro_mes) &
@@ -1197,7 +1190,8 @@ elif pagina == "Indicador de Devolução":
 
             impacto_retornando = retornando_transp.copy()
             
-            impacto_retornando["Mes"] = impacto_retornando["Mes"].astype(str)
+            impacto_retornando["Mes"] = pd.to_datetime(impacto_retornando["Mes"].astype(str))
+            impacto_retornando["Mes"] = impacto_retornando["Mes"].dt.strftime("%B %Y").str.capitalize()
 
             impacto_retornando = impacto_retornando[
                 impacto_retornando["Mes"].isin(filtro_mes) &
@@ -1298,7 +1292,7 @@ elif pagina == "Indicador de Devolução":
 
             graf_vendas = vendas_mes.copy()
 
-            graf_vendas["Mes"] = pd.to_datetime(graf_vendas["Mes"], errors="coerce")
+            graf_vendas["Mes"] = pd.to_datetime(graf_vendas["Mes"].astype(str))
 
             graf_vendas = graf_vendas.sort_values("Mes")
 
@@ -1389,7 +1383,7 @@ elif pagina == "Indicador de Devolução":
 
             graf_indice = vendas_mes.copy()
 
-            graf_indice["Mes"] = pd.to_datetime(graf_indice["Mes"], errors="coerce")
+            graf_indice["Mes"] = pd.to_datetime(graf_indice["Mes"].astype(str))
 
             graf_indice = graf_indice.sort_values("Mes")
 
