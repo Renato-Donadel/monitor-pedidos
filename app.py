@@ -939,7 +939,7 @@ elif pagina == "Indicador de Devolução":
     # FORMATAR NOME DOS MESES
     # ==============================
 
-    vendas_transp["Mes"] = pd.to_datetime(vendas_transp["Mes"].astype(str), errors="coerce")
+    vendas_transp["Mes"] = pd.to_datetime(vendas_transp["Mes"].astype(str))
     vendas_transp["Mes"] = vendas_transp["Mes"].dt.strftime("%B %Y").str.capitalize()
     
     potencial["Transportadora"] = (
@@ -949,7 +949,7 @@ elif pagina == "Indicador de Devolução":
         .str.upper()
     )
 
-    potencial["Mes"] = pd.to_datetime(potencial["Mes"].astype(str), errors="coerce")
+    potencial["Mes"] = pd.to_datetime(potencial["Mes"].astype(str))
     potencial["Mes"] = potencial["Mes"].dt.strftime("%B %Y").str.capitalize()
     
     devolucao_proc["Transportadora"] = (
@@ -959,7 +959,7 @@ elif pagina == "Indicador de Devolução":
         .str.upper()
     )
 
-    devolucao_proc["Mes"] = pd.to_datetime(devolucao_proc["Mes"].astype(str), errors="coerce")
+    devolucao_proc["Mes"] = pd.to_datetime(devolucao_proc["Mes"].astype(str))
     devolucao_proc["Mes"] = devolucao_proc["Mes"].dt.strftime("%B %Y").str.capitalize()
     
     devolucao_atras["Transportadora"] = (
@@ -969,7 +969,7 @@ elif pagina == "Indicador de Devolução":
         .str.upper()
     )
 
-    devolucao_atras["Mes"] = pd.to_datetime(devolucao_atras["Mes"].astype(str), errors="coerce")
+    devolucao_atras["Mes"] = pd.to_datetime(devolucao_atras["Mes"].astype(str))
     devolucao_atras["Mes"] = devolucao_atras["Mes"].dt.strftime("%B %Y").str.capitalize()
     
     if "Transportadora" in nfd_mes.columns:
@@ -980,7 +980,7 @@ elif pagina == "Indicador de Devolução":
             .str.upper()
         )
     
-    nfd_mes["Mes_NFD"] = pd.to_datetime(nfd_mes["Mes_NFD"].astype(str), errors="coerce")
+    nfd_mes["Mes_NFD"] = pd.to_datetime(nfd_mes["Mes_NFD"].astype(str))
     nfd_mes["Mes_NFD"] = nfd_mes["Mes_NFD"].dt.strftime("%B %Y").str.capitalize()
     
     if "Transportadora" in nfd_coleta.columns:
@@ -991,7 +991,7 @@ elif pagina == "Indicador de Devolução":
             .str.upper()
         )
 
-    nfd_coleta["Mes_Coleta"] = pd.to_datetime(nfd_coleta["Mes_Coleta"].astype(str), errors="coerce")
+    nfd_coleta["Mes_Coleta"] = pd.to_datetime(nfd_coleta["Mes_Coleta"].astype(str))
     nfd_coleta["Mes_Coleta"] = nfd_coleta["Mes_Coleta"].dt.strftime("%B %Y").str.capitalize()
     
     
@@ -1150,11 +1150,7 @@ elif pagina == "Indicador de Devolução":
             base_dev_bravium = bases["base"].copy()
             base_dev = base_dev_transportes
 
-            ret["Mes"] = pd.to_datetime(
-                ret["Mes"].astype(str),
-                errors="coerce"
-            )
-            ret["Mes"] = ret["Mes"].dt.strftime("%B %Y").str.capitalize()
+            ret["Mes"] = ret["Mes"].astype(str)
 
             ret = ret[
                 ret["Mes"].isin(filtro_mes) &
@@ -1201,11 +1197,7 @@ elif pagina == "Indicador de Devolução":
 
             impacto_retornando = retornando_transp.copy()
             
-            impacto_retornando["Mes"] = pd.to_datetime(
-                impacto_retornando["Mes"].astype(str),
-                errors="coerce"
-            )
-            impacto_retornando["Mes"] = impacto_retornando["Mes"].dt.strftime("%B %Y").str.capitalize()
+            impacto_retornando["Mes"] = impacto_retornando["Mes"].astype(str)
 
             impacto_retornando = impacto_retornando[
                 impacto_retornando["Mes"].isin(filtro_mes) &
@@ -1306,7 +1298,7 @@ elif pagina == "Indicador de Devolução":
 
             graf_vendas = vendas_mes.copy()
 
-            graf_vendas["Mes"] = pd.to_datetime(graf_vendas["Mes"].astype(str), errors="coerce")
+            graf_vendas["Mes"] = pd.to_datetime(graf_vendas["Mes"], errors="coerce")
 
             graf_vendas = graf_vendas.sort_values("Mes")
 
@@ -1397,7 +1389,7 @@ elif pagina == "Indicador de Devolução":
 
             graf_indice = vendas_mes.copy()
 
-            graf_indice["Mes"] = pd.to_datetime(graf_indice["Mes"].astype(str), errors="coerce")
+            graf_indice["Mes"] = pd.to_datetime(graf_indice["Mes"], errors="coerce")
 
             graf_indice = graf_indice.sort_values("Mes")
 
@@ -1544,8 +1536,7 @@ elif pagina == "Indicador de Devolução":
         # ==============================
 
         vendas_mes_pedido["Mes_Pedido"] = pd.to_datetime(
-            vendas_mes_pedido["Mes_Pedido"].astype(str),
-            errors="coerce"
+            vendas_mes_pedido["Mes_Pedido"].astype(str)
         )
         vendas_mes_pedido["Mes_Pedido"] = vendas_mes_pedido["Mes_Pedido"].dt.strftime("%B %Y").str.capitalize()
 
@@ -1636,8 +1627,7 @@ elif pagina == "Indicador de Devolução":
         graf_bravium = bases["vendas_mes_pedido"].copy()
 
         graf_bravium["Mes_Pedido"] = pd.to_datetime(
-            graf_bravium["Mes_Pedido"].astype(str),
-            errors="coerce"
+            graf_bravium["Mes_Pedido"].astype(str)
         )
 
         graf_bravium = graf_bravium.sort_values("Mes_Pedido")
