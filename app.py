@@ -905,7 +905,7 @@ elif pagina == "Indicador de Devolução":
         # AJUSTE Sem_Data_Coleta
         # ==============================
 
-        for df in [retornando_det, dev_atrasada_det, retornando_transp]:
+        for df in [retornando_det, dev_atrasada_det]:
             if "Mes" in df.columns:
                 df["Mes"] = df["Mes"].replace("Sem_Data_Coleta", "1977-07-01")
         
@@ -916,6 +916,8 @@ elif pagina == "Indicador de Devolução":
         potencial = bases["potencial_triplo"]
         devolucao_proc = bases["devolucao_processo"]
         retornando_transp = bases["retornando_transportes"]
+        if "Mes" in retornando_transp.columns:
+            retornando_transp["Mes"] = retornando_transp["Mes"].replace("Sem_Data_Coleta", "1977-07-01")
         devolucao_atras = bases["devolucao_atrasada"]
         nfd_mes = bases["nfd_mes"]
         nfd_coleta = bases["nfd_coleta"]
