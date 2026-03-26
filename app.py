@@ -241,7 +241,6 @@ def normalizar_pedido(col):
         .str.upper()
         .str.strip()
         .str.replace(r"\.0$", "", regex=True)
-        .str.replace(r"\D", "", regex=True)
     )
     
 def perc_transportes(x, venda_mes):
