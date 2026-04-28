@@ -313,10 +313,6 @@ if pagina == "Monitor de Pedidos":
     st.markdown("### 📥 Exportação por Carteira (300 em 300)")
 
     df_atual_base = ler_base(ARQ_ATUAL)
-    
-    df_atual_base = df_atual_base[
-        df_atual_base["Logistica"] != "ATRUS INTERMEDIACAO"
-    ]   
 
     if "offsets_carteira" not in st.session_state:
         st.session_state["offsets_carteira"] = {}
@@ -378,50 +374,35 @@ if pagina == "Monitor de Pedidos":
                     ):
                         st.session_state["offsets_carteira"][carteira] = fim
                         
-    # pegar hoje e D-2
-    dias_hist = listar_dias()
+    # ==============================
+    # 🧑 CARTEIRA AUGUSTO (NOVA)
+    # ==============================
 
-    if len(dias_hist) >= 3:
+    df_atual = ler_base(ARQ_ATUAL)
 
-        dia_hoje = dias_hist[-1]
-        dia_menos_2 = dias_hist[-3]
+    df_augusto = df_atual[
+        df_atual["Carteira"] == "Augusto"
+    ]
 
-        df_hoje = ler_base(caminho(dia_hoje))
-        df_d2 = ler_base(caminho(dia_menos_2))
+    total_augusto = len(df_augusto)
 
-        # filtrar ATRUS
-        df_hoje_atrus = df_hoje[df_hoje["Logistica"] == "ATRUS INTERMEDIACAO"]
-        df_d2_atrus = df_d2[df_d2["Logistica"] == "ATRUS INTERMEDIACAO"]
+    col1, col2 = st.columns([4,2])
 
-        set_hoje = set(df_hoje_atrus["PedidoFormatado"])
-        set_d2 = set(df_d2_atrus["PedidoFormatado"])
+    with col1:
+        st.write(f"**Augusto** — 1 até {total_augusto} de {total_augusto}")
 
-        # INTERSEÇÃO (o que continua)
-        intersec = set_hoje & set_d2
+    with col2:
 
-        df_augusto = df_hoje_atrus[
-            df_hoje_atrus["PedidoFormatado"].isin(intersec)
-        ]
+        buffer = BytesIO()
+        df_augusto.to_excel(buffer, index=False)
+        buffer.seek(0)
 
-        total_augusto = len(df_augusto)
-
-        col1, col2 = st.columns([4,2])
-
-        with col1:
-            st.write(f"**Augusto** — 1 até {total_augusto} de {total_augusto}")
-
-        with col2:
-
-            buffer = BytesIO()
-            df_augusto.to_excel(buffer, index=False)
-            buffer.seek(0)
-
-            st.download_button(
-                label="⬇️ Baixar Augusto",
-                data=buffer,
-                file_name=f"augusto_intersec_{dia_hoje}.xlsx",
-                key="dl_augusto"
-            )
+        st.download_button(
+            label="⬇️ Baixar Augusto",
+            data=buffer,
+            file_name="augusto.xlsx",
+            key="dl_augusto"
+        )
 
     st.divider()
 
