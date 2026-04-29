@@ -323,6 +323,7 @@ if pagina == "Monitor de Pedidos":
             df_atual_base = df_atual_base.sort_values("Ranking").reset_index(drop=True)
 
         carteiras = sorted(df_atual_base["Carteira"].dropna().unique())
+        carteiras = [c for c in carteiras if c != "Augusto"]
 
         if "Igor" in df_atual_base["Carteira"].values and "Igor" not in carteiras:
             carteiras.append("Igor")
