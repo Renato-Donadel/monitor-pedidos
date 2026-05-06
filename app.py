@@ -400,7 +400,7 @@ if pagina == "Monitor de Pedidos":
                         margin-bottom: 12px;
                     ">
 
-                        <div style="font-size:18px;font-weight:700;color:#0f2a44;">
+                        <div style="font-size:18pxREnato;font-weight:700;color:#0f2a44;">
                             {carteira}
                         </div>
 
