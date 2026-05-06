@@ -656,7 +656,7 @@ if pagina == "Monitor de Pedidos":
             dia_ant = dias_pizza[i-1]
 
             df_hist_atual = ler_base(caminho(dia_atual))
-            df_hist_ant = historico[dia_ant]
+            df_hist_ant = ler_base(caminho(dia_ant))
             
             df_hist_atual = df_hist_atual[
                 df_hist_atual["Logistica"] != "ATRUS INTERMEDIACAO"
