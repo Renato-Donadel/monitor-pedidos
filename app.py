@@ -336,17 +336,25 @@ if pagina == "Monitor de Pedidos":
             ].copy()
 
             df_fora_prazo = df_carteira[
-                (df_carteira["Nivel_Cliente"] != "Dentro") |
-                (df_carteira["Nivel_Transportadora"] != "Dentro") |
-                (df_carteira["Nivel_Status_Especifico"] != "Dentro") |
-                (df_carteira["Nivel_Regiao"] != "Dentro")
+                (df_carteira["Cliente_Fora"] == "X") |
+                (df_carteira["Transportadora_Fora"] == "X") |
+                (df_carteira["Status_Fora"] == "X") |
+                (df_carteira["Regiao_Fora"] == "X") |
+                (df_carteira["Cliente_Dobro"] == "X") |
+                (df_carteira["Transportadora_Dobro"] == "X") |
+                (df_carteira["Status_Dobro"] == "X") |
+                (df_carteira["Regiao_Dobro"] == "X") |
+                (df_carteira["Cliente_Triplo"] == "X") |
+                (df_carteira["Transportadora_Triplo"] == "X") |
+                (df_carteira["Status_Triplo"] == "X") |
+                (df_carteira["Regiao_Triplo"] == "X")
             ].reset_index(drop=True)
 
             df_dentro_prazo = df_carteira[
-                (df_carteira["Nivel_Cliente"] == "Dentro") &
-                (df_carteira["Nivel_Transportadora"] == "Dentro") &
-                (df_carteira["Nivel_Status_Especifico"] == "Dentro") &
-                (df_carteira["Nivel_Regiao"] == "Dentro")
+                (df_carteira["Cliente_Dentro"] == "X") &
+                (df_carteira["Transportadora_Dentro"] == "X") &
+                (df_carteira["Status_Dentro"] == "X") &
+                (df_carteira["Regiao_Dentro"] == "X")
             ]
 
             total = len(df_fora_prazo)
