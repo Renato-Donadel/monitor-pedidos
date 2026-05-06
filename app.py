@@ -266,6 +266,7 @@ def carregar_base_devolucao():
             "dev_atrasada_detalhado"
         ]
     )
+@st.cache_data
 def ler_base(path):
     if not os.path.exists(path):
         return pd.DataFrame()
@@ -312,35 +313,50 @@ if pagina == "Monitor de Pedidos":
     # ==============================
     st.markdown("### 📥 Exportação por Carteira (300 em 300)")
 
-    df_atual_base = ler_base(ARQ_ATUAL)
+    df_atual = ler_base(ARQ_ATUAL)
 
     if "offsets_carteira" not in st.session_state:
         st.session_state["offsets_carteira"] = {}
 
-    if not df_atual_base.empty and "Carteira" in df_atual_base.columns:
+    if not df_atual.empty and "Carteira" in df_atual.columns:
 
-        if "Ranking" in df_atual_base.columns:
-            df_atual_base = df_atual_base.sort_values("Ranking").reset_index(drop=True)
+        if "Ranking" in df_atual.columns:
+            df_atual = df_atual.sort_values("Ranking").reset_index(drop=True)
 
-        carteiras = sorted(df_atual_base["Carteira"].dropna().unique())
+        carteiras = sorted(df_atual["Carteira"].dropna().unique())
         carteiras = [c for c in carteiras if c != "Augusto"]
 
-        if "Igor" in df_atual_base["Carteira"].values and "Igor" not in carteiras:
+        if "Igor" in df_atual["Carteira"].values and "Igor" not in carteiras:
             carteiras.append("Igor")
 
         for carteira in carteiras:
 
-            df_carteira = df_atual_base[
-                df_atual_base["Carteira"] == carteira
+            df_carteira = df_atual[
+                df_atual["Carteira"] == carteira
+            ].copy()
+
+            df_fora_prazo = df_carteira[
+                (df_carteira["Nivel_Cliente"] != "Dentro") |
+                (df_carteira["Nivel_Transportadora"] != "Dentro") |
+                (df_carteira["Nivel_Status_Especifico"] != "Dentro") |
+                (df_carteira["Nivel_Regiao"] != "Dentro")
             ].reset_index(drop=True)
 
-            total = len(df_carteira)
+            df_dentro_prazo = df_carteira[
+                (df_carteira["Nivel_Cliente"] == "Dentro") &
+                (df_carteira["Nivel_Transportadora"] == "Dentro") &
+                (df_carteira["Nivel_Status_Especifico"] == "Dentro") &
+                (df_carteira["Nivel_Regiao"] == "Dentro")
+            ]
+
+            total = len(df_fora_prazo)
+            total_dentro = len(df_dentro_prazo)
             offset = st.session_state["offsets_carteira"].get(carteira, 0)
 
             inicio = offset
             fim = min(offset + TAMANHO_LOTE, total)
 
-            lote = df_carteira.iloc[inicio:fim]
+            lote = df_fora_prazo.iloc[inicio:fim]
 
             if not lote.empty:
                 buffer = BytesIO()
@@ -363,8 +379,49 @@ if pagina == "Monitor de Pedidos":
 
                 col1, col2 = st.columns([4, 2])
 
-                with col1:
-                    st.write(f"**{carteira}** — {inicio+1} até {fim} de {total}")
+                perc_fora = (total / (total + total_dentro)) * 100 if (total + total_dentro) > 0 else 0
+                barra = int(perc_fora // 5)
+
+                st.markdown(f"""
+                <div style="
+                    background: white;
+                    padding: 18px;
+                    border-radius: 16px;
+                    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+                    margin-bottom: 12px;
+                ">
+
+                    <div style="font-size:18px;font-weight:700;color:#0f2a44;">
+                        {carteira}
+                    </div>
+
+                    <div style="font-size:13px;color:#6b7280;margin-bottom:10px;">
+                        Lote {inicio+1} → {fim}
+                    </div>
+
+                    <div style="display:flex;justify-content:space-between;">
+                        <div style="font-size:26px;font-weight:800;color:#b91c1c;">
+                            🚨 {total}
+                        </div>
+                        <div style="font-size:16px;font-weight:700;color:#b91c1c;">
+                            {perc_fora:.1f}%
+                        </div>
+                    </div>
+
+                    <div style="font-size:13px;color:#6b7280;">
+                        Fora do prazo
+                    </div>
+
+                    <div style="margin-top:8px;font-family:monospace;color:#b91c1c;">
+                        {"█"*barra}{"░"*(20-barra)}
+                    </div>
+
+                    <div style="font-size:13px;font-weight:600;color:#047857;margin-top:8px;">
+                        ✅ {total_dentro} dentro do prazo
+                    </div>
+
+                </div>
+                """, unsafe_allow_html=True)
 
                 with col2:
                     if st.download_button(
@@ -378,8 +435,6 @@ if pagina == "Monitor de Pedidos":
     # ==============================
     # 🧑 CARTEIRA AUGUSTO (NOVA)
     # ==============================
-
-    df_atual = ler_base(ARQ_ATUAL)
 
     df_augusto = df_atual[
         df_atual["Carteira"] == "Augusto"
@@ -412,18 +467,16 @@ if pagina == "Monitor de Pedidos":
     # ==============================
     st.markdown("### 🚚 Expedição (3+ dias no status)")
 
-    df_atual_base = ler_base(ARQ_ATUAL)
-
-    if not df_atual_base.empty:
+    if not df_atual.empty:
 
         if (
-            "Status" in df_atual_base.columns and
-            "DiasDesdeUltimoStatus" in df_atual_base.columns
+            "Status" in df_atual.columns and
+            "DiasDesdeUltimoStatus" in df_atual.columns
         ):
 
-            df_expedicao = df_atual_base[
-                (df_atual_base["Status"] == "TSP - Aguardando Expedição") &
-                (df_atual_base["DiasDesdeUltimoStatus"] >= 3)
+            df_expedicao = df_atual[
+                (df_atual["Status"] == "TSP - Aguardando Expedição") &
+                (df_atual["DiasDesdeUltimoStatus"] >= 3)
             ].copy()
 
             total = len(df_expedicao)
@@ -505,7 +558,8 @@ if pagina == "Monitor de Pedidos":
             continue
 
         # Caso contrário calcula normalmente
-        df_temp = ler_base(caminho(dia_hist))
+        path = caminho(dia_hist)
+        df_temp = ler_base(path)
 
         if df_temp.empty:
             continue
@@ -587,73 +641,35 @@ if pagina == "Monitor de Pedidos":
 
     st.markdown("### 📌 Status Manuais")
 
-    dados_series = []
+    ARQ_CACHE = os.path.join(PASTA_MENSAL, "manuais_cache.xlsx")
 
-    for i in range(len(dias)):
+    if os.path.exists(ARQ_CACHE):
 
-        dia_atual = dias[i]
-        df_atual = ler_base(caminho(dia_atual))
+        df_graf = pd.read_excel(ARQ_CACHE)
 
-        if df_atual.empty:
-            continue
+        if not df_graf.empty:
 
-        df_atual = df_atual[
-            df_atual["Status"].isin(STATUS_Manuais)
-        ]
+            df_graf["Data"] = pd.to_datetime(df_graf["Data"])
+            df_graf = df_graf.sort_values("Data")
 
-        total = df_atual["PedidoFormatado"].nunique()
+            fig, ax = plt.subplots(figsize=(8, 3))
 
-        entraram = 0
-        sairam = 0
+            ax.plot(df_graf["Data"], df_graf["Total"], label="Total")
+            ax.plot(df_graf["Data"], df_graf["Entraram"], label="Entraram")
+            ax.plot(df_graf["Data"], df_graf["Sairam"], label="Saíram")
 
-        if i > 0:
-            dia_ant = dias[i-1]
-            df_ant = ler_base(caminho(dia_ant))
+            ax.set_title("Status Manuais")
+            ax.set_xlabel("Dia")
+            ax.set_ylabel("Quantidade")
+            ax.legend()
 
-            if not df_ant.empty:
-                df_ant = df_ant[
-                    df_ant["Status"].isin(STATUS_Manuais)
-                ]
+            ax.xaxis.set_major_formatter(mdates.DateFormatter('%d'))
 
-                set_atual = set(df_atual["PedidoFormatado"])
-                set_ant = set(df_ant["PedidoFormatado"])
+            st.pyplot(fig, use_container_width=True)
+            plt.close(fig)
 
-                entraram = len(set_atual - set_ant)
-                sairam = len(set_ant - set_atual)
-
-        dados_series.append(
-            (dia_atual, total, entraram, sairam)
-        )
-
-    if dados_series:
-
-        df_graf = pd.DataFrame(
-            dados_series,
-            columns=["Data", "Total", "Entraram", "Sairam"]
-        )
-
-        df_graf["Data"] = pd.to_datetime(
-            df_graf["Data"],
-            format="%d-%m-%Y"
-        )
-
-        df_graf = df_graf.sort_values("Data")
-
-        fig, ax = plt.subplots(figsize=(8, 3))
-
-        ax.plot(df_graf["Data"], df_graf["Total"], label="Total")
-        ax.plot(df_graf["Data"], df_graf["Entraram"], label="Entraram")
-        ax.plot(df_graf["Data"], df_graf["Sairam"], label="Saíram")
-
-        ax.set_title("Status Manuais")
-        ax.set_xlabel("Dia")
-        ax.set_ylabel("Quantidade")
-        ax.legend()
-
-        ax.xaxis.set_major_formatter(mdates.DateFormatter('%d'))
-
-        st.pyplot(fig, use_container_width=True)
-        plt.close(fig)
+    else:
+        st.info("Cache de status manuais ainda não foi gerado.")
         
     # ==============================
     # LOOP ORIGINAL COMPLETO (PIZZAS)
@@ -669,18 +685,18 @@ if pagina == "Monitor de Pedidos":
             dia_atual = dias_pizza[i]
             dia_ant = dias_pizza[i-1]
 
-            df_atual = ler_base(caminho(dia_atual))
-            df_ant = ler_base(caminho(dia_ant))
+            df_hist_atual = ler_base(caminho(dia_atual))
+            df_hist_ant = historico[dia_ant]
             
-            df_atual = df_atual[
-                df_atual["Logistica"] != "ATRUS INTERMEDIACAO"
+            df_hist_atual = df_hist_atual[
+                df_hist_atual["Logistica"] != "ATRUS INTERMEDIACAO"
             ]
 
-            df_ant = df_ant[
-                df_ant["Logistica"] != "ATRUS INTERMEDIACAO"
+            df_hist_ant = df_hist_ant[
+                df_hist_ant["Logistica"] != "ATRUS INTERMEDIACAO"
             ]
 
-            if df_atual.empty or df_ant.empty:
+            if df_hist_atual.empty or df_hist_ant.empty:
                 continue
 
             st.markdown(
@@ -692,10 +708,10 @@ if pagina == "Monitor de Pedidos":
 
             # TRIPLO
             with col1:
-                if "Transportadora_Triplo" in df_atual.columns:
+                if "Transportadora_Triplo" in df_hist_atual.columns:
 
-                    atual = df_atual[df_atual["Transportadora_Triplo"] == "X"]
-                    ant = df_ant[df_ant["Transportadora_Triplo"] == "X"]
+                    atual = df_hist_atual[df_hist_atual["Transportadora_Triplo"] == "X"]
+                    ant = df_hist_ant[df_hist_ant["Transportadora_Triplo"] == "X"]
 
                     tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
                     restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
@@ -734,10 +750,10 @@ if pagina == "Monitor de Pedidos":
 
             # STATUS 2X
             with col2:
-                if "Status_Dobro" in df_atual.columns:
+                if "Status_Dobro" in df_hist_atual.columns:
 
-                    atual = df_atual[df_atual["Status_Dobro"] == "X"]
-                    ant = df_ant[df_ant["Status_Dobro"] == "X"]
+                    atual = df_hist_atual[df_hist_atual["Status_Dobro"] == "X"]
+                    ant = df_hist_ant[df_hist_ant["Status_Dobro"] == "X"]
 
                     tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
                     restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
@@ -765,10 +781,10 @@ if pagina == "Monitor de Pedidos":
 
             # REGIÃO 2X
             with col3:
-                if "Regiao_Dobro" in df_atual.columns:
+                if "Regiao_Dobro" in df_hist_atual.columns:
 
-                    atual = df_atual[df_atual["Regiao_Dobro"] == "X"]
-                    ant = df_ant[df_ant["Regiao_Dobro"] == "X"]
+                    atual = df_hist_atual[df_hist_atual["Regiao_Dobro"] == "X"]
+                    ant = df_hist_ant[df_hist_ant["Regiao_Dobro"] == "X"]
 
                     tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
                     restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
@@ -798,15 +814,15 @@ if pagina == "Monitor de Pedidos":
 
             with col4:
 
-                if "Carteira" in df_atual.columns:
+                if "Carteira" in df_hist_atual.columns:
 
                     # ordenar se tiver ranking
                     if "Ranking" in df_atual.columns:
-                        df_atual = df_atual.sort_values("Ranking")
-                        df_ant = df_ant.sort_values("Ranking")
+                        df_hist_atual = df_hist_atual.sort_values("Ranking")
+                        df_hist_ant = df_hist_ant.sort_values("Ranking")
 
                     # pegar carteiras
-                    carteiras = df_atual["Carteira"].dropna().unique()
+                    carteiras = df_hist_atual["Carteira"].dropna().unique()
 
                     tratados_total = 0
                     restantes_total = 0
@@ -814,8 +830,8 @@ if pagina == "Monitor de Pedidos":
 
                     for c in carteiras:
 
-                        atual_carteira = df_atual[df_atual["Carteira"] == c].head(300)
-                        ant_carteira = df_ant[df_ant["Carteira"] == c].head(300)
+                        atual_carteira = df_hist_atual[df_hist_atual["Carteira"] == c].head(300)
+                        ant_carteira = df_hist_ant[df_hist_ant["Carteira"] == c].head(300)
 
                         set_atual = set(atual_carteira["PedidoFormatado"])
                         set_ant = set(ant_carteira["PedidoFormatado"])
@@ -845,8 +861,8 @@ if pagina == "Monitor de Pedidos":
 
                     for c in carteiras:
 
-                        atual_carteira = df_atual[df_atual["Carteira"] == c].head(300)
-                        ant_carteira = df_ant[df_ant["Carteira"] == c].head(300)
+                        atual_carteira = df_hist_atual[df_hist_atual["Carteira"] == c].head(300)
+                        ant_carteira = df_hist_ant[df_hist_ant["Carteira"] == c].head(300)
 
                         restantes_ids = set(ant_carteira["PedidoFormatado"]) & set(atual_carteira["PedidoFormatado"])
 
