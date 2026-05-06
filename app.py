@@ -388,15 +388,13 @@ if pagina == "Monitor de Pedidos":
                 perc_fora = (total / (total + total_dentro)) * 100 if (total + total_dentro) > 0 else 0
                 barra = int(perc_fora // 5)
                 
-                st.markdown(f"""
-                <div style="
+                st.markdown(f"""<div style="
                     background: white;
                     padding: 18px;
                     border-radius: 16px;
                     box-shadow: 0 3px 10px rgba(0,0,0,0.08);
                     margin-bottom: 16px;
                 ">
-
                     <div style="font-size:18px;font-weight:700;color:#0f2a44;">
                         {carteira}
                     </div>
