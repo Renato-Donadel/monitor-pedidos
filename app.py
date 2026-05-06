@@ -388,7 +388,7 @@ if pagina == "Monitor de Pedidos":
                 perc_fora = (total / (total + total_dentro)) * 100 if (total + total_dentro) > 0 else 0
                 barra = int(perc_fora // 5)
                 
-                st.markdown(f"""<div style="
+                st.html(f"""<div style="
                     background: white;
                     padding: 18px;
                     border-radius: 16px;
