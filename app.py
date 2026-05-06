@@ -391,46 +391,46 @@ if pagina == "Monitor de Pedidos":
                 col1, col2 = st.columns([4, 2])
                 
                 with col1:
-                    st.markdown(f"""
-                    <div style="
-                        background: white;
-                        padding: 18px;
-                        border-radius: 16px;
-                        box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-                        margin-bottom: 16px;
-                    ">
-                        <div style="font-size:18px;font-weight:700;color:#0f2a44;">
-                            {carteira}
-                        </div>
-
-                        <div style="font-size:13px;color:#6b7280;margin-bottom:10px;">
-                            Lote {inicio+1} → {fim}
-                        </div>
-
-                        <div style="display:block;">
-                            <div style="font-size:26px;font-weight:800;color:#b91c1c;">
-                                🚨 {total}
-                            </div>
-
-                            <div style="font-size:16px;font-weight:700;color:#b91c1c;margin-top:-8px;">
-                                {perc_fora:.1f}%
-                            </div>
-                        </div>
-
-                        <div style="font-size:13px;color:#6b7280;">
-                            Fora do prazo
-                        </div>
-
-                        <div style="margin-top:8px;font-family:monospace;color:#b91c1c;">
-                            {"█"*barra}{"░"*(20-barra)}
-                        </div>
-
-                        <div style="font-size:13px;font-weight:600;color:#047857;margin-top:8px;">
-                            ✅ {total_dentro} dentro do prazo
-                        </div>
-
+                st.markdown(f"""
+                <div style="
+                    background: white;
+                    padding: 18px;
+                    border-radius: 16px;
+                    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+                    margin-bottom: 16px;
+                ">
+                    <div style="font-size:18px;font-weight:700;color:#0f2a44;">
+                        {carteira}
                     </div>
-                    """, unsafe_allow_html=True)
+
+                    <div style="font-size:13px;color:#6b7280;margin-bottom:10px;">
+                        Lote {inicio+1} → {fim}
+                    </div>
+
+                    <div style="display:block;">
+                        <div style="font-size:26px;font-weight:800;color:#b91c1c;">
+                            🚨 {total}
+                        </div>
+
+                        <div style="font-size:16px;font-weight:700;color:#b91c1c;margin-top:-8px;">
+                            {perc_fora:.1f}%
+                        </div>
+                    </div>
+
+                    <div style="font-size:13px;color:#6b7280;">
+                        Fora do prazo
+                    </div>
+
+                    <div style="margin-top:8px;font-family:monospace;color:#b91c1c;">
+                        {"█"*barra}{"░"*(20-barra)}
+                    </div>
+
+                    <div style="font-size:13px;font-weight:600;color:#047857;margin-top:8px;">
+                        ✅ {total_dentro} dentro do prazo
+                    </div>
+
+                </div>
+                """, unsafe_allow_html=True)
                         
                 with col2:
                     if st.download_button(
