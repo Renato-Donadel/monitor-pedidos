@@ -330,6 +330,9 @@ if pagina == "Monitor de Pedidos":
             carteiras.append("Igor")
 
         for carteira in carteiras:
+        
+            if f"next_{carteira}" not in st.session_state:
+                st.session_state[f"next_{carteira}"] = False
 
             df_carteira = df_atual[
                 df_atual["Carteira"] == carteira
@@ -360,6 +363,14 @@ if pagina == "Monitor de Pedidos":
             total = len(df_fora_prazo)
             total_dentro = len(df_dentro_prazo)
             offset = st.session_state["offsets_carteira"].get(carteira, 0)
+            if offset >= total:
+                offset = 0
+                st.session_state["offsets_carteira"][carteira] = 0
+
+            if st.session_state[f"next_{carteira}"]:
+                offset = offset + TAMANHO_LOTE
+                st.session_state["offsets_carteira"][carteira] = offset
+                st.session_state[f"next_{carteira}"] = False
 
             inicio = offset
             fim = min(offset + TAMANHO_LOTE, total)
@@ -399,7 +410,8 @@ if pagina == "Monitor de Pedidos":
                         file_name=f"{carteira}_{inicio+1}_a_{fim}.xlsx",
                         key=f"dl_{carteira}_{offset}"
                     ):
-                        st.session_state["offsets_carteira"][carteira] = fim
+                        st.session_state[f"next_{carteira}"] = True
+                        st.rerun()
                                          
                   
     # ==============================
