@@ -407,11 +407,12 @@ if pagina == "Monitor de Pedidos":
                             Lote {inicio+1} → {fim}
                         </div>
 
-                        <div style="display:flex;justify-content:space-between;">
+                        <div style="display:block;">
                             <div style="font-size:26px;font-weight:800;color:#b91c1c;">
                                 🚨 {total}
                             </div>
-                            <div style="font-size:16px;font-weight:700;color:#b91c1c;">
+
+                            <div style="font-size:16px;font-weight:700;color:#b91c1c;margin-top:-8px;">
                                 {perc_fora:.1f}%
                             </div>
                         </div>
