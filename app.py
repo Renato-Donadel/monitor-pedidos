@@ -340,6 +340,10 @@ if pagina == "Monitor de Pedidos":
             df_carteira = df_atual[
                 df_atual["Carteira"] == carteira
             ].copy()
+            
+            # REMOVE DUPLICIDADE POR PEDIDO
+            if "PedidoFormatado" in df_carteira.columns:
+                df_carteira = df_carteira.drop_duplicates(subset=["PedidoFormatado"])
 
             for col in ["Cliente_Dentro","Transportadora_Dentro","Status_Dentro","Regiao_Dentro"]:
                 df_carteira[col] = df_carteira[col].astype(str).str.strip().str.upper()
@@ -421,7 +425,11 @@ if pagina == "Monitor de Pedidos":
 
     df_augusto = df_atual[
         df_atual["Carteira"] == "Augusto"
-    ]
+    ].copy()
+
+    # REMOVE DUPLICIDADE POR PEDIDO
+    if "PedidoFormatado" in df_augusto.columns:
+        df_augusto = df_augusto.drop_duplicates(subset=["PedidoFormatado"])
 
     total_augusto = len(df_augusto)
 
@@ -458,7 +466,7 @@ if pagina == "Monitor de Pedidos":
         ):
 
             df_expedicao = df_atual[
-                (df_atual["Status"] == "TSP - Aguardando Expedição") &
+                (df_atual["Status"].str.contains("AGUARDANDO EXPED", na=False)) &
                 (df_atual["DiasDesdeUltimoStatus"] >= 3)
             ].copy()
 
