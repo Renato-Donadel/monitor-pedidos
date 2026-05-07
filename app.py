@@ -266,7 +266,7 @@ def carregar_base_devolucao():
             "dev_atrasada_detalhado"
         ]
     )
-@st.cache_data
+@st.cache_data(ttl=2)
 def ler_base(path):
     if not os.path.exists(path):
         return pd.DataFrame()
@@ -312,6 +312,9 @@ if pagina == "Monitor de Pedidos":
     # DOWNLOAD POR CARTEIRA (COM ABA EXTRA)
     # ==============================
     st.markdown("### 📥 Exportação por Carteira (300 em 300)")
+    if st.button("🔄 Atualizar dados"):
+        st.cache_data.clear()
+        st.rerun()
 
     df_atual = ler_base(ARQ_ATUAL)
 
