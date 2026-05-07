@@ -330,7 +330,7 @@ if pagina == "Monitor de Pedidos":
             carteiras.append("Igor")
 
         for carteira in carteiras:
-        
+
             if f"next_{carteira}" not in st.session_state:
                 st.session_state[f"next_{carteira}"] = False
 
@@ -338,20 +338,8 @@ if pagina == "Monitor de Pedidos":
                 df_atual["Carteira"] == carteira
             ].copy()
 
-            df_fora_prazo = df_carteira[
-                (df_carteira["Cliente_Fora"] == "X") |
-                (df_carteira["Transportadora_Fora"] == "X") |
-                (df_carteira["Status_Fora"] == "X") |
-                (df_carteira["Regiao_Fora"] == "X") |
-                (df_carteira["Cliente_Dobro"] == "X") |
-                (df_carteira["Transportadora_Dobro"] == "X") |
-                (df_carteira["Status_Dobro"] == "X") |
-                (df_carteira["Regiao_Dobro"] == "X") |
-                (df_carteira["Cliente_Triplo"] == "X") |
-                (df_carteira["Transportadora_Triplo"] == "X") |
-                (df_carteira["Status_Triplo"] == "X") |
-                (df_carteira["Regiao_Triplo"] == "X")
-            ].reset_index(drop=True)
+            for col in ["Cliente_Dentro","Transportadora_Dentro","Status_Dentro","Regiao_Dentro"]:
+                df_carteira[col] = df_carteira[col].astype(str).str.strip().str.upper()
 
             df_dentro_prazo = df_carteira[
                 (df_carteira["Cliente_Dentro"] == "X") &
@@ -360,8 +348,18 @@ if pagina == "Monitor de Pedidos":
                 (df_carteira["Regiao_Dentro"] == "X")
             ]
 
+            df_fora_prazo = df_carteira[
+                ~(
+                    (df_carteira["Cliente_Dentro"] == "X") &
+                    (df_carteira["Transportadora_Dentro"] == "X") &
+                    (df_carteira["Status_Dentro"] == "X") &
+                    (df_carteira["Regiao_Dentro"] == "X")
+                )
+            ].reset_index(drop=True)
+
             total = len(df_fora_prazo)
             total_dentro = len(df_dentro_prazo)
+
             offset = st.session_state["offsets_carteira"].get(carteira, 0)
             if offset >= total:
                 offset = 0
