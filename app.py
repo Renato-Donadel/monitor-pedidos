@@ -717,7 +717,19 @@ if pagina == "Monitor de Pedidos":
             .str.strip()
         )
 
-        status_validos = [s.upper().strip() for s in STATUS_DIARIOS]
+        def limpar_status(s):
+            return (
+                str(s)
+                .upper()
+                .strip()
+                .replace("Ç", "C")
+                .replace("Ã", "A")
+                .replace("Á", "A")
+            )
+
+        status_validos = [limpar_status(s) for s in STATUS_DIARIOS]
+
+        df_temp["Status"] = df_temp["Status"].apply(limpar_status)
 
         qtd = df_temp[
             df_temp["Status"].isin(status_validos)
@@ -778,8 +790,8 @@ if pagina == "Monitor de Pedidos":
 
                 ax.plot(df_mes["Data"], df_mes["Qtd"])
 
-                ax.set_xticks(df_mes["Data"][::2])  # pega de 2 em 2
-                ax.set_xticklabels(df_mes["Data"].dt.day[::2], fontsize=8)
+                ax.set_xticks(df_mes["Data"][::3])  # pega de 3 em 3
+                ax.set_xticklabels(df_mes["Data"].dt.day[::3], fontsize=8)
 
                 plt.xticks(rotation=0)
 
