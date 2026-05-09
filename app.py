@@ -6,9 +6,7 @@ import matplotlib.pyplot as plt
 import re
 import base64
 import matplotlib.dates as mdates
-import sys
-sys.path.append(r"Z:\9. Transportes\9.2. Business Intelligence\9.2 Monitor_Pedidos")
-from database import carregar_dados_sla
+
 # ==============================
 # CONFIGS
 # ==============================
@@ -1010,7 +1008,8 @@ elif pagina == "Desempenho por Transportadora":
 
     st.markdown("### 🚚 Desempenho por Transportadora")
 
-    df = carregar_dados_sla()
+    ARQ_TRANSP = os.path.join(PASTA_DATA, "Base_Transportadora.xlsx")
+    df = pd.read_excel(ARQ_TRANSP)
 
     if df.empty:
         st.warning("Sem dados.")
