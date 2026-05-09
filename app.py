@@ -406,8 +406,18 @@ if pagina == "Monitor de Pedidos":
 
                 col1, col2 = st.columns([4, 2])
 
+                total_geral = total + total_dentro
+
+                perc_dentro = (total_dentro / total_geral) * 100 if total_geral > 0 else 0
+                perc_fora = (total / total_geral) * 100 if total_geral > 0 else 0
+
                 with col1:
                     st.write(f"**{carteira}** — {inicio+1} até {fim} de {total}")
+                    st.write(
+                        f"Dentro do prazo: {total_dentro} ({perc_dentro:.1f}%) | "
+                        f"Fora do prazo: {total} ({perc_fora:.1f}%)"
+                    )
+                   
                 with col2:
                     if st.download_button(
                         label=f"⬇️ Baixar {carteira}",
