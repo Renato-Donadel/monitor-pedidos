@@ -1024,7 +1024,7 @@ elif pagina == "Desempenho por Transportadora":
     st.write("EXISTE?", os.path.exists(ARQ_TRANSP))
 
     if os.path.exists(ARQ_TRANSP):
-    st.write("TAMANHO:", os.path.getsize(ARQ_TRANSP))
+        st.write("TAMANHO:", os.path.getsize(ARQ_TRANSP))
     if not os.path.exists(ARQ_TRANSP):
         st.error(f"Arquivo não encontrado: {ARQ_TRANSP}")
         st.stop()
