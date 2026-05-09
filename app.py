@@ -442,6 +442,10 @@ if pagina == "Monitor de Pedidos":
                 df_atual["Carteira"] == carteira
             ].copy()
             
+            if carteira == "Igor":
+                st.write("TOTAL IGOR (BRUTO):", len(df_carteira))
+                st.dataframe(df_carteira)
+            
             if carteira == "Igor" and df_carteira.empty:
                 st.write("Igor sem dados — verificar base")
             
@@ -459,6 +463,11 @@ if pagina == "Monitor de Pedidos":
                     df_carteira["DiasDesdeUltimoStatus"],
                     errors="coerce"
                 )
+
+                # 🔥 REMOVE LINHAS INVÁLIDAS
+                df_carteira = df_carteira[
+                    df_carteira["DiasDesdeUltimoStatus"].notna()
+                ]
 
                 # 🔥 REGRA SIMPLES IGOR (30 DIAS)
                 df_dentro_prazo = df_carteira[
