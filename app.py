@@ -431,12 +431,19 @@ if pagina == "Monitor de Pedidos":
             df_atual = df_atual.sort_values("Ranking").reset_index(drop=True)
 
         carteiras = sorted(df_atual["Carteira"].dropna().unique())
+
+        # 🔥 REMOVE RENATO DO FRONT
+        carteiras = [c for c in carteiras if c != "Renato"]
         carteiras = [c for c in carteiras if c != "Augusto"]
 
         if "Igor" in df_atual["Carteira"].values and "Igor" not in carteiras:
             carteiras.append("Igor")
 
         for carteira in carteiras:
+        
+            
+            if carteira == "Renato":
+                continue
 
             if f"next_{carteira}" not in st.session_state:
                 st.session_state[f"next_{carteira}"] = False
