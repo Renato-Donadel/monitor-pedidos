@@ -408,6 +408,9 @@ if pagina == "Monitor de Pedidos":
                 df_atual["Carteira"] == carteira
             ].copy()
             
+            if carteira == "Igor" and df_carteira.empty:
+                st.write("Igor sem dados — verificar base")
+            
             # REMOVE DUPLICIDADE POR PEDIDO
             if "PedidoFormatado" in df_carteira.columns:
                 df_carteira = df_carteira.drop_duplicates(subset=["PedidoFormatado"])
@@ -418,17 +421,24 @@ if pagina == "Monitor de Pedidos":
 
             if carteira == "Igor":
 
+                # 🔒 GARANTE QUE A COLUNA EXISTE
                 if "Nivel_Igor" not in df_carteira.columns:
                     df_carteira["Nivel_Igor"] = ""
 
+                df_carteira["Nivel_Igor"] = (
+                    df_carteira["Nivel_Igor"]
+                    .astype(str)
+                    .str.strip()
+                    .str.upper()
+                )
+
                 df_dentro_prazo = df_carteira[
-                    df_carteira["Nivel_Igor"] == "Dentro"
+                    df_carteira["Nivel_Igor"] == "DENTRO"
                 ]
 
                 df_fora_prazo = df_carteira[
-                    df_carteira["Nivel_Igor"] == "Fora"
+                    df_carteira["Nivel_Igor"] == "FORA"
                 ].reset_index(drop=True)
-
             else:
 
                 for col in ["Cliente_Dentro","Transportadora_Dentro","Status_Dentro","Regiao_Dentro"]:
@@ -533,8 +543,19 @@ if pagina == "Monitor de Pedidos":
 
     with col1:
         st.write(f"**Augusto** — 1 até {total_augusto} de {total_augusto}")
-        dentro = len(df_augusto[df_augusto["Score_Final"] == 0])
-        fora = len(df_augusto[df_augusto["Score_Final"] > 0])
+        df_augusto["Cliente_Dentro"] = df_augusto["Cliente_Dentro"].astype(str).str.strip().str.upper()
+        df_augusto["Transportadora_Dentro"] = df_augusto["Transportadora_Dentro"].astype(str).str.strip().str.upper()
+        df_augusto["Status_Dentro"] = df_augusto["Status_Dentro"].astype(str).str.strip().str.upper()
+        df_augusto["Regiao_Dentro"] = df_augusto["Regiao_Dentro"].astype(str).str.strip().str.upper()
+
+        dentro = len(df_augusto[
+            (df_augusto["Cliente_Dentro"] == "X") &
+            (df_augusto["Transportadora_Dentro"] == "X") &
+            (df_augusto["Status_Dentro"] == "X") &
+            (df_augusto["Regiao_Dentro"] == "X")
+        ])
+
+        fora = len(df_augusto) - dentro
 
         total = dentro + fora
 
