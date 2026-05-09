@@ -275,12 +275,27 @@ def carregar_base_devolucao():
 def ler_base(path):
     if not os.path.exists(path):
         return pd.DataFrame()
+
     try:
         df = pd.read_excel(path)
     except Exception:
         return pd.DataFrame()
-    if "PedidoFormatado" in df.columns:
-        df["PedidoFormatado"] = normalizar_pedido(df["PedidoFormatado"])
+
+    # 🔥 PADRONIZA NOMES DAS COLUNAS
+    df.columns = df.columns.str.strip()
+
+    # 🔥 GARANTE PEDIDO
+    if "PEDIDOFORMATADO" in df.columns:
+        df["PEDIDOFORMATADO"] = normalizar_pedido(df["PEDIDOFORMATADO"])
+
+    # 🔥 GARANTE NIVEL IGOR (mesmo que venha com nome zoado)
+    col_igor = [c for c in df.columns if "IGOR" in c]
+
+    if col_igor:
+        df["NIVEL_IGOR"] = df[col_igor[0]].astype(str).str.strip().str.upper()
+    else:
+        df["NIVEL_IGOR"] = ""
+
     return df
 
 def listar_dias():
@@ -419,23 +434,19 @@ if pagina == "Monitor de Pedidos":
 
             if carteira == "Igor":
 
-                # 🔒 GARANTE QUE A COLUNA EXISTE
-                if "Nivel_Igor" not in df_carteira.columns:
-                    df_carteira["Nivel_Igor"] = ""
-
-                df_carteira["Nivel_Igor"] = (
-                    df_carteira["Nivel_Igor"]
+                df_carteira["NIVEL_IGOR"] = (
+                    df_carteira["NIVEL_IGOR"]
                     .astype(str)
                     .str.strip()
                     .str.upper()
                 )
 
                 df_dentro_prazo = df_carteira[
-                    df_carteira["Nivel_Igor"] == "DENTRO"
+                    df_carteira["NIVEL_IGOR"] == "DENTRO"
                 ]
 
                 df_fora_prazo = df_carteira[
-                    df_carteira["Nivel_Igor"] == "FORA"
+                    df_carteira["NIVEL_IGOR"] == "FORA"
                 ].reset_index(drop=True)
             else:
 
