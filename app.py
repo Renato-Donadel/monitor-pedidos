@@ -352,10 +352,7 @@ if pagina == "Monitor de Pedidos":
             .str.upper()
             .str.strip()
         )
-    # 🔥 DEBUG IGOR (pode apagar depois)
-    st.write("IGOR LINHAS:", df_atual[df_atual["Carteira"] == "Igor"].shape[0])
-    
-    
+   
     # ==============================
     # 🚚 KPI GERAL - PRAZO TRANSPORTADORA
     # ==============================
@@ -452,7 +449,7 @@ if pagina == "Monitor de Pedidos":
 
             if carteira == "Igor":
 
-                df_carteira["NIVEL_IGOR"] = (
+                df_carteira["Nivel_Igor"] = (
                     df_carteira["NIVEL_IGOR"]
                     .astype(str)
                     .str.strip()
