@@ -442,10 +442,6 @@ if pagina == "Monitor de Pedidos":
                 df_atual["Carteira"] == carteira
             ].copy()
             
-            if carteira == "Igor":
-                st.write("TOTAL IGOR (BRUTO):", len(df_carteira))
-                st.dataframe(df_carteira)
-            
             if carteira == "Igor" and df_carteira.empty:
                 st.write("Igor sem dados — verificar base")
             
