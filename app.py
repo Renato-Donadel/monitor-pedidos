@@ -411,12 +411,15 @@ if pagina == "Monitor de Pedidos":
 
             if carteira == "Igor":
 
+                if "Nivel_Igor" not in df_carteira.columns:
+                    df_carteira["Nivel_Igor"] = ""
+
                 df_dentro_prazo = df_carteira[
-                    df_carteira.get("Nivel_Igor", "") == "Dentro"
+                    df_carteira["Nivel_Igor"] == "Dentro"
                 ]
 
                 df_fora_prazo = df_carteira[
-                    df_carteira.get("Nivel_Igor", "") == "Fora"
+                    df_carteira["Nivel_Igor"] == "Fora"
                 ].reset_index(drop=True)
 
             else:
