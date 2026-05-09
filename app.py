@@ -475,7 +475,6 @@ if pagina == "Monitor de Pedidos":
 
                 df_fora_prazo = df_carteira[
                     df_carteira["DiasDesdeUltimoStatus"] > 30
-                ]
                 ].reset_index(drop=True)
                 
 
