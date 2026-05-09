@@ -797,8 +797,10 @@ if pagina == "Monitor de Pedidos":
 
                 ax.plot(df_mes["Data"], df_mes["Qtd"])
 
-                ax.set_xticks(df_mes["Data"][::3])  # pega de 3 em 3
-                ax.set_xticklabels(df_mes["Data"].dt.day[::3], fontsize=8)
+                import matplotlib.dates as mdates
+
+                ax.xaxis.set_major_locator(mdates.DayLocator(interval=3))
+                ax.xaxis.set_major_formatter(mdates.DateFormatter('%d'))
 
                 plt.xticks(rotation=0)
 
