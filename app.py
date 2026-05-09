@@ -7,7 +7,7 @@ import re
 import base64
 import matplotlib.dates as mdates
 import sys
-sys.path.append(r"Z:\9. Transportes\9.2. Business Intelligence\9.2 Monitor_Pedidos\SLA")
+sys.path.append(r"Z:\9. Transportes\9.2. Business Intelligence\9.2 Monitor_Pedidos")
 from database import carregar_dados_sla
 # ==============================
 # CONFIGS
