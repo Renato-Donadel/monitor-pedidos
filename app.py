@@ -465,17 +465,17 @@ if pagina == "Monitor de Pedidos":
                 )
 
                 # 🔥 REMOVE LINHAS INVÁLIDAS
-                df_carteira = df_carteira[
-                    df_carteira["DiasDesdeUltimoStatus"].notna()
-                ]
+                # NÃO REMOVE NADA, SÓ TRATA
+                df_carteira["DiasDesdeUltimoStatus"] = df_carteira["DiasDesdeUltimoStatus"].fillna(-1)
 
-                # 🔥 REGRA SIMPLES IGOR (30 DIAS)
                 df_dentro_prazo = df_carteira[
-                    df_carteira["DiasDesdeUltimoStatus"] <= 30
+                    (df_carteira["DiasDesdeUltimoStatus"] >= 0) &
+                    (df_carteira["DiasDesdeUltimoStatus"] <= 30)
                 ]
 
                 df_fora_prazo = df_carteira[
                     df_carteira["DiasDesdeUltimoStatus"] > 30
+                ]
                 ].reset_index(drop=True)
                 
 
