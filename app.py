@@ -277,7 +277,10 @@ def ler_base(path):
         return pd.DataFrame()
 
     try:
-        df = pd.read_excel(path)
+        if path.endswith(".csv"):
+            df = pd.read_csv(path, sep=";", encoding="utf-8-sig")
+        else:
+            df = pd.read_excel(path)
     except Exception:
         return pd.DataFrame()
 
@@ -304,7 +307,7 @@ def listar_dias():
     arquivos = os.listdir(PASTA_HIST)
     datas = set()
     for a in arquivos:
-        m = re.match(r"(\d{2}-\d{2}-\d{4})_manha\.xlsx$", a)
+        m = re.match(r"(\d{2}-\d{2}-\d{4})_manha\.(xlsx|csv)$", a)
         if m:
             datas.add(m.group(1))
     return sorted(datas, key=lambda x: pd.to_datetime(x, format="%d-%m-%Y"))
@@ -775,9 +778,10 @@ if pagina == "Monitor de Pedidos":
 
                 ax.plot(df_mes["Data"], df_mes["Qtd"])
 
-                ax.xaxis.set_major_locator(mdates.DayLocator(interval=2))
-                ax.xaxis.set_major_formatter(mdates.DateFormatter('%d'))
-                plt.xticks(rotation=45)
+                ax.set_xticks(df_mes["Data"][::2])  # pega de 2 em 2
+                ax.set_xticklabels(df_mes["Data"].dt.day[::2], fontsize=8)
+
+                plt.xticks(rotation=0)
 
                 ax.set_xlabel("Dia", fontsize=7)
                 ax.set_ylabel("Qtde", fontsize=7)
