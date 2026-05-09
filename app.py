@@ -285,11 +285,11 @@ def ler_base(path):
     df.columns = df.columns.str.strip()
 
     # 🔥 GARANTE PEDIDO
-    if "PEDIDOFORMATADO" in df.columns:
-        df["PEDIDOFORMATADO"] = normalizar_pedido(df["PEDIDOFORMATADO"])
+    if "PedidoFormatado" in df.columns:
+        df["PedidoFormatado"] = normalizar_pedido(df["PedidoFormatado"])
 
     # 🔥 GARANTE NIVEL IGOR (mesmo que venha com nome zoado)
-    col_igor = [c for c in df.columns if "IGOR" in c]
+    col_igor = [c for c in df.columns if c.strip().upper() == "NIVEL_IGOR"]
 
     if col_igor:
         df["NIVEL_IGOR"] = df[col_igor[0]].astype(str).str.strip().str.upper()
@@ -337,6 +337,30 @@ if pagina == "Monitor de Pedidos":
         st.rerun()
 
     df_atual = ler_base(ARQ_ATUAL)
+    # 🔥 NORMALIZA CARTEIRA (CORRIGE IGOR SUMINDO)
+    if "Carteira" in df_atual.columns:
+        df_atual["Carteira"] = (
+            df_atual["Carteira"]
+            .astype(str)
+            .str.strip()
+        )
+    # 🔥 NORMALIZA STATUS
+    if "Status" in df_atual.columns:
+        df_atual["Status"] = (
+            df_atual["Status"]
+            .astype(str)
+            .str.upper()
+            .str.strip()
+        )
+    # 🔥 DEBUG IGOR (pode apagar depois)
+    st.write("IGOR LINHAS:", df_atual[df_atual["Carteira"] == "Igor"].shape[0])
+    if "Status" in df_atual.columns:
+        df_atual["Status"] = (
+            df_atual["Status"]
+            .astype(str)
+            .str.upper()
+            .str.strip()
+        )
     
     # ==============================
     # 🚚 KPI GERAL - PRAZO TRANSPORTADORA
