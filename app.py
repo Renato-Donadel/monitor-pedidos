@@ -317,6 +317,53 @@ if pagina == "Monitor de Pedidos":
         st.rerun()
 
     df_atual = ler_base(ARQ_ATUAL)
+    
+    # ==============================
+    # 🚚 KPI GERAL - PRAZO TRANSPORTADORA
+    # ==============================
+
+    if not df_atual.empty and "PrazoTransportadorDiasUteis" in df_atual.columns:
+
+        df_tmp = df_atual.copy()
+
+        # garante tipo correto
+        df_tmp["DiasDesdeExpedicao"] = pd.to_numeric(df_tmp["DiasDesdeExpedicao"], errors="coerce")
+        df_tmp["PrazoTransportadorDiasUteis"] = pd.to_numeric(df_tmp["PrazoTransportadorDiasUteis"], errors="coerce")
+
+        # dentro / fora baseado SÓ na transportadora
+        dentro = len(df_tmp[
+            df_tmp["DiasDesdeExpedicao"] <= df_tmp["PrazoTransportadorDiasUteis"]
+        ])
+
+        fora = len(df_tmp[
+            df_tmp["DiasDesdeExpedicao"] > df_tmp["PrazoTransportadorDiasUteis"]
+        ])
+
+        total = dentro + fora
+
+        perc_dentro = (dentro / total * 100) if total > 0 else 0
+        perc_fora = (fora / total * 100) if total > 0 else 0
+
+        st.markdown("### 🚚 Prazo Transportadora (Geral)")
+
+        st.markdown(
+            f"""
+            <div style="
+                background:white;
+                padding:14px;
+                border-radius:12px;
+                box-shadow:0 2px 6px rgba(0,0,0,0.06);
+                margin-bottom:20px;
+            ">
+                <div style="font-size:14px;color:#6b7280;">Transportadora</div>
+                <div style="font-size:18px;font-weight:700;color:#0f2a44;">
+                    Dentro: {dentro} ({perc_dentro:.1f}%) &nbsp;&nbsp;|&nbsp;&nbsp;
+                    Fora: {fora} ({perc_fora:.1f}%)
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
     if "offsets_carteira" not in st.session_state:
         st.session_state["offsets_carteira"] = {}
@@ -345,24 +392,40 @@ if pagina == "Monitor de Pedidos":
             if "PedidoFormatado" in df_carteira.columns:
                 df_carteira = df_carteira.drop_duplicates(subset=["PedidoFormatado"])
 
-            for col in ["Cliente_Dentro","Transportadora_Dentro","Status_Dentro","Regiao_Dentro"]:
-                df_carteira[col] = df_carteira[col].astype(str).str.strip().str.upper()
+            # ==============================
+            # 🎯 REGRA POR CARTEIRA
+            # ==============================
 
-            df_dentro_prazo = df_carteira[
-                (df_carteira["Cliente_Dentro"] == "X") &
-                (df_carteira["Transportadora_Dentro"] == "X") &
-                (df_carteira["Status_Dentro"] == "X") &
-                (df_carteira["Regiao_Dentro"] == "X")
-            ]
+            if carteira == "Igor":
 
-            df_fora_prazo = df_carteira[
-                ~(
+                df_dentro_prazo = df_carteira[
+                    df_carteira["Nivel_Igor"] == "Dentro"
+                ]
+
+                df_fora_prazo = df_carteira[
+                    df_carteira["Nivel_Igor"] == "Fora"
+                ].reset_index(drop=True)
+
+            else:
+
+                for col in ["Cliente_Dentro","Transportadora_Dentro","Status_Dentro","Regiao_Dentro"]:
+                    df_carteira[col] = df_carteira[col].astype(str).str.strip().str.upper()
+
+                df_dentro_prazo = df_carteira[
                     (df_carteira["Cliente_Dentro"] == "X") &
                     (df_carteira["Transportadora_Dentro"] == "X") &
                     (df_carteira["Status_Dentro"] == "X") &
                     (df_carteira["Regiao_Dentro"] == "X")
-                )
-            ].reset_index(drop=True)
+                ]
+
+                df_fora_prazo = df_carteira[
+                    ~(
+                        (df_carteira["Cliente_Dentro"] == "X") &
+                        (df_carteira["Transportadora_Dentro"] == "X") &
+                        (df_carteira["Status_Dentro"] == "X") &
+                        (df_carteira["Regiao_Dentro"] == "X")
+                    )
+                ].reset_index(drop=True)
 
             total = len(df_fora_prazo)
             total_dentro = len(df_dentro_prazo)
@@ -447,6 +510,18 @@ if pagina == "Monitor de Pedidos":
 
     with col1:
         st.write(f"**Augusto** — 1 até {total_augusto} de {total_augusto}")
+        dentro = len(df_augusto[df_augusto["Score_Final"] == 0])
+        fora = len(df_augusto[df_augusto["Score_Final"] > 0])
+
+        total = dentro + fora
+
+        perc_dentro = (dentro / total * 100) if total > 0 else 0
+        perc_fora = (fora / total * 100) if total > 0 else 0
+
+        st.write(
+            f"Dentro do prazo: {dentro} ({perc_dentro:.1f}%) | "
+            f"Fora do prazo: {fora} ({perc_fora:.1f}%)"
+        )
 
     with col2:
 
