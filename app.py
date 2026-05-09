@@ -1020,7 +1020,20 @@ elif pagina == "Desempenho por Transportadora":
     st.markdown("### 🚚 Desempenho por Transportadora")
 
     ARQ_TRANSP = os.path.join(PASTA_DATA, "Base_Transportadora.xlsx")
-    df = pd.read_excel(ARQ_TRANSP)
+    st.write("CAMINHO:", ARQ_TRANSP)
+    st.write("EXISTE?", os.path.exists(ARQ_TRANSP))
+
+    if os.path.exists(ARQ_TRANSP):
+    st.write("TAMANHO:", os.path.getsize(ARQ_TRANSP))
+    if not os.path.exists(ARQ_TRANSP):
+        st.error(f"Arquivo não encontrado: {ARQ_TRANSP}")
+        st.stop()
+
+    try:
+        df = pd.read_excel(ARQ_TRANSP)
+    except Exception as e:
+        st.error(f"Erro ao ler o arquivo: {e}")
+        st.stop()
 
     if df.empty:
         st.warning("Sem dados.")
