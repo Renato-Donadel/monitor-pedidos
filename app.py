@@ -6,7 +6,9 @@ import matplotlib.pyplot as plt
 import re
 import base64
 import matplotlib.dates as mdates
-
+import sys
+sys.path.append(r"Z:\9. Transportes\9.2. Business Intelligence\9.2 Monitor_Pedidos\SLA")
+from database import carregar_dados_sla
 # ==============================
 # CONFIGS
 # ==============================
@@ -170,7 +172,8 @@ pagina = st.sidebar.selectbox(
     "Painel",
     [
         "Monitor de Pedidos",
-        "Indicador de Devolução"
+        "Indicador de Devolução",
+        "Desempenho por Transportadora"
     ]
 )
 
@@ -218,6 +221,10 @@ if pagina == "Monitor de Pedidos":
 elif pagina == "Indicador de Devolução":
     titulo = "Painel de Devolução"
     subtitulo = "Devolução • Extravio • Avaria • Indicadores Logísticos"
+
+elif pagina == "Desempenho por Transportadora":
+    titulo = "Desempenho por Transportadora - SLA"
+    subtitulo = "Eficiência de Entrega • Dentro vs Fora do Prazo"
 
 st.markdown(f"""
 <div class="header-box">
@@ -973,6 +980,83 @@ if pagina == "Monitor de Pedidos":
                     )
 
             st.divider()
+
+# ==============================
+# DESEMPENHO POR TRANSPORTADORA
+# ==============================
+
+elif pagina == "Desempenho por Transportadora":
+
+    st.markdown("### 🚚 Desempenho por Transportadora")
+
+    df = carregar_dados_sla()
+
+    if df.empty:
+        st.warning("Sem dados.")
+        st.stop()
+
+    # ==============================
+    # TRATAMENTO
+    # ==============================
+
+    df["DataExpedicao"] = pd.to_datetime(df["DataExpedicao"], errors="coerce")
+    df["DataFinal"] = pd.to_datetime(df["DataFinal"], errors="coerce")
+
+    df["DiasEntrega"] = (df["DataFinal"] - df["DataExpedicao"]).dt.days
+    df["PrazoTransportadoraDiasUteis"] = pd.to_numeric(
+        df["PrazoTransportadoraDiasUteis"], errors="coerce"
+    )
+
+    df = df.dropna(subset=["Transportadora", "DiasEntrega", "PrazoTransportadoraDiasUteis"])
+
+    # ==============================
+    # REGRA PRAZO
+    # ==============================
+
+    df["DentroPrazo"] = df["DiasEntrega"] <= df["PrazoTransportadoraDiasUteis"]
+
+    resumo = (
+        df.groupby("Transportadora")
+        .agg(
+            Total=("DentroPrazo", "count"),
+            Dentro=("DentroPrazo", "sum")
+        )
+        .reset_index()
+    )
+
+    resumo["Fora"] = resumo["Total"] - resumo["Dentro"]
+
+    resumo["% Dentro"] = (resumo["Dentro"] / resumo["Total"]) * 100
+    resumo["% Fora"] = (resumo["Fora"] / resumo["Total"]) * 100
+
+    resumo = resumo.sort_values("% Fora", ascending=False)
+
+    # ==============================
+    # VISUAL (MESMO PADRÃO)
+    # ==============================
+
+    for _, row in resumo.iterrows():
+
+        st.markdown(
+            f"""
+            <div style="
+                background:white;
+                padding:14px;
+                border-radius:12px;
+                box-shadow:0 2px 6px rgba(0,0,0,0.06);
+                margin-bottom:10px;
+            ">
+                <div style="font-size:14px;color:#6b7280;">
+                    {row["Transportadora"]}
+                </div>
+                <div style="font-size:18px;font-weight:700;color:#0f2a44;">
+                    Dentro: {int(row["Dentro"])} ({row["% Dentro"]:.1f}%) &nbsp;&nbsp;|&nbsp;&nbsp;
+                    Fora: {int(row["Fora"])} ({row["% Fora"]:.1f}%)
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
 # ==============================
 # INDICADOR DE DEVOLUÇÃO
