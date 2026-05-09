@@ -354,13 +354,7 @@ if pagina == "Monitor de Pedidos":
         )
     # 🔥 DEBUG IGOR (pode apagar depois)
     st.write("IGOR LINHAS:", df_atual[df_atual["Carteira"] == "Igor"].shape[0])
-    if "Status" in df_atual.columns:
-        df_atual["Status"] = (
-            df_atual["Status"]
-            .astype(str)
-            .str.upper()
-            .str.strip()
-        )
+    
     
     # ==============================
     # 🚚 KPI GERAL - PRAZO TRANSPORTADORA
@@ -1069,19 +1063,18 @@ elif pagina == "Desempenho por Transportadora":
 
     df["DataExpedicao"] = pd.to_datetime(df["DataExpedicao"], errors="coerce")
     df["DataFinal"] = pd.to_datetime(df["DataFinal"], errors="coerce")
+    
+    df["DataFinal"] = pd.to_datetime(df["DataFinal"], errors="coerce")
+    df["DataPrevista"] = pd.to_datetime(df["DataPrevista"], errors="coerce")
 
-    df["DiasEntrega"] = (df["DataFinal"] - df["DataExpedicao"]).dt.days
-    df["PrazoTransportadoraDiasUteis"] = pd.to_numeric(
-        df["PrazoTransportadoraDiasUteis"], errors="coerce"
-    )
+    df = df.dropna(subset=["Transportadora", "DataFinal", "DataPrevista"])
 
-    df = df.dropna(subset=["Transportadora", "DiasEntrega", "PrazoTransportadoraDiasUteis"])
+    df["DentroPrazo"] = df["DataFinal"].dt.date <= df["DataPrevista"].dt.date
+    
 
     # ==============================
     # REGRA PRAZO
     # ==============================
-
-    df["DentroPrazo"] = df["DiasEntrega"] <= df["PrazoTransportadoraDiasUteis"]
 
     resumo = (
         df.groupby("Transportadora")
