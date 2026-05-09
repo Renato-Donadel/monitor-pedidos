@@ -458,27 +458,14 @@ if pagina == "Monitor de Pedidos":
             # ==============================
 
             if carteira == "Igor":
-                # 🔥 GARANTE NUMÉRICO
-                df_carteira["DiasDesdeUltimoStatus"] = pd.to_numeric(
-                    df_carteira["DiasDesdeUltimoStatus"],
-                    errors="coerce"
-                )
-
-                # 🔥 REMOVE LINHAS INVÁLIDAS
-                # NÃO REMOVE NADA, SÓ TRATA
-                df_carteira["DiasDesdeUltimoStatus"] = df_carteira["DiasDesdeUltimoStatus"].fillna(-1)
-
                 df_dentro_prazo = df_carteira[
-                    (df_carteira["DiasDesdeUltimoStatus"] >= 0) &
-                    (df_carteira["DiasDesdeUltimoStatus"] <= 30)
+                df_carteira["Nivel_Igor_30d"] == "Dentro"
                 ]
 
                 df_fora_prazo = df_carteira[
-                    df_carteira["DiasDesdeUltimoStatus"] > 30
+                    df_carteira["Nivel_Igor_30d"] == "Fora"
                 ].reset_index(drop=True)
-                
-
-                
+                   
             else:
 
                 for col in ["Cliente_Dentro","Transportadora_Dentro","Status_Dentro","Regiao_Dentro"]:
