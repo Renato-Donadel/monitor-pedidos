@@ -344,6 +344,12 @@ if pagina == "Monitor de Pedidos":
             .astype(str)
             .str.strip()
         )
+    # 🔥 GARANTE DIAS COMO NUMÉRICO (IGOR)
+    if "DiasDesdeUltimoStatus" in df_atual.columns:
+        df_atual["DiasDesdeUltimoStatus"] = pd.to_numeric(
+            df_atual["DiasDesdeUltimoStatus"],
+            errors="coerce"
+        )
     # 🔥 NORMALIZA STATUS
     if "Status" in df_atual.columns:
         df_atual["Status"] = (
@@ -448,21 +454,23 @@ if pagina == "Monitor de Pedidos":
             # ==============================
 
             if carteira == "Igor":
-
-                df_carteira["Nivel_Igor"] = (
-                    df_carteira["NIVEL_IGOR"]
-                    .astype(str)
-                    .str.strip()
-                    .str.upper()
+                # 🔥 GARANTE NUMÉRICO
+                df_carteira["DiasDesdeUltimoStatus"] = pd.to_numeric(
+                    df_carteira["DiasDesdeUltimoStatus"],
+                    errors="coerce"
                 )
 
+                # 🔥 REGRA SIMPLES IGOR (30 DIAS)
                 df_dentro_prazo = df_carteira[
-                    df_carteira["NIVEL_IGOR"] == "DENTRO"
+                    df_carteira["DiasDesdeUltimoStatus"] <= 30
                 ]
 
                 df_fora_prazo = df_carteira[
-                    df_carteira["NIVEL_IGOR"] == "FORA"
+                    df_carteira["DiasDesdeUltimoStatus"] > 30
                 ].reset_index(drop=True)
+                
+
+                
             else:
 
                 for col in ["Cliente_Dentro","Transportadora_Dentro","Status_Dentro","Regiao_Dentro"]:
@@ -502,7 +510,7 @@ if pagina == "Monitor de Pedidos":
 
             lote = df_fora_prazo.iloc[inicio:fim]
 
-            if not lote.empty:
+            if not lote.empty or carteira == "Igor":
                 buffer = BytesIO()
 
                 with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
