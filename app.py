@@ -707,7 +707,18 @@ if pagina == "Monitor de Pedidos":
         if df_temp.empty:
             continue
 
-        qtd = df_temp[df_temp["Status"].isin(STATUS_DIARIOS)].shape[0]
+        df_temp["Status"] = (
+            df_temp["Status"]
+            .astype(str)
+            .str.upper()
+            .str.strip()
+        )
+
+        status_validos = [s.upper().strip() for s in STATUS_DIARIOS]
+
+        qtd = df_temp[
+            df_temp["Status"].isin(status_validos)
+        ].shape[0]
 
         contagem.append((data, qtd))
 
@@ -764,8 +775,9 @@ if pagina == "Monitor de Pedidos":
 
                 ax.plot(df_mes["Data"], df_mes["Qtd"])
 
-                ax.set_xticks(df_mes["Data"])
-                ax.set_xticklabels(df_mes["Data"].dt.day, fontsize=7)
+                ax.xaxis.set_major_locator(mdates.DayLocator(interval=2))
+                ax.xaxis.set_major_formatter(mdates.DateFormatter('%d'))
+                plt.xticks(rotation=45)
 
                 ax.set_xlabel("Dia", fontsize=7)
                 ax.set_ylabel("Qtde", fontsize=7)
