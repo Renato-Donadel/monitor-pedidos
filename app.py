@@ -708,17 +708,13 @@ if pagina == "Monitor de Pedidos":
     
         data = pd.to_datetime(dia_hist, format="%d-%m-%Y")
 
-        # 🔥 FILTRO: só considerar a partir de 01/05/2026
-        if data < pd.Timestamp("2026-05-01"):
-            continue
-
         data = pd.to_datetime(dia_hist, format="%d-%m-%Y")
         mes = data.to_period("M")
 
         arquivo_mes = os.path.join(PASTA_MENSAL, f"{mes}.xlsx")
 
         # Se o mês já estiver congelado
-        if mes != mes_atual and os.path.exists(arquivo_mes) and mes >= pd.Period("2026-05", freq="M"):
+        if mes != mes_atual and os.path.exists(arquivo_mes):
 
             df_mes = pd.read_excel(arquivo_mes)
 
@@ -842,6 +838,11 @@ if pagina == "Monitor de Pedidos":
     mes_atual = pd.Timestamp.today().to_period("M")
 
     for dia_hist in dias:
+    
+        data = pd.to_datetime(dia_hist, format="%d-%m-%Y")
+
+        if data < pd.Timestamp("2026-05-01"):
+            continue
 
         data = pd.to_datetime(dia_hist, format="%d-%m-%Y")
         mes = data.to_period("M")
