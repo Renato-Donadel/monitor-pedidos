@@ -848,7 +848,12 @@ if pagina == "Monitor de Pedidos":
             df_mes = pd.read_excel(arquivo_mes)
 
             for _, row in df_mes.iterrows():
-                contagem.append((row["Data"], row["Total"]))
+                contagem.append((
+                row["Data"],
+                row["Total"],
+                row.get("Entrou", 0),
+                row.get("Tratados", 0)
+            ))
 
             continue
 
@@ -871,13 +876,11 @@ if pagina == "Monitor de Pedidos":
         df_temp["Status"] = df_temp["Status"].apply(limpar_status)
         if "PedidoFormatado" in df_temp.columns:
             df_temp = df_temp.drop_duplicates(subset=["PedidoFormatado"])
-        atuais = df_temp[
-            df_temp["Status"].str.contains(
-                "CRITIC|REENTREGA|ACAREACAO|DADOS|FALTANTE|COLETA",
-                na=False
-            )
-        ].copy()
+        status_validos = [limpar_status(s) for s in STATUS_Manuais]
 
+        atuais = df_temp[
+            df_temp["Status"].isin(status_validos)
+        ].copy()
         # 🔥 remover duplicidade
         if "PedidoFormatado" in atuais.columns:
             atuais = atuais.drop_duplicates(subset=["PedidoFormatado"])
@@ -892,10 +895,7 @@ if pagina == "Monitor de Pedidos":
             df_ant["Status"] = df_ant["Status"].apply(limpar_status)
 
             anteriores = df_ant[
-                df_ant["Status"].str.contains(
-                    "CRITIC|REENTREGA|ACAREACAO|DADOS|FALTANTE|COLETA",
-                    na=False
-                )
+                df_ant["Status"].isin(status_validos)
             ].copy()
 
             if "PedidoFormatado" in anteriores.columns:
@@ -1022,6 +1022,7 @@ if pagina == "Monitor de Pedidos":
                     ]
                     restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
                     entrou = atual[~atual["PedidoFormatado"].isin(ant["PedidoFormatado"])]
+                    tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
 
                     valor_entrou = entrou["ValorNota"].sum() if "ValorNota" in entrou.columns else 0
                     valor_restantes = restantes["ValorNota"].sum() if "ValorNota" in restantes.columns else 0
@@ -1075,6 +1076,7 @@ if pagina == "Monitor de Pedidos":
                     tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
                     restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
                     entrou = atual[~atual["PedidoFormatado"].isin(ant["PedidoFormatado"])]
+                    tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
 
                     st.image(pizza(len(tratados), len(restantes), "Status Específico 2x"))
 
