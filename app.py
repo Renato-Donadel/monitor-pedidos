@@ -568,9 +568,14 @@ if pagina == "Monitor de Pedidos":
     # 🧑 CARTEIRA AUGUSTO (NOVA)
     # ==============================
 
-    df_augusto = df_atual[
-        df_atual["Carteira"] == "Augusto"
-    ].copy()
+    if "Carteira" in df_atual.columns:
+
+        df_augusto = df_atual[
+            df_atual["Carteira"] == "Augusto"
+        ].copy()
+
+    else:
+        df_augusto = pd.DataFrame()
 
     # REMOVE DUPLICIDADE POR PEDIDO
     if "PedidoFormatado" in df_augusto.columns:
