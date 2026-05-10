@@ -869,20 +869,51 @@ if pagina == "Monitor de Pedidos":
             )
 
         df_temp["Status"] = df_temp["Status"].apply(limpar_status)
-
-        total = df_temp[
+        if "PedidoFormatado" in df_temp.columns:
+            df_temp = df_temp.drop_duplicates(subset=["PedidoFormatado"])
+        atuais = df_temp[
             df_temp["Status"].str.contains(
                 "CRITIC|REENTREGA|ACAREACAO|DADOS|FALTANTE|COLETA",
                 na=False
             )
-        ].shape[0]
+        ].copy()
 
-        contagem.append((data, total))
+        # 🔥 remover duplicidade
+        if "PedidoFormatado" in atuais.columns:
+            atuais = atuais.drop_duplicates(subset=["PedidoFormatado"])
 
+        # 🔥 carregar dia anterior
+        idx = dias.index(dia_hist)
+
+        if idx > 0:
+            dia_ant = dias[idx - 1]
+            df_ant = ler_base(caminho(dia_ant))
+
+            df_ant["Status"] = df_ant["Status"].apply(limpar_status)
+
+            anteriores = df_ant[
+                df_ant["Status"].str.contains(
+                    "CRITIC|REENTREGA|ACAREACAO|DADOS|FALTANTE|COLETA",
+                    na=False
+                )
+            ].copy()
+
+            if "PedidoFormatado" in anteriores.columns:
+                anteriores = anteriores.drop_duplicates(subset=["PedidoFormatado"])
+
+        else:
+            anteriores = pd.DataFrame(columns=atuais.columns)
+
+        # 🔥 métricas
+        total = len(atuais)
+        tratados = len(anteriores[~anteriores["PedidoFormatado"].isin(atuais["PedidoFormatado"])])
+        entrou = len(atuais[~atuais["PedidoFormatado"].isin(anteriores["PedidoFormatado"])])
+
+        contagem.append((data, total, entrou, tratados))
 
     if contagem:
 
-        df_graf = pd.DataFrame(contagem, columns=["Data", "Total"])
+        df_graf = pd.DataFrame(contagem, columns=["Data", "Total", "Entrou", "Tratados"])
         df_graf["Data"] = pd.to_datetime(df_graf["Data"])
         df_graf = df_graf.sort_values("Data")
 
@@ -916,7 +947,11 @@ if pagina == "Monitor de Pedidos":
 
                 fig, ax = plt.subplots(figsize=(3.2, 1.2))
 
-                ax.plot(df_mes["Data"], df_mes["Total"])
+                ax.plot(df_mes["Data"], df_mes["Total"], label="Total")
+                ax.plot(df_mes["Data"], df_mes["Entrou"], label="Entraram")
+                ax.plot(df_mes["Data"], df_mes["Tratados"], label="Tratados")
+
+                ax.legend(fontsize=6)
 
                 ax.xaxis.set_major_locator(mdates.DayLocator(interval=3))
                 ax.xaxis.set_major_formatter(mdates.DateFormatter('%d'))
@@ -970,10 +1005,21 @@ if pagina == "Monitor de Pedidos":
             with col1:
                 if "Transportadora_Triplo" in df_hist_atual.columns:
 
-                    atual = df_hist_atual[df_hist_atual["Transportadora_Triplo"] == "X"]
-                    ant = df_hist_ant[df_hist_ant["Transportadora_Triplo"] == "X"]
+                    
 
-                    tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
+                    atual = df_hist_atual[
+                        df_hist_atual["Transportadora_Triplo"]
+                        .astype(str)
+                        .str.strip()
+                        .str.upper() == "X"
+                    ]
+
+                    ant = df_hist_ant[
+                        df_hist_ant["Transportadora_Triplo"]
+                        .astype(str)
+                        .str.strip()
+                        .str.upper() == "X"
+                    ]
                     restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
                     entrou = atual[~atual["PedidoFormatado"].isin(ant["PedidoFormatado"])]
 
@@ -1012,8 +1058,19 @@ if pagina == "Monitor de Pedidos":
             with col2:
                 if "Status_Dobro" in df_hist_atual.columns:
 
-                    atual = df_hist_atual[df_hist_atual["Status_Dobro"] == "X"]
-                    ant = df_hist_ant[df_hist_ant["Status_Dobro"] == "X"]
+                    atual = df_hist_atual[
+                        df_hist_atual["Status_Dobro"]
+                        .astype(str)
+                        .str.strip()
+                        .str.upper() == "X"
+                    ]
+
+                    ant = df_hist_ant[
+                        df_hist_ant["Status_Dobro"]
+                        .astype(str)
+                        .str.strip()
+                        .str.upper() == "X"
+                    ]
 
                     tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
                     restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
@@ -1043,8 +1100,19 @@ if pagina == "Monitor de Pedidos":
             with col3:
                 if "Regiao_Dobro" in df_hist_atual.columns:
 
-                    atual = df_hist_atual[df_hist_atual["Regiao_Dobro"] == "X"]
-                    ant = df_hist_ant[df_hist_ant["Regiao_Dobro"] == "X"]
+                    atual = df_hist_atual[
+                        df_hist_atual["Regiao_Dobro"]
+                        .astype(str)
+                        .str.strip()
+                        .str.upper() == "X"
+                    ]
+
+                    ant = df_hist_ant[
+                        df_hist_ant["Regiao_Dobro"]
+                        .astype(str)
+                        .str.strip()
+                        .str.upper() == "X"
+                    ]
 
                     tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
                     restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
