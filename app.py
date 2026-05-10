@@ -850,7 +850,11 @@ if pagina == "Monitor de Pedidos":
         arquivo_mes = os.path.join(PASTA_MENSAL, f"manuais_{mes}.xlsx")
 
         # 🔒 usa mês já salvo
-        if mes != mes_atual and os.path.exists(arquivo_mes):
+        if (
+            mes != mes_atual
+            and os.path.exists(arquivo_mes)
+            and mes >= pd.Period("2026-05", freq="M")
+        ):
 
             df_mes = pd.read_excel(arquivo_mes)
 
