@@ -705,6 +705,12 @@ if pagina == "Monitor de Pedidos":
     mes_atual = pd.Timestamp.today().to_period("M")
 
     for dia_hist in dias:
+    
+        data = pd.to_datetime(dia_hist, format="%d-%m-%Y")
+
+        # 🔥 FILTRO: só considerar a partir de 01/05/2026
+        if data < pd.Timestamp("2026-05-01"):
+            continue
 
         data = pd.to_datetime(dia_hist, format="%d-%m-%Y")
         mes = data.to_period("M")
@@ -712,7 +718,7 @@ if pagina == "Monitor de Pedidos":
         arquivo_mes = os.path.join(PASTA_MENSAL, f"{mes}.xlsx")
 
         # Se o mês já estiver congelado
-        if mes != mes_atual and os.path.exists(arquivo_mes):
+        if mes != mes_atual and os.path.exists(arquivo_mes) and mes >= pd.Period("2026-05", freq="M"):
 
             df_mes = pd.read_excel(arquivo_mes)
 
@@ -1004,9 +1010,7 @@ if pagina == "Monitor de Pedidos":
             # TRIPLO
             with col1:
                 if "Transportadora_Triplo" in df_hist_atual.columns:
-
-                    
-
+                
                     atual = df_hist_atual[
                         df_hist_atual["Transportadora_Triplo"]
                         .astype(str)
@@ -1059,18 +1063,15 @@ if pagina == "Monitor de Pedidos":
             with col2:
                 if "Status_Dobro" in df_hist_atual.columns:
 
+                    df_hist_atual["Status_Dobro"] = df_hist_atual["Status_Dobro"].astype(str).str.strip().str.upper()
+                    df_hist_ant["Status_Dobro"] = df_hist_ant["Status_Dobro"].astype(str).str.strip().str.upper()
+
                     atual = df_hist_atual[
-                        df_hist_atual["Status_Dobro"]
-                        .astype(str)
-                        .str.strip()
-                        .str.upper() == "X"
+                        df_hist_atual["Status_Dobro"] == "X"
                     ]
 
                     ant = df_hist_ant[
-                        df_hist_ant["Status_Dobro"]
-                        .astype(str)
-                        .str.strip()
-                        .str.upper() == "X"
+                        df_hist_ant["Status_Dobro"] == "X"
                     ]
 
                     tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
