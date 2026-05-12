@@ -376,11 +376,16 @@ if pagina == "Monitor de Pedidos":
 
         df_tmp = df_atual.copy()
 
-        # 🚫 EXCLUIR DEVOLUÇÃO
+        # 🚫 EXCLUIR Status fora de desempenho
         status_devolucao = [
             "TSP - Aguardando Confirmar Devolução",
             "TSP - Trânsferência para Devolução",
-            "TSP - Rota de Devolução"
+            "TSP - Rota de Devolução",
+            "TSP - Reentrega",
+            "TSP - Aguardando Tratativa Transportadora",
+            "TSP - Coleta Realizada",
+            "TSP - Item Faltante",
+            "TSP - REENTREGAR/ENDERECO CORRETO"
         ]
 
         df_tmp = df_tmp[~df_tmp["Status"].isin(status_devolucao)]
