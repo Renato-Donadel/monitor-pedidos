@@ -1072,7 +1072,8 @@ if pagina == "Monitor de Pedidos":
                     df_hist_ant["Status_Dobro"] = df_hist_ant["Status_Dobro"].astype(str).str.strip().str.upper()
 
                     atual = df_hist_atual[
-                        df_hist_atual["Status_Dobro"] == "X"
+                        (df_hist_atual["Status_Dobro"] == "X") |
+                        (df_hist_atual["Status_Triplo"] == "X")
                     ]
 
                     ant = df_hist_ant[
