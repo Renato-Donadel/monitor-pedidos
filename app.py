@@ -3,9 +3,9 @@ import pandas as pd
 import os
 from io import BytesIO
 import matplotlib.pyplot as plt
+import plotly.express as px
 import re
 import base64
-import matplotlib.dates as mdates
 
 # ==============================
 # CONFIGS
@@ -810,28 +810,28 @@ if pagina == "Monitor de Pedidos":
                 df_mes = df_mes[df_mes["Data"].dt.day >= 18]
 
             with colunas[i]:
-
-                fig, ax = plt.subplots(figsize=(3.2, 1.2))
-
-                ax.plot(df_mes["Data"], df_mes["Qtd"])
-
-                import matplotlib.dates as mdates
-
-                ax.xaxis.set_major_locator(mdates.DayLocator(interval=3))
-                ax.xaxis.set_major_formatter(mdates.DateFormatter('%d'))
-
-                plt.xticks(rotation=0)
-
-                ax.set_xlabel("Dia", fontsize=7)
-                ax.set_ylabel("Qtde", fontsize=7)
-
+            
                 nome_mes = df_mes["Data"].dt.strftime("%B").iloc[0].capitalize()
                 ano = df_mes["Data"].dt.year.iloc[0]
 
-                ax.set_title(f"{nome_mes}/{ano}", fontsize=9)
+                fig = px.line(
+                    df_mes,
+                    x="Data",
+                    y="Qtd",
+                    title=f"{nome_mes}/{ano}"
+                )
 
-                st.pyplot(fig)
-                plt.close(fig)
+                fig.update_layout(
+                    height=220,
+                    margin=dict(l=10, r=10, t=40, b=10),
+                    xaxis_title="",
+                    yaxis_title=""
+                )
+
+                st.plotly_chart(
+                    fig,
+                    use_container_width=True
+                )
                 
     # ==============================
     # 📌 STATUS MANUAIS (POR MÊS - IGUAL DIÁRIOS)
@@ -961,27 +961,36 @@ if pagina == "Monitor de Pedidos":
 
             with colunas[i]:
 
-                fig, ax = plt.subplots(figsize=(3.2, 1.2))
-
-                ax.plot(df_mes["Data"], df_mes["Total"], label="Total")
-                ax.plot(df_mes["Data"], df_mes["Entrou"], label="Entraram")
-                ax.plot(df_mes["Data"], df_mes["Tratados"], label="Tratados")
-
-                ax.legend(fontsize=6)
-
-                ax.xaxis.set_major_locator(mdates.DayLocator(interval=3))
-                ax.xaxis.set_major_formatter(mdates.DateFormatter('%d'))
-
-                ax.set_xlabel("Dia", fontsize=7)
-                ax.set_ylabel("Qtde", fontsize=7)
-
+                df_plot = df_mes.melt(
+                    id_vars="Data",
+                    value_vars=["Total", "Entrou", "Tratados"],
+                    var_name="Tipo",
+                    value_name="Quantidade"
+                )
+                
                 nome_mes = df_mes["Data"].dt.strftime("%B").iloc[0].capitalize()
                 ano = df_mes["Data"].dt.year.iloc[0]
 
-                ax.set_title(f"{nome_mes}/{ano}", fontsize=9)
+                fig = px.line(
+                    df_plot,
+                    x="Data",
+                    y="Quantidade",
+                    color="Tipo",
+                    title=f"{nome_mes}/{ano}"
+                )
 
-                st.pyplot(fig)
-                plt.close(fig)        
+                fig.update_layout(
+                    height=250,
+                    margin=dict(l=10, r=10, t=40, b=10),
+                    xaxis_title="",
+                    yaxis_title=""
+                )
+
+                st.plotly_chart(
+                    fig,
+                    use_container_width=True
+                )
+        
     # ==============================
     # LOOP ORIGINAL COMPLETO (PIZZAS)
     # ==============================
@@ -1233,17 +1242,17 @@ elif pagina == "Desempenho por Transportadora":
     st.markdown("### 🚚 Desempenho por Transportadora")
 
     ARQ_TRANSP = os.path.join(PASTA_DATA, "Base_Transportadora.xlsx")
-    st.write("CAMINHO:", ARQ_TRANSP)
-    st.write("EXISTE?", os.path.exists(ARQ_TRANSP))
-
-    if os.path.exists(ARQ_TRANSP):
-        st.write("TAMANHO:", os.path.getsize(ARQ_TRANSP))
+    
     if not os.path.exists(ARQ_TRANSP):
         st.error(f"Arquivo não encontrado: {ARQ_TRANSP}")
         st.stop()
+        
+    @st.cache_data(ttl=300)
+    def carregar_base_transportadora(path):
+        return pd.read_excel(path)
 
     try:
-        df = pd.read_excel(ARQ_TRANSP)
+        df = carregar_base_transportadora(ARQ_TRANSP)
     except Exception as e:
         st.error(f"Erro ao ler o arquivo: {e}")
         st.stop()
@@ -1266,6 +1275,21 @@ elif pagina == "Desempenho por Transportadora":
 
     df["DentroPrazo"] = df["DataFinal"].dt.date <= df["DataPrevista"].dt.date
     
+    df["Mes"] = df["DataFinal"].dt.to_period("M").astype(str)
+
+    mensal = (
+        df.groupby(["Mes", "Transportadora"])
+        .agg(
+            Total=("DentroPrazo", "count"),
+            Dentro=("DentroPrazo", "sum")
+        )
+        .reset_index()
+    )
+
+    mensal["% Dentro"] = (
+        mensal["Dentro"] / mensal["Total"]
+    ) * 100
+    
 
     # ==============================
     # REGRA PRAZO
@@ -1286,34 +1310,81 @@ elif pagina == "Desempenho por Transportadora":
     resumo["% Fora"] = (resumo["Fora"] / resumo["Total"]) * 100
 
     resumo = resumo.sort_values("% Fora", ascending=False)
+    
+    st.markdown("## 📈 Evolução Mensal")
+
+    transportadoras_graf = sorted(
+        df["Transportadora"].unique()
+    )
+
+    transp_sel = st.selectbox(
+        "Transportadora",
+        transportadoras_graf
+    )
+
+    df_graf = mensal[
+        mensal["Transportadora"] == transp_sel
+    ].copy()
+
+    df_graf = df_graf.sort_values("Mes")
+
+    df_graf["Mes"] = pd.to_datetime(df_graf["Mes"])
+
+    df_graf = df_graf.sort_values("Mes")
+
+    fig = px.line(
+        df_graf,
+        x="Mes",
+        y="% Dentro",
+        markers=True,
+        title=f"Desempenho Mensal - {transp_sel}"
+    )
+
+    fig.update_layout(
+        xaxis_title="Mês",
+        yaxis_title="% Dentro do Prazo",
+        height=450
+    )
+
+    st.plotly_chart(
+        fig,
+        use_container_width=True
+    )
 
     # ==============================
     # VISUAL (MESMO PADRÃO)
     # ==============================
 
     for _, row in resumo.iterrows():
+    
+            transportadora = row["Transportadora"]
 
-        st.markdown(
-            f"""
-            <div style="
-                background:white;
-                padding:14px;
-                border-radius:12px;
-                box-shadow:0 2px 6px rgba(0,0,0,0.06);
-                margin-bottom:10px;
-            ">
-                <div style="font-size:14px;color:#6b7280;">
-                    {row["Transportadora"]}
-                </div>
-                <div style="font-size:18px;font-weight:700;color:#0f2a44;">
-                    Dentro: {int(row["Dentro"])} ({row["% Dentro"]:.1f}%) &nbsp;&nbsp;|&nbsp;&nbsp;
-                    Fora: {int(row["Fora"])} ({row["% Fora"]:.1f}%)
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+            df_transp = df[
+                df["Transportadora"] == transportadora
+            ].copy()
 
+            df_fora = df_transp[
+                df_transp["DentroPrazo"] == False
+            ].copy()
+
+            st.write(f"### {transportadora}")
+
+            st.write(
+                f"Dentro: {int(row['Dentro'])} ({row['% Dentro']:.1f}%) | "
+                f"Fora: {int(row['Fora'])} ({row['% Fora']:.1f}%)"
+            )
+
+            if not df_fora.empty:
+
+                csv = df_fora.to_csv(index=False).encode("utf-8-sig")
+
+                st.download_button(
+                    label=f"⬇️ Baixar atrasados - {transportadora}",
+                    data=csv,
+                    file_name=f"atrasados_{transportadora}.csv",
+                    mime="text/csv",
+                    key=f"download_atrasados_{transportadora}"
+                )
 # ==============================
 # INDICADOR DE DEVOLUÇÃO
 # ==============================
@@ -1743,24 +1814,24 @@ elif pagina == "Indicador de Devolução":
 
             graf_vendas = graf_vendas.sort_values("Mes")
 
-            fig, ax = plt.subplots(figsize=(20,8))
-
-            ax.plot(
-                graf_vendas["Mes"],
-                graf_vendas["ValorVenda"],
-                marker="o"
+            fig = px.line(
+                graf_vendas,
+                x="Mes",
+                y="ValorVenda",
+                markers=True,
+                title="Venda mensal - Transportadoras"
             )
 
-            ax.set_title("Venda mensal - Transportadoras")
-            ax.set_xlabel("Mês")
-            ax.set_ylabel("Valor")
+            fig.update_layout(
+                xaxis_title="Mês",
+                yaxis_title="Valor",
+                height=500
+            )
 
-            ax.xaxis.set_major_formatter(mdates.DateFormatter('%b/%Y'))
-
-            plt.xticks(rotation=45)
-
-            st.pyplot(fig, use_container_width=True)
-            plt.close(fig)
+            st.plotly_chart(
+                fig,
+                use_container_width=True
+            )
 
             st.markdown("### NFD gerada")
             st.write(f"{moeda(nfd_total)} | {perc_transportes(indice_nfd, venda_mes)}")
@@ -1868,32 +1939,28 @@ elif pagina == "Indicador de Devolução":
             # PLOT
             # ==============================
 
-            fig, ax = plt.subplots(figsize=(8,4))
-
-            ax.plot(
-                graf_indice["Mes"],
-                graf_indice["IndiceAtual"] * 100,
-                label="Índice atual"
+            fig = px.line(
+                graf_indice,
+                x="Mes",
+                y=["IndiceAtual", "IndicePotencial"],
+                markers=True,
+                title="Impacto Potencial Triplo no Índice de Devolução"
             )
 
-            ax.plot(
-                graf_indice["Mes"],
-                graf_indice["IndicePotencial"] * 100,
-                label="Índice com potencial"
+            fig.update_layout(
+                yaxis_title="Índice %",
+                xaxis_title="Mês",
+                height=450
             )
 
-            ax.set_title("Impacto Potencial Triplo no Índice de Devolução")
-            ax.set_ylabel("Índice %")
+            fig.update_yaxes(
+                tickformat=".2%"
+            )
 
-            ax.legend()
-
-            ax.xaxis.set_major_formatter(mdates.DateFormatter('%b/%Y'))
-
-            plt.xticks(rotation=45)
-
-            st.pyplot(fig, use_container_width=True)
-
-            plt.close(fig)
+            st.plotly_chart(
+                fig,
+                use_container_width=True
+            )
             
     # =====================================
     # DEVOLUÇÃO - PAINEL BRAVIUM
@@ -2058,7 +2125,7 @@ elif pagina == "Indicador de Devolução":
                 </div>
             </div>
             """,
-            unsafe_allow_html=True
+                
         )
         
         # ==============================
@@ -2073,24 +2140,24 @@ elif pagina == "Indicador de Devolução":
 
         graf_bravium = graf_bravium.sort_values("Mes_Pedido")
 
-        fig, ax = plt.subplots(figsize=(20,8))
-
-        ax.plot(
-            graf_bravium["Mes_Pedido"],
-            graf_bravium["ValorVenda"],
-            marker="o"
+        fig = px.line(
+            graf_bravium,
+            x="Mes_Pedido",
+            y="ValorVenda",
+            markers=True,
+            title="Venda mensal - Bravium"
         )
 
-        ax.set_title("Venda mensal - Bravium")
-        ax.set_xlabel("Mês")
-        ax.set_ylabel("Valor")
+        fig.update_layout(
+            xaxis_title="Mês",
+            yaxis_title="Valor",
+            height=500
+        )
 
-        ax.xaxis.set_major_formatter(mdates.DateFormatter('%b/%Y'))
-
-        plt.xticks(rotation=45)
-
-        st.pyplot(fig, use_container_width=True)
-        plt.close(fig)
+        st.plotly_chart(
+            fig,
+            use_container_width=True
+        )
 
         st.markdown("### NFD gerada (Empresa)")
         st.write(f"{moeda(nfd_empresa)} | {perc_bravium(indice_brav_nfd)}")
