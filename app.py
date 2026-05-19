@@ -2391,11 +2391,11 @@ elif pagina == "Trade-Off Logístico":
     # =====================================================
 
     df_trade = pd.read_excel(
-        r"data\Base_Pedidos_Codigo.xlsx"
+        "data/Base_Pedidos_Codigo.xlsx"
     )
 
     df_sim = pd.read_excel(
-        r"data\Base_Similaridade_Tarifarios.xlsx"
+        "data/Base_Similaridade_Tarifarios.xlsx"
     )
 
     # =====================================================
