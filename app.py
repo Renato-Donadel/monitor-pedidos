@@ -17,6 +17,7 @@ PASTA_MENSAL = os.path.join(PASTA_DATA, "mensal_status")
 os.makedirs(PASTA_MENSAL, exist_ok=True)
 ARQ_ATUAL = os.path.join(PASTA_DATA, "Monitor_Pedidos_Processado.xlsx")
 ARQ_DEVOLUCAO = os.path.join(PASTA_DATA, "Base_Streamlit_Devolucao.xlsx")
+ARQ_TRADEOFF = os.path.join(PASTA_DATA, "Base_Similaridade_Tarifarios.xlsx")
 LOGO_PATH = os.path.join(PASTA_DATA, "logo_bravium.png")
 
 TAMANHO_LOTE = 300
@@ -1300,6 +1301,7 @@ if pagina == "Monitor de Pedidos":
                     )
 
             st.divider()
+            
 
 # ==============================
 # DESEMPENHO POR TRANSPORTADORA
@@ -2400,10 +2402,10 @@ elif pagina == "Trade-Off Logístico":
 
         df_trade = pd.DataFrame()
 
-    if os.path.exists("data/Base_Similaridade_Tarifarios2.xlsx"):
+    if os.path.exists("data/Base_Similaridade_Tarifarios.xlsx"):
 
         df_sim = pd.read_excel(
-            "data/Base_Similaridade_Tarifarios2.xlsx"
+            "data/Base_Similaridade_Tarifarios.xlsx"
         )
 
     else:
@@ -2450,6 +2452,29 @@ elif pagina == "Trade-Off Logístico":
                 "90 dias"
             ]
         )
+        
+        if periodo == "30 dias":
+            dias = 30
+
+        elif periodo == "60 dias":
+            dias = 60
+
+        else:
+            dias = 90
+
+        df_trade["DataFinal"] = pd.to_datetime(
+            df_trade["DataFinal"],
+            errors="coerce"
+        )
+
+        data_corte = (
+            pd.Timestamp.today()
+            - pd.Timedelta(days=dias)
+        )
+
+        df_trade = df_trade[
+            df_trade["DataFinal"] >= data_corte
+        ]
 
     # =====================================================
     # CÓDIGOS TARIFÁRIOS
@@ -2498,8 +2523,50 @@ elif pagina == "Trade-Off Logístico":
 
     # ordena
     df_sim_filtrado = df_sim_filtrado.sort_values(
-        "Similaridade",
+        "Percentual",
         ascending=False
+    )
+    
+    # =====================================================
+    # BASE DESTINO
+    # =====================================================
+
+    codigos_destino = (
+
+        df_sim_filtrado["CodigoDestino"]
+        .dropna()
+        .unique()
+    )
+
+    df_destino = df_trade[
+
+        (df_trade["Transportadora"] == transportadora_destino)
+
+        &
+
+        (df_trade["CodigoTarifario"].isin(codigos_destino))
+
+    ].copy()
+    
+    # =====================================================
+    # TM DESTINO POR CÓDIGO
+    # =====================================================
+
+    tm_destino = (
+
+        df_destino.groupby("CodigoTarifario")
+
+        .agg(
+
+            TM_Destino=("ValorFrete", "mean"),
+
+            SLA_Destino=("DentroPrazo", "mean"),
+
+            NFD_Destino=("TemNFD", "mean")
+
+        )
+
+        .reset_index()
     )
 
     # =====================================================
@@ -2515,6 +2582,96 @@ elif pagina == "Trade-Off Logístico":
         (df_trade["CodigoTarifario"] == codigo_origem)
 
     ].copy()
+    
+    # =====================================================
+    # SLA
+    # =====================================================
+
+    sla_origem = round(
+
+        (
+            df_origem["DentroPrazo"]
+            .astype(bool)
+            .mean()
+        ) * 100,
+
+        2
+    )
+    
+    sla_destino = round(
+
+        (
+            (
+                df_sim_filtrado["SLA_Destino"]
+
+                *
+
+                df_sim_filtrado["Pedidos"]
+
+            ).sum()
+
+            /
+
+            df_sim_filtrado["Pedidos"].sum()
+
+        ) * 100,
+
+        2
+    )
+    
+    nfd_destino = round(
+
+        (
+            (
+                df_sim_filtrado["NFD_Destino"]
+
+                *
+
+                df_sim_filtrado["Pedidos"]
+
+            ).sum()
+
+            /
+
+            df_sim_filtrado["Pedidos"].sum()
+
+        ) * 100,
+
+        2
+    )
+    
+    tm_destino_ponderado = round(
+
+        gasto_projetado
+
+        /
+
+        pedidos_simulados,
+
+        2
+    )
+    
+    nfd_origem = round(
+
+        (
+            df_origem["TemNFD"]
+            .astype(bool)
+            .mean()
+        ) * 100,
+
+        2
+    )
+
+    nfd_destino = round(
+
+        (
+            df_destino["TemNFD"]
+            .astype(bool)
+            .mean()
+        ) * 100,
+
+        2
+    )
 
     total_pedidos = len(df_origem)
 
@@ -2522,15 +2679,45 @@ elif pagina == "Trade-Off Logístico":
     # PEDIDOS SIMULADOS
     # =====================================================
 
-    df_sim_filtrado["PedidosSimulados"] = (
+    df_sim_filtrado["Pedidos"] = (
 
         total_pedidos
 
         *
 
-        (df_sim_filtrado["Similaridade"] / 100)
+        (df_sim_filtrado["Percentual"] / 100)
 
     ).round(0)
+    
+    # =====================================================
+    # JOIN COM TM DESTINO
+    # =====================================================
+
+    df_sim_filtrado = df_sim_filtrado.merge(
+
+        tm_destino,
+
+        left_on="CodigoDestino",
+
+        right_on="CodigoTarifario",
+
+        how="left"
+    )
+
+    df_sim_filtrado["TM_Destino"] = (
+        df_sim_filtrado["TM_Destino"]
+        .fillna(0)
+    )
+
+    df_sim_filtrado["SLA_Destino"] = (
+        df_sim_filtrado["SLA_Destino"]
+        .fillna(0)
+    )
+
+    df_sim_filtrado["NFD_Destino"] = (
+        df_sim_filtrado["NFD_Destino"]
+        .fillna(0)
+    )
 
     # =====================================================
     # KPIs
@@ -2538,18 +2725,69 @@ elif pagina == "Trade-Off Logístico":
 
     similaridade_media = round(
 
-        df_sim_filtrado["Similaridade"].mean(),
+        df_sim_filtrado["Percentual"].mean(),
 
         2
     )
 
     pedidos_simulados = int(
 
-        df_sim_filtrado["PedidosSimulados"].sum()
+        df_sim_filtrado["Pedidos"].sum()
+
+    )
+    
+    frete_medio_origem = round(
+
+        df_origem["ValorFrete"]
+        .astype(float)
+        .mean(),
+
+        2
+    )
+
+
+    gasto_total = round(
+
+        df_origem["ValorFrete"]
+        .astype(float)
+        .sum(),
+
+        2
+    )
+    
+    # =====================================================
+    # PROJEÇÃO PONDERADA
+    # =====================================================
+
+    df_sim_filtrado["FreteProjetado"] = (
+
+        df_sim_filtrado["TM_Destino"]
+
+        *
+
+        df_sim_filtrado["Pedidos"]
 
     )
 
-    k1, k2, k3 = st.columns(3)
+    gasto_projetado = round(
+
+        df_sim_filtrado["FreteProjetado"].sum(),
+
+        2
+    )
+
+    economia_projetada = round(
+
+        gasto_total
+
+        -
+
+        gasto_projetado,
+
+        2
+    )
+
+    k1, k2, k3, k4, k5, k6, k7, k8, k9, k10, k11 = st.columns(11)
 
     with k1:
 
@@ -2571,6 +2809,62 @@ elif pagina == "Trade-Off Logístico":
             "Pedidos Simulados",
             f"{pedidos_simulados:,}"
         )
+        
+    with k4:
+
+        st.metric(
+            "TM Origem",
+            f"R$ {frete_medio_origem:,.2f}"
+        )
+
+    with k5:
+
+        st.metric(
+            "Gasto Total",
+            f"R$ {gasto_total:,.2f}"
+        )
+        
+    with k6:
+
+        st.metric(
+            "SLA Origem",
+            f"{sla_origem}%"
+        )
+
+    with k7:
+
+        st.metric(
+            "SLA Destino",
+            f"{sla_destino}%"
+        )
+        
+    with k8:
+
+        st.metric(
+            "TM Destino",
+            f"R$ {tm_destino_ponderado:,.2f}"
+        )
+
+    with k9:
+
+        st.metric(
+            "Economia Projetada",
+            f"R$ {economia_projetada:,.2f}"
+        )
+        
+    with k10:
+
+        st.metric(
+            "NFD Origem",
+            f"{nfd_origem}%"
+        )
+
+    with k11:
+
+        st.metric(
+            "NFD Destino",
+            f"{nfd_destino}%"
+        )
 
     st.divider()
 
@@ -2583,16 +2877,16 @@ elif pagina == "Trade-Off Logístico":
     tabela = df_sim_filtrado[
         [
             "CodigoDestino",
-            "Similaridade",
-            "PedidosSimulados"
+            "Percentual",
+            "Pedidos"
         ]
     ].copy()
 
     tabela = tabela.rename(columns={
 
         "CodigoDestino": "Código Destino",
-        "Similaridade": "Similaridade %",
-        "PedidosSimulados": "Pedidos Simulados"
+        "Percentual": "Similaridade %",
+        "Pedidos": "Pedidos Simulados"
 
     })
 
