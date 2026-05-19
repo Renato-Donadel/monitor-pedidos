@@ -2598,58 +2598,7 @@ elif pagina == "Trade-Off Logístico":
         2
     )
     
-    sla_destino = round(
-
-        (
-            (
-                df_sim_filtrado["SLA_Destino"]
-
-                *
-
-                df_sim_filtrado["Pedidos"]
-
-            ).sum()
-
-            /
-
-            df_sim_filtrado["Pedidos"].sum()
-
-        ) * 100,
-
-        2
-    )
     
-    nfd_destino = round(
-
-        (
-            (
-                df_sim_filtrado["NFD_Destino"]
-
-                *
-
-                df_sim_filtrado["Pedidos"]
-
-            ).sum()
-
-            /
-
-            df_sim_filtrado["Pedidos"].sum()
-
-        ) * 100,
-
-        2
-    )
-    
-    tm_destino_ponderado = round(
-
-        gasto_projetado
-
-        /
-
-        pedidos_simulados,
-
-        2
-    )
     
     nfd_origem = round(
 
@@ -2718,6 +2667,48 @@ elif pagina == "Trade-Off Logístico":
         df_sim_filtrado["NFD_Destino"]
         .fillna(0)
     )
+    
+    sla_destino = round(
+
+        (
+            (
+                df_sim_filtrado["SLA_Destino"]
+
+                *
+
+                df_sim_filtrado["Pedidos"]
+
+            ).sum()
+
+            /
+
+            df_sim_filtrado["Pedidos"].sum()
+
+        ) * 100,
+
+        2
+    ) if df_sim_filtrado["Pedidos"].sum() > 0 else 0
+
+    nfd_destino = round(
+
+        (
+            (
+                df_sim_filtrado["NFD_Destino"]
+
+                *
+
+                df_sim_filtrado["Pedidos"]
+
+            ).sum()
+
+            /
+
+            df_sim_filtrado["Pedidos"].sum()
+
+        ) * 100,
+
+        2
+    ) if df_sim_filtrado["Pedidos"].sum() > 0 else 0
 
     # =====================================================
     # KPIs
@@ -2786,6 +2777,17 @@ elif pagina == "Trade-Off Logístico":
 
         2
     )
+    
+    tm_destino_ponderado = round(
+
+        gasto_projetado
+
+        /
+
+        pedidos_simulados,
+
+        2
+    ) if pedidos_simulados > 0 else 0
 
     k1, k2, k3, k4, k5, k6, k7, k8, k9, k10, k11 = st.columns(11)
 
@@ -2878,15 +2880,43 @@ elif pagina == "Trade-Off Logístico":
         [
             "CodigoDestino",
             "Percentual",
-            "Pedidos"
+            "Pedidos",
+            "TM_Destino",
+            "SLA_Destino",
+            "NFD_Destino",
+            "FreteProjetado"
         ]
     ].copy()
+
+    tabela["TM_Destino"] = tabela["TM_Destino"].round(2)
+
+    tabela["SLA_Destino"] = (
+        tabela["SLA_Destino"] * 100
+    ).round(2)
+
+    tabela["NFD_Destino"] = (
+        tabela["NFD_Destino"] * 100
+    ).round(2)
+
+    tabela["FreteProjetado"] = (
+        tabela["FreteProjetado"]
+    ).round(2)
 
     tabela = tabela.rename(columns={
 
         "CodigoDestino": "Código Destino",
+
         "Percentual": "Similaridade %",
-        "Pedidos": "Pedidos Simulados"
+
+        "Pedidos": "Pedidos Simulados",
+
+        "TM_Destino": "TM Destino",
+
+        "SLA_Destino": "SLA Destino %",
+
+        "NFD_Destino": "NFD Destino %",
+
+        "FreteProjetado": "Valor Projetado"
 
     })
 
