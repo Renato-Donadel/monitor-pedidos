@@ -2390,13 +2390,25 @@ elif pagina == "Trade-Off Logístico":
     # CARREGAR BASES
     # =====================================================
 
-    df_trade = pd.read_excel(
-        "data/Base_Pedidos_Codigo.xlsx"
-    )
+    if os.path.exists("data/Base_Pedidos_Codigo.xlsx"):
 
-    df_sim = pd.read_excel(
-        "data/Base_Similaridade_Tarifarios.xlsx"
-    )
+        df_trade = pd.read_excel(
+            "data/Base_Pedidos_Codigo.xlsx"
+        )
+
+    else:
+
+        df_trade = pd.DataFrame()
+
+    if os.path.exists("data/Base_Similaridade_Tarifarios.xlsx"):
+
+        df_sim = pd.read_excel(
+            "data/Base_Similaridade_Tarifarios.xlsx"
+        )
+
+    else:
+
+        df_sim = pd.DataFrame()
 
     # =====================================================
     # FILTROS
