@@ -1,2207 +1,2623 @@
-import streamlit as st
-import pandas as pd
-import os
-from io import BytesIO
-import matplotlib.pyplot as plt
-import plotly.express as px
-import re
-import base64
+        import streamlit as st
+        import pandas as pd
+        import os
+        from io import BytesIO
+        import matplotlib.pyplot as plt
+        import plotly.express as px
+        import re
+        import base64
 
-# ==============================
-# CONFIGS
-# ==============================
-BASE_DIR = os.path.dirname(__file__)
-PASTA_DATA = os.path.join(BASE_DIR, "data")
-PASTA_HIST = os.path.join(PASTA_DATA, "historico")
-PASTA_MENSAL = os.path.join(PASTA_DATA, "mensal_status")
-os.makedirs(PASTA_MENSAL, exist_ok=True)
-ARQ_ATUAL = os.path.join(PASTA_DATA, "Monitor_Pedidos_Processado.xlsx")
-ARQ_DEVOLUCAO = os.path.join(PASTA_DATA, "Base_Streamlit_Devolucao.xlsx")
-LOGO_PATH = os.path.join(PASTA_DATA, "logo_bravium.png")
+        # ==============================
+        # CONFIGS
+        # ==============================
+        BASE_DIR = os.path.dirname(__file__)
+        PASTA_DATA = os.path.join(BASE_DIR, "data")
+        PASTA_HIST = os.path.join(PASTA_DATA, "historico")
+        PASTA_MENSAL = os.path.join(PASTA_DATA, "mensal_status")
+        os.makedirs(PASTA_MENSAL, exist_ok=True)
+        ARQ_ATUAL = os.path.join(PASTA_DATA, "Monitor_Pedidos_Processado.xlsx")
+        ARQ_DEVOLUCAO = os.path.join(PASTA_DATA, "Base_Streamlit_Devolucao.xlsx")
+        LOGO_PATH = os.path.join(PASTA_DATA, "logo_bravium.png")
 
-TAMANHO_LOTE = 300
+        TAMANHO_LOTE = 300
 
-STATUS_DIARIOS = [
-    "TSP - Pendente Transportes - Dados do Recebedor Solicitado",
-    "TSP - Item Faltante",
-    "TSP - Pendente Transportes - Aguardando Acareação",
-    "TSP - Pendente Transportes - Acareação Solicitada",
-    "TSP - Item Faltante Solicitado",
-    "TSP - Aguardando Dados do Recebedor"
-]
-
-STATUS_Manuais = [
-    "TSP - Críticos",
-    "TSP - Reentrega",
-    "TSP - Reentregar/Endereço correto",
-    "Aguardando tratativa transportadora",
-    "TSP - Aguardando Acareação",
-    "TSP - Pendente Transportes - Acareação Solicitada",
-    "TSP - Aguardando Dados do Recebedor",
-    "TSP - Pendente Transportes - Dados do Recebedor Solicitado",
-    "TSP - Item Faltante",
-    "TSP - Item Faltante Solicitado",
-    "TSP - Aguardando Avaliação de Problema de Coleta",
-    "TSP - Coleta Realizada",
-    "TSP - Aguardando Coleta",
-    "TSP - Coleta Agendada",
-    "TSP - Aguardando Envio de Guia de Retenção ao Fiscal"
-]
-
-st.set_page_config(
-    page_title="BI Executivo - Monitor",
-    layout="wide",
-    page_icon="📊"
-)
-
-# ==============================
-# ESTILO
-# ==============================
-
-  
-st.markdown("""
-<style>
-
-    .titulo-painel {
-        background: linear-gradient(90deg,#0f2a44,#1f4e79);
-        color: white;
-        font-size: 20px;
-        font-weight: 700;
-        text-align: center;
-        padding: 12px;
-        border-radius: 12px;
-        margin-bottom: 20px;
-    }
-
-    .separador-colunas {
-        border-right: 6px solid #1f4e79;
-        padding-right: 25px;
-    }
-
-    </style>
-<style>
-.stApp { background-color: #f4f6f9; }
-
-.header-box { 
-background: linear-gradient(90deg, #0f2a44, #1f4e79);
-padding: 18px 24px; 
-border-radius: 14px; 
-display: flex;
-align-items: center; 
-gap: 20px; 
-margin-bottom: 20px; 
-}
-
-.header-title { 
-color: white; 
-font-size: 26px; 
-font-weight: 700; 
-margin: 0; 
-}
-
-.header-sub { 
-color: white; 
-opacity: 0.85; 
-margin: 0; 
-font-size: 14px; 
-}
-
-.header-box img {
-max-width: 220px !important; 
-}
-
-.data-title { 
-font-size: 20px; 
-font-weight: 700; 
-color: #0f2a44;
-margin-top: 10px; 
-margin-bottom: 10px; 
-}
-
-.metric-small { 
-font-size: 16px !important; 
-font-weight: 600; 
-color: #0f2a44; 
-}
-
-/* BOTÕES */
-button {
-background: linear-gradient(90deg, #0f2a44, #1f4e79) !important;
-color: white !important;
-border-radius: 10px !important;
-font-weight: 700 !important;
-border: none !important;
-}
-
-button:hover {
-background: linear-gradient(90deg, #1f4e79, #0f2a44) !important;
-color: white !important;
-}
-
-/* ============================= */
-/* BOTÃO SIDEBAR (COR + ÍCONE) */
-/* ============================= */
-
-/* botão */
-button[data-testid="collapsedControl"] {
-    background-color: #0f2a44 !important;
-    border-radius: 8px !important;
-}
-
-/* ícone (seta) */
-button[data-testid="collapsedControl"] svg {
-    fill: white !important;
-    color: white !important;
-}
-
-/* hover */
-button[data-testid="collapsedControl"]:hover {
-    background-color: #1f4e79 !important;
-}
-
-</style>
-""", unsafe_allow_html=True)
-
-# ==============================
-# MENU LATERAL
-# ==============================
-
-pagina = st.sidebar.selectbox(
-    "Painel",
-    [
-        "Monitor de Pedidos",
-        "Indicador de Devolução",
-        "Desempenho por Transportadora"
-    ]
-)
-
-# ==============================
-# HEADER
-# ==============================
-logo_html = ""
-logo_base64 = ""
-if os.path.exists(LOGO_PATH):
-    with open(LOGO_PATH, "rb") as f:
-        logo_base64 = base64.b64encode(f.read()).decode()
-    logo_html = f'<img src="data:image/png;base64,{logo_base64}" width="120">'
-    
-st.markdown(
-    f"""
-    <style>
-    .stApp {{
-        background-color: #f4f6f9;
-    }}
-
-    .stApp::before {{
-        content: "";
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-image: url("data:image/png;base64,{logo_base64}");
-        background-repeat: no-repeat;
-        background-position: center;
-        background-size: 700px;
-        opacity: 0.03;
-        pointer-events: none;
-        z-index: 0;
-    }}
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-if pagina == "Monitor de Pedidos":
-    titulo = "Monitor de Pedidos — BI Executivo"
-    subtitulo = "Análise de Risco Logístico • Transportadora • Status • Região • Cliente"
-
-elif pagina == "Indicador de Devolução":
-    titulo = "Painel de Devolução"
-    subtitulo = "Devolução • Extravio • Avaria • Indicadores Logísticos"
-
-elif pagina == "Desempenho por Transportadora":
-    titulo = "Desempenho por Transportadora - SLA"
-    subtitulo = "Eficiência de Entrega • Dentro vs Fora do Prazo"
-
-st.markdown(f"""
-<div class="header-box">
-    {logo_html}
-    <div>
-        <p class="header-title">{titulo}</p>
-        <p class="header-sub">
-        {subtitulo}
-        </p>
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-# ==============================
-# FUNÇÕES
-# ==============================
-
-def normalizar_pedido(col):
-    return (
-        col.astype(str)
-        .str.upper()
-        .str.strip()
-        .str.replace(r"\.0$", "", regex=True)
-    )
-    
-def perc_transportes(x, venda_mes):
-    if venda_mes == 0:
-        return "0%"
-    return f"{(x / venda_mes)*100:.2f}%".replace(".", ",")
-
-def carregar_base_devolucao():
-    return pd.read_excel(
-        ARQ_DEVOLUCAO,
-        sheet_name=[
-            "vendas_mes",
-            "vendas_mes_pedido",
-            "vendas_transportadora",
-            "potencial_triplo",
-            "devolucao_processo",
-            "retornando_transportes",
-            "devolucao_atrasada",
-            "nfd_mes",
-            "nfd_coleta",
-            "base",
-            "retornando_detalhado",
-            "dev_atrasada_detalhado"
-        ]
-    )
-@st.cache_data(ttl=2)
-def ler_base(path):
-    if not os.path.exists(path):
-        return pd.DataFrame()
-
-    try:
-        if path.endswith(".csv"):
-            df = pd.read_csv(path, sep=";", encoding="utf-8-sig")
-        else:
-            df = pd.read_excel(path)
-    except Exception:
-        return pd.DataFrame()
-
-    # 🔥 PADRONIZA NOMES DAS COLUNAS
-    df.columns = df.columns.str.strip()
-
-    # 🔥 GARANTE PEDIDO
-    if "PedidoFormatado" in df.columns:
-        df["PedidoFormatado"] = normalizar_pedido(df["PedidoFormatado"])
-
-    # 🔥 GARANTE NIVEL IGOR (mesmo que venha com nome zoado)
-    col_igor = [c for c in df.columns if c.strip().upper() == "NIVEL_IGOR"]
-
-    if col_igor:
-        df["NIVEL_IGOR"] = df[col_igor[0]].astype(str).str.strip().str.upper()
-    else:
-        df["NIVEL_IGOR"] = ""
-
-    return df
-
-def listar_dias():
-    if not os.path.exists(PASTA_HIST):
-        return []
-    arquivos = os.listdir(PASTA_HIST)
-    datas = set()
-    for a in arquivos:
-        m = re.match(r"(\d{2}-\d{2}-\d{4})_manha\.(xlsx|csv)$", a)
-        if m:
-            datas.add(m.group(1))
-    return sorted(datas, key=lambda x: pd.to_datetime(x, format="%d-%m-%Y"))
-
-def caminho(dia):
-    caminho_csv = os.path.join(PASTA_HIST, f"{dia}_manha.csv")
-    caminho_xlsx = os.path.join(PASTA_HIST, f"{dia}_manha.xlsx")
-
-    if os.path.exists(caminho_csv):
-        return caminho_csv
-
-    return caminho_xlsx
-
-def pizza(tratados, restantes, titulo):
-    fig, ax = plt.subplots(figsize=(2.3, 2.3))
-    total = tratados + restantes
-    if total == 0:
-        ax.text(0.5, 0.5, "0", ha="center", va="center")
-    else:
-        ax.pie([tratados, restantes], autopct="%1.0f%%", startangle=90)
-    ax.set_title(titulo, fontsize=10)
-    buf = BytesIO()
-    fig.savefig(buf, format="png", bbox_inches="tight")
-    plt.close(fig)
-    buf.seek(0)
-    return buf.getvalue()
-    
-if pagina == "Monitor de Pedidos":
-
-    # ==============================
-    # DOWNLOAD POR CARTEIRA (COM ABA EXTRA)
-    # ==============================
-    st.markdown("### 📥 Exportação por Carteira (300 em 300)")
-    if st.button("🔄 Atualizar dados"):
-        st.cache_data.clear()
-        st.rerun()
-
-    df_atual = ler_base(ARQ_ATUAL)
-    # 🔥 NORMALIZA CARTEIRA (CORRIGE IGOR SUMINDO)
-    if "Carteira" in df_atual.columns:
-        df_atual["Carteira"] = (
-            df_atual["Carteira"]
-            .astype(str)
-            .str.strip()
-        )
-    # 🔥 GARANTE DIAS COMO NUMÉRICO (IGOR)
-    if "DiasDesdeUltimoStatus" in df_atual.columns:
-        df_atual["DiasDesdeUltimoStatus"] = pd.to_numeric(
-            df_atual["DiasDesdeUltimoStatus"],
-            errors="coerce"
-        )
-    # 🔥 NORMALIZA STATUS
-    if "Status" in df_atual.columns:
-        df_atual["Status"] = (
-            df_atual["Status"]
-            .astype(str)
-            .str.upper()
-            .str.strip()
-        )
-   
-    # ==============================
-    # 🚚 KPI GERAL - PRAZO TRANSPORTADORA
-    # ==============================
-
-    if not df_atual.empty and "PrazoTransportadorDiasUteis" in df_atual.columns:
-
-        df_tmp = df_atual.copy()
-
-        # 🚫 EXCLUIR Status fora de desempenho
-        status_devolucao = [
-            "TSP - Aguardando Confirmar Devolução",
-            "TSP - Trânsferência para Devolução",
-            "TSP - Rota de Devolução",
-            "TSP - Reentrega",
-            "TSP - Aguardando Tratativa Transportadora",
-            "TSP - Coleta Realizada",
+        STATUS_DIARIOS = [
+            "TSP - Pendente Transportes - Dados do Recebedor Solicitado",
             "TSP - Item Faltante",
-            "TSP - REENTREGAR/ENDERECO CORRETO"
+            "TSP - Pendente Transportes - Aguardando Acareação",
+            "TSP - Pendente Transportes - Acareação Solicitada",
+            "TSP - Item Faltante Solicitado",
+            "TSP - Aguardando Dados do Recebedor"
         ]
 
-        df_tmp = df_tmp[~df_tmp["Status"].isin(status_devolucao)]
-
-        # 🚫 EXCLUIR AGUARDANDO EXPEDIÇÃO
-        df_tmp = df_tmp[
-            ~df_tmp["Status"].str.contains("AGUARDANDO EXPED", na=False)
+        STATUS_Manuais = [
+            "TSP - Críticos",
+            "TSP - Reentrega",
+            "TSP - Reentregar/Endereço correto",
+            "Aguardando tratativa transportadora",
+            "TSP - Aguardando Acareação",
+            "TSP - Pendente Transportes - Acareação Solicitada",
+            "TSP - Aguardando Dados do Recebedor",
+            "TSP - Pendente Transportes - Dados do Recebedor Solicitado",
+            "TSP - Item Faltante",
+            "TSP - Item Faltante Solicitado",
+            "TSP - Aguardando Avaliação de Problema de Coleta",
+            "TSP - Coleta Realizada",
+            "TSP - Aguardando Coleta",
+            "TSP - Coleta Agendada",
+            "TSP - Aguardando Envio de Guia de Retenção ao Fiscal"
         ]
 
-        # garante tipo numérico
-        df_tmp["DiasDesdeExpedicao"] = pd.to_numeric(df_tmp["DiasDesdeExpedicao"], errors="coerce")
-        df_tmp["PrazoTransportadorDiasUteis"] = pd.to_numeric(df_tmp["PrazoTransportadorDiasUteis"], errors="coerce")
+        st.set_page_config(
+            page_title="BI Executivo - Monitor",
+            layout="wide",
+            page_icon="📊"
+        )
 
-        # dentro / fora baseado SÓ na transportadora
-        dentro = len(df_tmp[
-            df_tmp["DiasDesdeExpedicao"] <= df_tmp["PrazoTransportadorDiasUteis"]
-        ])
+        # ==============================
+        # ESTILO
+        # ==============================
 
-        fora = len(df_tmp[
-            df_tmp["DiasDesdeExpedicao"] > df_tmp["PrazoTransportadorDiasUteis"]
-        ])
+          
+        st.markdown("""
+        <style>
 
-        total = dentro + fora
+            .titulo-painel {
+                background: linear-gradient(90deg,#0f2a44,#1f4e79);
+                color: white;
+                font-size: 20px;
+                font-weight: 700;
+                text-align: center;
+                padding: 12px;
+                border-radius: 12px;
+                margin-bottom: 20px;
+            }
 
-        perc_dentro = (dentro / total * 100) if total > 0 else 0
-        perc_fora = (fora / total * 100) if total > 0 else 0
+            .separador-colunas {
+                border-right: 6px solid #1f4e79;
+                padding-right: 25px;
+            }
 
-        st.markdown("### 🚚 Prazo Transportadora (Geral)")
+            </style>
+        <style>
+        .stApp { background-color: #f4f6f9; }
 
+        .header-box { 
+        background: linear-gradient(90deg, #0f2a44, #1f4e79);
+        padding: 18px 24px; 
+        border-radius: 14px; 
+        display: flex;
+        align-items: center; 
+        gap: 20px; 
+        margin-bottom: 20px; 
+        }
+
+        .header-title { 
+        color: white; 
+        font-size: 26px; 
+        font-weight: 700; 
+        margin: 0; 
+        }
+
+        .header-sub { 
+        color: white; 
+        opacity: 0.85; 
+        margin: 0; 
+        font-size: 14px; 
+        }
+
+        .header-box img {
+        max-width: 220px !important; 
+        }
+
+        .data-title { 
+        font-size: 20px; 
+        font-weight: 700; 
+        color: #0f2a44;
+        margin-top: 10px; 
+        margin-bottom: 10px; 
+        }
+
+        .metric-small { 
+        font-size: 16px !important; 
+        font-weight: 600; 
+        color: #0f2a44; 
+        }
+
+        /* BOTÕES */
+        button {
+        background: linear-gradient(90deg, #0f2a44, #1f4e79) !important;
+        color: white !important;
+        border-radius: 10px !important;
+        font-weight: 700 !important;
+        border: none !important;
+        }
+
+        button:hover {
+        background: linear-gradient(90deg, #1f4e79, #0f2a44) !important;
+        color: white !important;
+        }
+
+        /* ============================= */
+        /* BOTÃO SIDEBAR (COR + ÍCONE) */
+        /* ============================= */
+
+        /* botão */
+        button[data-testid="collapsedControl"] {
+            background-color: #0f2a44 !important;
+            border-radius: 8px !important;
+        }
+
+        /* ícone (seta) */
+        button[data-testid="collapsedControl"] svg {
+            fill: white !important;
+            color: white !important;
+        }
+
+        /* hover */
+        button[data-testid="collapsedControl"]:hover {
+            background-color: #1f4e79 !important;
+        }
+
+        </style>
+        """, unsafe_allow_html=True)
+
+        # ==============================
+        # MENU LATERAL
+        # ==============================
+        pagina = st.sidebar.radio(
+            "Painel",
+            [
+                "Monitor de Pedidos",
+                "Indicador de Devolução",
+                "Desempenho por Transportadora",
+                "Trade-Off Logístico"
+            ]
+        )
+
+        # ==============================
+        # HEADER
+        # ==============================
+        logo_html = ""
+        logo_base64 = ""
+        if os.path.exists(LOGO_PATH):
+            with open(LOGO_PATH, "rb") as f:
+                logo_base64 = base64.b64encode(f.read()).decode()
+            logo_html = f'<img src="data:image/png;base64,{logo_base64}" width="120">'
+            
         st.markdown(
             f"""
-            <div style="
-                background:white;
-                padding:14px;
-                border-radius:12px;
-                box-shadow:0 2px 6px rgba(0,0,0,0.06);
-                margin-bottom:20px;
-            ">
-                <div style="font-size:14px;color:#6b7280;">Transportadora</div>
-                <div style="font-size:18px;font-weight:700;color:#0f2a44;">
-                    Dentro: {dentro} ({perc_dentro:.1f}%) &nbsp;&nbsp;|&nbsp;&nbsp;
-                    Fora: {fora} ({perc_fora:.1f}%)
-                </div>
-            </div>
+            <style>
+            .stApp {{
+                background-color: #f4f6f9;
+            }}
+
+            .stApp::before {{
+                content: "";
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-image: url("data:image/png;base64,{logo_base64}");
+                background-repeat: no-repeat;
+                background-position: center;
+                background-size: 700px;
+                opacity: 0.03;
+                pointer-events: none;
+                z-index: 0;
+            }}
+            </style>
             """,
             unsafe_allow_html=True
         )
-    if "offsets_carteira" not in st.session_state:
-        st.session_state["offsets_carteira"] = {}
 
-    if not df_atual.empty and "Carteira" in df_atual.columns:
+        if pagina == "Monitor de Pedidos":
+            titulo = "Monitor de Pedidos — BI Executivo"
+            subtitulo = "Análise de Risco Logístico • Transportadora • Status • Região • Cliente"
 
-        if "Ranking" in df_atual.columns:
-            df_atual = df_atual.sort_values("Ranking").reset_index(drop=True)
+        elif pagina == "Indicador de Devolução":
+            titulo = "Painel de Devolução"
+            subtitulo = "Devolução • Extravio • Avaria • Indicadores Logísticos"
 
-        carteiras = sorted(df_atual["Carteira"].dropna().unique())
-
-        # 🔥 REMOVE RENATO DO FRONT
-        carteiras = [c for c in carteiras if c != "Renato"]
-        carteiras = [c for c in carteiras if c != "Augusto"]
-
-        if "Igor" in df_atual["Carteira"].values and "Igor" not in carteiras:
-            carteiras.append("Igor")
-
-        for carteira in carteiras:
-        
+        elif pagina == "Desempenho por Transportadora":
+            titulo = "Desempenho por Transportadora - SLA"
+            subtitulo = "Eficiência de Entrega • Dentro vs Fora do Prazo"
             
-            if carteira == "Renato":
-                continue
-
-            if f"next_{carteira}" not in st.session_state:
-                st.session_state[f"next_{carteira}"] = False
-
-            df_carteira = df_atual[
-                df_atual["Carteira"] == carteira
-            ].copy()
-            
-            if carteira == "Igor" and df_carteira.empty:
-                st.write("Igor sem dados — verificar base")
-            
-            # REMOVE DUPLICIDADE POR PEDIDO
-            if "PedidoFormatado" in df_carteira.columns:
-                df_carteira = df_carteira.drop_duplicates(subset=["PedidoFormatado"])
-
-            # ==============================
-            # 🎯 REGRA POR CARTEIRA
-            # ==============================
-
-            if carteira == "Igor":
-                df_dentro_prazo = df_carteira[
-                df_carteira["Nivel_Igor_30d"] == "Dentro"
-                ]
-
-                df_fora_prazo = df_carteira[
-                    df_carteira["Nivel_Igor_30d"] == "Fora"
-                ].reset_index(drop=True)
-                   
-            else:
-
-                for col in ["Cliente_Dentro","Transportadora_Dentro","Status_Dentro","Regiao_Dentro"]:
-                    df_carteira[col] = df_carteira[col].astype(str).str.strip().str.upper()
-
-                df_dentro_prazo = df_carteira[
-                    (df_carteira["Cliente_Dentro"] == "X") &
-                    (df_carteira["Transportadora_Dentro"] == "X") &
-                    (df_carteira["Status_Dentro"] == "X") &
-                    (df_carteira["Regiao_Dentro"] == "X")
-                ]
-
-                df_fora_prazo = df_carteira[
-                    ~(
-                        (df_carteira["Cliente_Dentro"] == "X") &
-                        (df_carteira["Transportadora_Dentro"] == "X") &
-                        (df_carteira["Status_Dentro"] == "X") &
-                        (df_carteira["Regiao_Dentro"] == "X")
-                    )
-                ].reset_index(drop=True)
-
-            total = len(df_fora_prazo)
-            total_dentro = len(df_dentro_prazo)
-
-            offset = st.session_state["offsets_carteira"].get(carteira, 0)
-            if offset >= total:
-                offset = 0
-                st.session_state["offsets_carteira"][carteira] = 0
-
-            if st.session_state[f"next_{carteira}"]:
-                offset = offset + TAMANHO_LOTE
-                st.session_state["offsets_carteira"][carteira] = offset
-                st.session_state[f"next_{carteira}"] = False
-
-            inicio = offset
-            fim = min(offset + TAMANHO_LOTE, total)
-
-            lote = df_fora_prazo.iloc[inicio:fim]
-
-            if not lote.empty or carteira == "Igor":
-                buffer = BytesIO()
-
-                with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
-                    lote.to_excel(writer, index=False, sheet_name="Lote")
-
-                    df_status = df_carteira[
-                        df_carteira["Status"].isin(STATUS_DIARIOS)
-                    ]
-
-                    if not df_status.empty:
-                        df_status.to_excel(
-                            writer,
-                            index=False,
-                            sheet_name="Status Diários"
-                        )
-
-                buffer.seek(0)
-
-                perc_fora = (total / (total + total_dentro)) * 100 if (total + total_dentro) > 0 else 0
-                barra = int(perc_fora // 5)
-
-                col1, col2 = st.columns([4, 2])
-
-                total_geral = total + total_dentro
-
-                perc_dentro = (total_dentro / total_geral) * 100 if total_geral > 0 else 0
-                perc_fora = (total / total_geral) * 100 if total_geral > 0 else 0
-
-                with col1:
-                    st.write(f"**{carteira}** — {inicio+1} até {fim} de {total}")
-                    st.write(
-                        f"Dentro do prazo: {total_dentro} ({perc_dentro:.1f}%) | "
-                        f"Fora do prazo: {total} ({perc_fora:.1f}%)"
-                    )
-                   
-                with col2:
-                    if st.download_button(
-                        label=f"⬇️ Baixar {carteira}",
-                        data=buffer,
-                        file_name=f"{carteira}_{inicio+1}_a_{fim}.xlsx",
-                        key=f"dl_{carteira}_{offset}"
-                    ):
-                        st.session_state[f"next_{carteira}"] = True
-                        st.rerun()
-                                         
-                  
-    # ==============================
-    # 🧑 CARTEIRA AUGUSTO (NOVA)
-    # ==============================
-
-    if "Carteira" in df_atual.columns:
-
-        df_augusto = df_atual[
-            df_atual["Carteira"] == "Augusto"
-        ].copy()
-
-    else:
-        df_augusto = pd.DataFrame()
-
-    # REMOVE DUPLICIDADE POR PEDIDO
-    if "PedidoFormatado" in df_augusto.columns:
-        df_augusto = df_augusto.drop_duplicates(subset=["PedidoFormatado"])
-
-    total_augusto = len(df_augusto)
-
-    col1, col2 = st.columns([4,2])
-
-    with col1:
-        st.write(f"**Augusto** — 1 até {total_augusto} de {total_augusto}")
-        df_augusto["Cliente_Dentro"] = df_augusto["Cliente_Dentro"].astype(str).str.strip().str.upper()
-        df_augusto["Transportadora_Dentro"] = df_augusto["Transportadora_Dentro"].astype(str).str.strip().str.upper()
-        df_augusto["Status_Dentro"] = df_augusto["Status_Dentro"].astype(str).str.strip().str.upper()
-        df_augusto["Regiao_Dentro"] = df_augusto["Regiao_Dentro"].astype(str).str.strip().str.upper()
-
-        dentro = len(df_augusto[
-            (df_augusto["Cliente_Dentro"] == "X") &
-            (df_augusto["Transportadora_Dentro"] == "X") &
-            (df_augusto["Status_Dentro"] == "X") &
-            (df_augusto["Regiao_Dentro"] == "X")
-        ])
-
-        fora = len(df_augusto) - dentro
-
-        total = dentro + fora
-
-        perc_dentro = (dentro / total * 100) if total > 0 else 0
-        perc_fora = (fora / total * 100) if total > 0 else 0
-
-        st.write(
-            f"Dentro do prazo: {dentro} ({perc_dentro:.1f}%) | "
-            f"Fora do prazo: {fora} ({perc_fora:.1f}%)"
-        )
-
-    with col2:
-
-        buffer = BytesIO()
-        df_augusto.to_excel(buffer, index=False)
-        buffer.seek(0)
-
-        st.download_button(
-            label="⬇️ Baixar Augusto",
-            data=buffer,
-            file_name="augusto.xlsx",
-            key="dl_augusto"
-        )
-
-    st.divider()
-
-    # ==============================
-    # 🚚 EXPEDIÇÃO — 3+ DIAS NO STATUS
-    # ==============================
-    st.markdown("### 🚚 Expedição (3+ dias no status)")
-
-    if not df_atual.empty:
-
-        if (
-            "Status" in df_atual.columns and
-            "DiasDesdeUltimoStatus" in df_atual.columns
-        ):
-
-            df_expedicao = df_atual[
-                (df_atual["Status"].str.contains("AGUARDANDO EXPED", na=False)) &
-                (df_atual["DiasDesdeUltimoStatus"] >= 3)
-            ].copy()
-
-            total = len(df_expedicao)
-
-            col1, col2 = st.columns([4, 2])
-
-            with col1:
-                st.write(
-                    f"Pedidos aguardando expedição há ≥ 3 dias úteis: **{total}**"
-                )
-
-            with col2:
-                if total > 0:
-
-                    colunas_exportar = [
-                        c for c in [
-                            "PedidoFormatado",
-                            "NotaFiscal",
-                            "Armazém",
-                            "Logistica",
-                            "DiasDesdeUltimoStatus"
-                        ] if c in df_expedicao.columns
-                    ]
-
-                    df_export = df_expedicao[colunas_exportar].copy()
-
-                    df_export = df_export.rename(columns={
-                        "DiasDesdeUltimoStatus": "Dias_Parado_no_Status"
-                    })
-
-                    df_export = df_export.sort_values(
-                        "Dias_Parado_no_Status",
-                        ascending=False
-                    )
-
-                    buffer = BytesIO()
-                    df_export.to_excel(buffer, index=False)
-                    buffer.seek(0)
-
-                    st.download_button(
-                        label="⬇️ Baixar Expedição (3+ dias)",
-                        data=buffer,
-                        file_name="expedicao_parada_3_dias_ou_mais.xlsx",
-                        key="download_expedicao_3dias"
-                    )
-                else:
-                    st.write("Nenhum pedido elegível.")
-
-    # ==============================
-    # BI EXECUTIVO
-    # ==============================
-    dias = listar_dias()
-
-    if len(dias) < 2:
-        st.warning("Histórico insuficiente na pasta data/historico.")
-        st.stop()
-
-    st.markdown("### 📈 Status Diários por Mês")
-
-    contagem = []
-
-    mes_atual = pd.Timestamp.today().to_period("M")
-
-    for dia_hist in dias:
-    
-        data = pd.to_datetime(dia_hist, format="%d-%m-%Y")
-
-        data = pd.to_datetime(dia_hist, format="%d-%m-%Y")
-        mes = data.to_period("M")
-
-        arquivo_mes = os.path.join(PASTA_MENSAL, f"{mes}.xlsx")
-
-        # Se o mês já estiver congelado
-        if mes != mes_atual and os.path.exists(arquivo_mes):
-
-            df_mes = pd.read_excel(arquivo_mes)
-
-            for _, row in df_mes.iterrows():
-                contagem.append((row["Data"], row["Qtd"]))
-
-            continue
-
-        # Caso contrário calcula normalmente
-        path = caminho(dia_hist)
-        df_temp = ler_base(path)
-
-        if df_temp.empty:
-            continue
-
-        df_temp["Status"] = (
-            df_temp["Status"]
-            .astype(str)
-            .str.upper()
-            .str.strip()
-        )
-
-        def limpar_status(s):
+        elif pagina == "Trade-Off Logístico":
+            titulo = "Trade-Off Logístico"
+            subtitulo = "Simulação Estratégica • SLA • NFD • Frete • Similaridade CEP"
+
+        st.markdown(f"""
+        <div class="header-box">
+            {logo_html}
+            <div>
+                <p class="header-title">{titulo}</p>
+                <p class="header-sub">
+                {subtitulo}
+                </p>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # ==============================
+        # FUNÇÕES
+        # ==============================
+
+        def normalizar_pedido(col):
             return (
-                str(s)
-                .upper()
-                .strip()
-                .replace("Ç", "C")
-                .replace("Ã", "A")
-                .replace("Á", "A")
-            )
-
-        status_validos = [limpar_status(s) for s in STATUS_DIARIOS]
-
-        df_temp["Status"] = df_temp["Status"].apply(limpar_status)
-
-        qtd = df_temp[
-            df_temp["Status"].isin(status_validos)
-        ].shape[0]
-
-        contagem.append((data, qtd))
-
-    if contagem:
-
-        df_graf = pd.DataFrame(contagem, columns=["Data", "Qtd"])
-        df_graf["Data"] = pd.to_datetime(df_graf["Data"], format="%d-%m-%Y")
-        df_graf = df_graf.sort_values("Data")
-        
-        # ==============================
-        # SALVAR MÊS FECHADO AUTOMATICAMENTE
-        # ==============================
-
-        mes_atual = pd.Timestamp.today().to_period("M")
-
-        for mes in df_graf["Data"].dt.to_period("M").unique():
-
-            if mes == mes_atual:
-                continue
-
-            arquivo_mes = os.path.join(PASTA_MENSAL, f"{mes}.xlsx")
-
-            # se ainda não existir, salva
-            if not os.path.exists(arquivo_mes):
-
-                df_mes = df_graf[
-                    df_graf["Data"].dt.to_period("M") == mes
-                ].copy()
-                
-                # ajuste especial fevereiro 2026
-                if mes.month == 2 and mes.year == 2026:
-                    df_mes = df_mes[df_mes["Data"].dt.day >= 18]
-
-                df_mes.to_excel(arquivo_mes, index=False)
-
-        # Agrupa por Ano + Mês
-        df_graf["AnoMes"] = df_graf["Data"].dt.to_period("M")
-
-        meses = df_graf["AnoMes"].unique()
-
-        colunas = st.columns(len(meses))
-
-        for i, mes in enumerate(meses):
-
-            df_mes = df_graf[df_graf["AnoMes"] == mes]
-        
-            # Se for fevereiro de 2026 (ajuste o ano se necessário)
-            if mes.month == 2 and mes.year == 2026:
-                df_mes = df_mes[df_mes["Data"].dt.day >= 18]
-
-            with colunas[i]:
-            
-                nome_mes = df_mes["Data"].dt.strftime("%B").iloc[0].capitalize()
-                ano = df_mes["Data"].dt.year.iloc[0]
-
-                fig = px.line(
-                    df_mes,
-                    x="Data",
-                    y="Qtd",
-                    title=f"{nome_mes}/{ano}"
-                )
-
-                fig.update_layout(
-                    height=220,
-                    margin=dict(l=10, r=10, t=40, b=10),
-                    xaxis_title="",
-                    yaxis_title=""
-                )
-
-                st.plotly_chart(
-                    fig,
-                    use_container_width=True
-                )
-                
-    # ==============================
-    # 📌 STATUS MANUAIS (POR MÊS - IGUAL DIÁRIOS)
-    # ==============================
-
-    st.markdown("### 📌 Status Manuais")
-
-    contagem = []
-    mes_atual = pd.Timestamp.today().to_period("M")
-
-    for dia_hist in dias:
-    
-        data = pd.to_datetime(dia_hist, format="%d-%m-%Y")
-
-        if data < pd.Timestamp("2026-05-01"):
-            continue
-
-        data = pd.to_datetime(dia_hist, format="%d-%m-%Y")
-        mes = data.to_period("M")
-
-        arquivo_mes = os.path.join(PASTA_MENSAL, f"manuais_{mes}.xlsx")
-
-        # 🔒 usa mês já salvo
-        if (
-            mes != mes_atual
-            and os.path.exists(arquivo_mes)
-            and mes >= pd.Period("2026-05", freq="M")
-        ):
-
-            df_mes = pd.read_excel(arquivo_mes)
-
-            for _, row in df_mes.iterrows():
-                contagem.append((
-                row["Data"],
-                row["Total"],
-                row.get("Entrou", 0),
-                row.get("Tratados", 0)
-            ))
-
-            continue
-
-        # 🔄 calcula mês atual
-        df_temp = ler_base(caminho(dia_hist))
-
-        if df_temp.empty:
-            continue
-
-        def limpar_status(s):
-            return (
-                str(s)
-                .upper()
-                .strip()
-                .replace("Ç", "C")
-                .replace("Ã", "A")
-                .replace("Á", "A")
-            )
-
-        df_temp["Status"] = df_temp["Status"].apply(limpar_status)
-        if "PedidoFormatado" in df_temp.columns:
-            df_temp = df_temp.drop_duplicates(subset=["PedidoFormatado"])
-        status_validos = [limpar_status(s) for s in STATUS_Manuais]
-
-        atuais = df_temp[
-            df_temp["Status"].isin(status_validos)
-        ].copy()
-        # 🔥 remover duplicidade
-        if "PedidoFormatado" in atuais.columns:
-            atuais = atuais.drop_duplicates(subset=["PedidoFormatado"])
-
-        # 🔥 carregar dia anterior
-        idx = dias.index(dia_hist)
-
-        if idx > 0:
-            dia_ant = dias[idx - 1]
-            df_ant = ler_base(caminho(dia_ant))
-
-            df_ant["Status"] = df_ant["Status"].apply(limpar_status)
-
-            anteriores = df_ant[
-                df_ant["Status"].isin(status_validos)
-            ].copy()
-
-            if "PedidoFormatado" in anteriores.columns:
-                anteriores = anteriores.drop_duplicates(subset=["PedidoFormatado"])
-
-        else:
-            anteriores = pd.DataFrame(columns=atuais.columns)
-
-        # 🔥 métricas
-        total = len(atuais)
-        tratados = len(anteriores[~anteriores["PedidoFormatado"].isin(atuais["PedidoFormatado"])])
-        entrou = len(atuais[~atuais["PedidoFormatado"].isin(anteriores["PedidoFormatado"])])
-
-        contagem.append((data, total, entrou, tratados))
-
-    if contagem:
-
-        df_graf = pd.DataFrame(contagem, columns=["Data", "Total", "Entrou", "Tratados"])
-        df_graf["Data"] = pd.to_datetime(df_graf["Data"])
-        df_graf = df_graf.sort_values("Data")
-
-        # 🔒 SALVAR MÊS FECHADO
-        for mes in df_graf["Data"].dt.to_period("M").unique():
-
-            if mes == mes_atual:
-                continue
-
-            arquivo_mes = os.path.join(PASTA_MENSAL, f"manuais_{mes}.xlsx")
-
-            if not os.path.exists(arquivo_mes):
-
-                df_mes = df_graf[
-                    df_graf["Data"].dt.to_period("M") == mes
-                ].copy()
-
-                df_mes.to_excel(arquivo_mes, index=False)
-
-        # 📊 GRÁFICO POR MÊS (IGUAL DIÁRIOS)
-        df_graf["AnoMes"] = df_graf["Data"].dt.to_period("M")
-
-        meses = df_graf["AnoMes"].unique()
-        colunas = st.columns(len(meses))
-
-        for i, mes in enumerate(meses):
-
-            df_mes = df_graf[df_graf["AnoMes"] == mes]
-
-            with colunas[i]:
-
-                df_plot = df_mes.melt(
-                    id_vars="Data",
-                    value_vars=["Total", "Entrou", "Tratados"],
-                    var_name="Tipo",
-                    value_name="Quantidade"
-                )
-                
-                nome_mes = df_mes["Data"].dt.strftime("%B").iloc[0].capitalize()
-                ano = df_mes["Data"].dt.year.iloc[0]
-
-                fig = px.line(
-                    df_plot,
-                    x="Data",
-                    y="Quantidade",
-                    color="Tipo",
-                    title=f"{nome_mes}/{ano}"
-                )
-
-                fig.update_layout(
-                    height=250,
-                    margin=dict(l=10, r=10, t=40, b=10),
-                    xaxis_title="",
-                    yaxis_title=""
-                )
-
-                st.plotly_chart(
-                    fig,
-                    use_container_width=True
-                )
-        
-    # ==============================
-    # LOOP ORIGINAL COMPLETO (PIZZAS)
-    # ==============================
-
-    dias_pizza = dias[-7:]
-
-    if len(dias_pizza) < 2:
-        st.warning("Histórico insuficiente para gráfico de pizza.")
-    else:
-        for i in range(len(dias_pizza)-1, 0, -1):
-
-            dia_atual = dias_pizza[i]
-            dia_ant = dias_pizza[i-1]
-
-            df_hist_atual = ler_base(caminho(dia_atual))
-            df_hist_ant = ler_base(caminho(dia_ant))
-            
-            df_hist_atual = df_hist_atual[
-                df_hist_atual["Logistica"] != "ATRUS INTERMEDIACAO"
-            ]
-
-            df_hist_ant = df_hist_ant[
-                df_hist_ant["Logistica"] != "ATRUS INTERMEDIACAO"
-            ]
-
-            if df_hist_atual.empty or df_hist_ant.empty:
-                continue
-
-            st.markdown(
-                f'<p class="data-title">📅 {dia_ant} ➜ {dia_atual}</p>',
-                unsafe_allow_html=True
-            )
-
-            col1, col2, col3, col4 = st.columns(4)
-
-            # TRIPLO
-            with col1:
-                if "Transportadora_Triplo" in df_hist_atual.columns:
-                
-                    atual = df_hist_atual[
-                        df_hist_atual["Transportadora_Triplo"]
-                        .astype(str)
-                        .str.strip()
-                        .str.upper() == "X"
-                    ]
-
-                    ant = df_hist_ant[
-                        df_hist_ant["Transportadora_Triplo"]
-                        .astype(str)
-                        .str.strip()
-                        .str.upper() == "X"
-                    ]
-                    restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
-                    entrou = atual[~atual["PedidoFormatado"].isin(ant["PedidoFormatado"])]
-                    tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
-
-                    valor_entrou = entrou["ValorNota"].sum() if "ValorNota" in entrou.columns else 0
-                    valor_restantes = restantes["ValorNota"].sum() if "ValorNota" in restantes.columns else 0
-
-                    valor_entrou_fmt = f"{valor_entrou:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-                    valor_restantes_fmt = f"{valor_restantes:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-
-                    st.image(pizza(len(tratados), len(restantes), "Triplo Transportadora"))
-
-                    st.markdown(
-                        f'<p class="metric-small">Tratados: {len(tratados)} / {len(ant)}</p>',
-                        unsafe_allow_html=True
-                    )
-
-                    st.markdown(
-                        f'<p class="metric-small">Entraram: {len(entrou)} | R$ {valor_entrou_fmt}</p>',
-                        unsafe_allow_html=True
-                    )
-
-                    st.markdown(
-                        f'<p class="metric-small">Remanescentes: {len(restantes)} | R$ {valor_restantes_fmt}</p>',
-                        unsafe_allow_html=True
-                    )
-
-                    buf = BytesIO()
-                    restantes.to_excel(buf, index=False)
-                    st.download_button(
-                        "Remanescentes Triplo",
-                        buf.getvalue(),
-                        file_name=f"remanescente_triplo_{dia_atual}.xlsx"
-                    )
-
-            # STATUS 2X
-            with col2:
-                if "Status_Dobro" in df_hist_atual.columns:
-
-                    df_hist_atual["Status_Dobro"] = df_hist_atual["Status_Dobro"].astype(str).str.strip().str.upper()
-                    df_hist_ant["Status_Dobro"] = df_hist_ant["Status_Dobro"].astype(str).str.strip().str.upper()
-
-                    atual = df_hist_atual[
-                        (df_hist_atual["Status_Dobro"] == "X") |
-                        (df_hist_atual["Status_Triplo"] == "X")
-                    ]
-
-                    ant = df_hist_ant[
-                        df_hist_ant["Status_Dobro"] == "X"
-                    ]
-
-                    tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
-                    restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
-                    entrou = atual[~atual["PedidoFormatado"].isin(ant["PedidoFormatado"])]
-                    tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
-
-                    st.image(pizza(len(tratados), len(restantes), "Status Específico 2x"))
-
-                    st.markdown(
-                        f'<p class="metric-small">Tratados: {len(tratados)} / {len(ant)}</p>',
-                        unsafe_allow_html=True
-                    )
-
-                    st.markdown(
-                        f'<p class="metric-small">Entraram: {len(entrou)}</p>',
-                        unsafe_allow_html=True
-                    )
-
-                    buf = BytesIO()
-                    restantes.to_excel(buf, index=False)
-                    st.download_button(
-                        "Remanescentes Status 2x",
-                        buf.getvalue(),
-                        file_name=f"remanescente_status_{dia_atual}.xlsx"
-                    )
-
-            # REGIÃO 2X
-            with col3:
-                if "Regiao_Dobro" in df_hist_atual.columns:
-
-                    atual = df_hist_atual[
-                        df_hist_atual["Regiao_Dobro"]
-                        .astype(str)
-                        .str.strip()
-                        .str.upper() == "X"
-                    ]
-
-                    ant = df_hist_ant[
-                        df_hist_ant["Regiao_Dobro"]
-                        .astype(str)
-                        .str.strip()
-                        .str.upper() == "X"
-                    ]
-
-                    tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
-                    restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
-                    entrou = atual[~atual["PedidoFormatado"].isin(ant["PedidoFormatado"])]
-
-                    st.image(pizza(len(tratados), len(restantes), "Região 2x Prazo"))
-
-                    st.markdown(
-                        f'<p class="metric-small">Tratados: {len(tratados)} / {len(ant)}</p>',
-                        unsafe_allow_html=True
-                    )
-
-                    st.markdown(
-                        f'<p class="metric-small">Entraram: {len(entrou)}</p>',
-                        unsafe_allow_html=True
-                    )
-
-                    buf = BytesIO()
-                    restantes.to_excel(buf, index=False)
-                    st.download_button(
-                        "Remanescentes Região 2x",
-                        buf.getvalue(),
-                        file_name=f"remanescente_regiao_{dia_atual}.xlsx"
-                    )
-                    
-            # CARTEIRA (TOP 300 DE CADA)
-
-            with col4:
-
-                if "Carteira" in df_hist_atual.columns:
-
-                    # ordenar se tiver ranking
-                    if "Ranking" in df_atual.columns:
-                        df_hist_atual = df_hist_atual.sort_values("Ranking")
-                        df_hist_ant = df_hist_ant.sort_values("Ranking")
-
-                    # pegar carteiras
-                    carteiras = df_hist_atual["Carteira"].dropna().unique()
-
-                    tratados_total = 0
-                    restantes_total = 0
-                    entrou_total = 0
-
-                    for c in carteiras:
-
-                        atual_carteira = df_hist_atual[df_hist_atual["Carteira"] == c].head(300)
-                        ant_carteira = df_hist_ant[df_hist_ant["Carteira"] == c].head(300)
-
-                        set_atual = set(atual_carteira["PedidoFormatado"])
-                        set_ant = set(ant_carteira["PedidoFormatado"])
-
-                        tratados = set_ant - set_atual
-                        restantes = set_ant & set_atual
-                        entrou = set_atual - set_ant
-
-                        tratados_total += len(tratados)
-                        restantes_total += len(restantes)
-                        entrou_total += len(entrou)
-                    # gráfico
-                    st.image(pizza(tratados_total, restantes_total, "Carteiras (Top 300)"))
-                    # métricas corretas
-                    st.markdown(
-                        f'<p class="metric-small">Tratados: {tratados_total} / {tratados_total + restantes_total}</p>',
-                        unsafe_allow_html=True
-                    )
-
-                    st.markdown(
-                        f'<p class="metric-small">Entraram: {entrou_total}</p>',
-                        unsafe_allow_html=True
-                    )
-
-                    # exportação correta
-                    restantes_df = pd.DataFrame()
-
-                    for c in carteiras:
-
-                        atual_carteira = df_hist_atual[df_hist_atual["Carteira"] == c].head(300)
-                        ant_carteira = df_hist_ant[df_hist_ant["Carteira"] == c].head(300)
-
-                        restantes_ids = set(ant_carteira["PedidoFormatado"]) & set(atual_carteira["PedidoFormatado"])
-
-                        restantes_df = pd.concat([
-                            restantes_df,
-                            ant_carteira[ant_carteira["PedidoFormatado"].isin(restantes_ids)]
-                        ])
-
-                    buf = BytesIO()
-                    restantes_df.to_excel(buf, index=False)
-
-                    st.download_button(
-                        "Remanescentes Carteiras",
-                        buf.getvalue(),
-                        file_name=f"remanescente_carteiras_{dia_atual}.xlsx"
-                    )
-
-            st.divider()
-
-# ==============================
-# DESEMPENHO POR TRANSPORTADORA
-# ==============================
-
-elif pagina == "Desempenho por Transportadora":
-
-    st.markdown("### 🚚 Desempenho por Transportadora")
-
-    ARQ_TRANSP = os.path.join(PASTA_DATA, "Base_Transportadora.xlsx")
-    
-    if not os.path.exists(ARQ_TRANSP):
-        st.error(f"Arquivo não encontrado: {ARQ_TRANSP}")
-        st.stop()
-        
-    @st.cache_data(ttl=300)
-    def carregar_base_transportadora(path):
-        return pd.read_excel(path)
-
-    try:
-        df = carregar_base_transportadora(ARQ_TRANSP)
-    except Exception as e:
-        st.error(f"Erro ao ler o arquivo: {e}")
-        st.stop()
-
-    if df.empty:
-        st.warning("Sem dados.")
-        st.stop()
-
-    # ==============================
-    # TRATAMENTO
-    # ==============================
-
-    df["DataExpedicao"] = pd.to_datetime(df["DataExpedicao"], errors="coerce")
-    df["DataFinal"] = pd.to_datetime(df["DataFinal"], errors="coerce")
-    
-    df["DataFinal"] = pd.to_datetime(df["DataFinal"], errors="coerce")
-    df["DataPrevista"] = pd.to_datetime(df["DataPrevista"], errors="coerce")
-
-    df = df.dropna(subset=["Transportadora", "DataFinal", "DataPrevista"])
-
-    df["DentroPrazo"] = df["DataFinal"].dt.date <= df["DataPrevista"].dt.date
-    
-    df["Mes"] = df["DataFinal"].dt.to_period("M").astype(str)
-
-    mensal = (
-        df.groupby(["Mes", "Transportadora"])
-        .agg(
-            Total=("DentroPrazo", "count"),
-            Dentro=("DentroPrazo", "sum")
-        )
-        .reset_index()
-    )
-
-    mensal["% Dentro"] = (
-        mensal["Dentro"] / mensal["Total"]
-    ) * 100
-    
-
-    # ==============================
-    # REGRA PRAZO
-    # ==============================
-
-    resumo = (
-        df.groupby("Transportadora")
-        .agg(
-            Total=("DentroPrazo", "count"),
-            Dentro=("DentroPrazo", "sum")
-        )
-        .reset_index()
-    )
-
-    resumo["Fora"] = resumo["Total"] - resumo["Dentro"]
-
-    resumo["% Dentro"] = (resumo["Dentro"] / resumo["Total"]) * 100
-    resumo["% Fora"] = (resumo["Fora"] / resumo["Total"]) * 100
-
-    resumo = resumo.sort_values("% Fora", ascending=False)
-    
-    st.markdown("## 📈 Evolução Mensal")
-
-    transportadoras_graf = sorted(
-        df["Transportadora"].unique()
-    )
-
-    transp_sel = st.selectbox(
-        "Transportadora",
-        transportadoras_graf
-    )
-
-    df_graf = mensal[
-        mensal["Transportadora"] == transp_sel
-    ].copy()
-
-    df_graf = df_graf.sort_values("Mes")
-
-    df_graf["Mes"] = pd.to_datetime(df_graf["Mes"])
-
-    df_graf = df_graf.sort_values("Mes")
-
-    fig = px.line(
-        df_graf,
-        x="Mes",
-        y="% Dentro",
-        markers=True,
-        title=f"Desempenho Mensal - {transp_sel}"
-    )
-
-    fig.update_layout(
-        xaxis_title="Mês",
-        yaxis_title="% Dentro do Prazo",
-        height=450
-    )
-
-    st.plotly_chart(
-        fig,
-        use_container_width=True
-    )
-
-    # ==============================
-    # VISUAL (MESMO PADRÃO)
-    # ==============================
-
-    for _, row in resumo.iterrows():
-    
-            transportadora = row["Transportadora"]
-
-            df_transp = df[
-                df["Transportadora"] == transportadora
-            ].copy()
-
-            df_fora = df_transp[
-                df_transp["DentroPrazo"] == False
-            ].copy()
-
-            st.write(f"### {transportadora}")
-
-            st.write(
-                f"Dentro: {int(row['Dentro'])} ({row['% Dentro']:.1f}%) | "
-                f"Fora: {int(row['Fora'])} ({row['% Fora']:.1f}%)"
-            )
-
-            if not df_fora.empty:
-
-                csv = df_fora.to_csv(index=False).encode("utf-8-sig")
-
-                st.download_button(
-                    label=f"⬇️ Baixar atrasados - {transportadora}",
-                    data=csv,
-                    file_name=f"atrasados_{transportadora}.csv",
-                    mime="text/csv",
-                    key=f"download_atrasados_{transportadora}"
-                )
-# ==============================
-# INDICADOR DE DEVOLUÇÃO
-# ==============================
-
-elif pagina == "Indicador de Devolução":
-
-    if not os.path.exists(ARQ_DEVOLUCAO):
-        st.warning("Base de devolução ainda não foi gerada.")
-        st.stop()
-
-    try:
-
-        bases = carregar_base_devolucao()
-        dev_atrasada_det = bases["dev_atrasada_detalhado"]
-        retornando_det = bases["retornando_detalhado"]
-        
-        # ==============================
-        # AJUSTE Sem_Data_Coleta
-        # ==============================
-
-        for df in [retornando_det, dev_atrasada_det]:
-            if "Mes" in df.columns:
-                df["Mes"] = df["Mes"].replace("Sem_Data_Coleta", "1977-07-01")
-        
-
-        vendas_mes = bases["vendas_mes"]
-        vendas_mes_pedido = bases["vendas_mes_pedido"]
-        vendas_transp = bases["vendas_transportadora"]
-        potencial = bases["potencial_triplo"]
-        devolucao_proc = bases["devolucao_processo"]
-        retornando_transp = bases["retornando_transportes"]
-        if "Mes" in retornando_transp.columns:
-            retornando_transp["Mes"] = retornando_transp["Mes"].replace("Sem_Data_Coleta", "1977-07-01")
-        devolucao_atras = bases["devolucao_atrasada"]
-        nfd_mes = bases["nfd_mes"]
-        nfd_coleta = bases["nfd_coleta"]
-
-    except Exception as e:
-        st.error(f"Erro ao ler base de devolução: {e}")
-        st.stop()
-
-    # PADRONIZAR TRANSPORTADORAS PARA O MERGE
-    vendas_transp["Transportadora"] = (
-        vendas_transp["Transportadora"]
-        .astype(str)
-        .str.strip()
-        .str.upper()
-    )
-    
-    potencial["Transportadora"] = (
-        potencial["Transportadora"]
-        .astype(str)
-        .str.strip()
-        .str.upper()
-    )
-
-    # ordenar os dados
-    vendas_mes = vendas_mes.sort_values("Mes")
-    vendas_transp = vendas_transp.sort_values(["Mes", "Transportadora"])
-    
-    # ==============================
-    # FORMATAR NOME DOS MESES
-    # ==============================
-
-    vendas_transp["Mes"] = pd.to_datetime(vendas_transp["Mes"].astype(str))
-    vendas_transp["Mes"] = vendas_transp["Mes"].dt.strftime("%B %Y").str.capitalize()
-    
-    potencial["Transportadora"] = (
-        potencial["Transportadora"]
-        .astype(str)
-        .str.strip()
-        .str.upper()
-    )
-
-    potencial["Mes"] = pd.to_datetime(potencial["Mes"].astype(str))
-    potencial["Mes"] = potencial["Mes"].dt.strftime("%B %Y").str.capitalize()
-    
-    devolucao_proc["Transportadora"] = (
-        devolucao_proc["Transportadora"]
-        .astype(str)
-        .str.strip()
-        .str.upper()
-    )
-
-    devolucao_proc["Mes"] = pd.to_datetime(devolucao_proc["Mes"].astype(str))
-    devolucao_proc["Mes"] = devolucao_proc["Mes"].dt.strftime("%B %Y").str.capitalize()
-    
-    devolucao_atras["Transportadora"] = (
-        devolucao_atras["Transportadora"]
-        .astype(str)
-        .str.strip()
-        .str.upper()
-    )
-
-    devolucao_atras["Mes"] = pd.to_datetime(devolucao_atras["Mes"].astype(str))
-    devolucao_atras["Mes"] = devolucao_atras["Mes"].dt.strftime("%B %Y").str.capitalize()
-    
-    if "Transportadora" in nfd_mes.columns:
-        nfd_mes["Transportadora"] = (
-            nfd_mes["Transportadora"]
-            .astype(str)
-            .str.strip()
-            .str.upper()
-        )
-    
-    nfd_mes["Mes_NFD"] = pd.to_datetime(nfd_mes["Mes_NFD"].astype(str))
-    nfd_mes["Mes_NFD"] = nfd_mes["Mes_NFD"].dt.strftime("%B %Y").str.capitalize()
-    
-    if "Transportadora" in nfd_coleta.columns:
-        nfd_coleta["Transportadora"] = (
-            nfd_coleta["Transportadora"]
-            .astype(str)
-            .str.strip()
-            .str.upper()
-        )
-
-    nfd_coleta["Mes_Coleta"] = pd.to_datetime(nfd_coleta["Mes_Coleta"].astype(str))
-    nfd_coleta["Mes_Coleta"] = nfd_coleta["Mes_Coleta"].dt.strftime("%B %Y").str.capitalize()
-    
-    
-    # ==============================
-    # FILTROS
-    # ==============================
-
-    meses = sorted(vendas_transp["Mes"].dropna().unique())
-    transportadoras = sorted(vendas_transp["Transportadora"].unique())
-    
-    # ==============================
-    # CONTROLE DE ABERTURA DOS FILTROS
-    # ==============================
-
-    if "abrir_filtro_mes" not in st.session_state:
-        st.session_state["abrir_filtro_mes"] = False
-
-    if "abrir_filtro_transp" not in st.session_state:
-        st.session_state["abrir_filtro_transp"] = False
-
-    col_space1, col_btn1, col_btn2, col_space2 = st.columns([2,1,1,2])
-
-    with col_btn1:
-        if st.button("Mês"):
-            st.session_state["abrir_filtro_mes"] = not st.session_state["abrir_filtro_mes"]
-
-    with col_btn2:
-        if st.button("Transportadora"):
-            st.session_state["abrir_filtro_transp"] = not st.session_state["abrir_filtro_transp"]
-
-
-    # ==============================
-    # FILTRO MÊS
-    # ==============================
-
-    if st.session_state["abrir_filtro_mes"]:
-
-        filtro_mes = st.multiselect(
-            "Filtrar mês",
-            options=meses,
-            default=meses
-        )
-
-        if st.button("Aplicar filtro mês"):
-            st.session_state["abrir_filtro_mes"] = False
-
-    else:
-        filtro_mes = meses
-
-
-    # ==============================
-    # FILTRO TRANSPORTADORA
-    # ==============================
-
-    if st.session_state["abrir_filtro_transp"]:
-
-        filtro_transportadora = st.multiselect(
-            "Filtrar transportadora",
-            options=transportadoras,
-            default=transportadoras
-        )
-
-        if st.button("Aplicar filtro transportadora"):
-            st.session_state["abrir_filtro_transp"] = False
-
-    else:
-        filtro_transportadora = transportadoras
-        
-    # filtros já existem aqui
-
-    retornando_det["ValorNota"] = retornando_det["ValorNota"].fillna(0)
-
-    retornando_det["DataColeta"] = pd.to_datetime(retornando_det["DataColeta"], errors="coerce")
-
-    retornando_det["Mes"] = (
-        retornando_det["DataColeta"]
-        .dt.strftime("%B %Y")
-        .str.capitalize()
-    )
-
-    retornando_total = retornando_det[
-        retornando_det["Mes"].isin(filtro_mes) &
-        retornando_det["Transportadora"].isin(filtro_transportadora)
-    ]["ValorNota"].sum()   
-    
-          
-    # ==============================
-    # TOTAIS DOS INDICADORES
-    # ==============================
-
-    venda_total = vendas_transp[
-        vendas_transp["Mes"].isin(filtro_mes) &
-        vendas_transp["Transportadora"].isin(filtro_transportadora)
-    ]["ValorVenda"].sum()
-
-    devolucao_total = devolucao_proc[
-        devolucao_proc["Mes"].isin(filtro_mes) &
-        devolucao_proc["Transportadora"].isin(filtro_transportadora)
-    ]["Devolucao_Processo"].sum()
-
-    potencial_total = potencial[
-        potencial["Mes"].isin(filtro_mes) &
-        potencial["Transportadora"].isin(filtro_transportadora)
-    ]["Potencial"].sum()
-
-    devolucao_atras_total = devolucao_atras[
-        devolucao_atras["Mes"].isin(filtro_mes) &
-        devolucao_atras["Transportadora"].isin(filtro_transportadora)
-    ]["Devolucao_Atrasada"].sum()
-
-
-    # percentuais
-    perc_devolucao = devolucao_total / venda_total if venda_total > 0 else 0
-    perc_potencial = potencial_total / venda_total if venda_total > 0 else 0
-    perc_atrasada = devolucao_atras_total / venda_total if venda_total > 0 else 0
-    
-    # ==============================
-    # FILTRO NAS NFD POR TRANSPORTADORA
-    # ==============================
-
-    nfd_mes = nfd_mes[
-        nfd_mes["Mes_NFD"].isin(filtro_mes)
-    ]
-
-    nfd_coleta = nfd_coleta[
-        nfd_coleta["Mes_Coleta"].isin(filtro_mes)
-    ]
-
-
-    # formatação
-    def moeda(x):
-        return f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-        
-    col_transp, col_brav = st.columns([2,2])
-    
-    hoje = pd.Timestamp.today().normalize()
-    fim_mes = hoje + pd.offsets.MonthEnd(0)
-    dias_restantes_mes = (fim_mes - hoje).days
-              
-    # =====================================
-    # DEVOLUÇÃO - PAINEL TRANSPORTES
-    # =====================================
-
-    with col_transp:
-    
-            st.markdown(
-                '<div class="titulo-painel">Devolução - Painel Transportes</div>',
-                unsafe_allow_html=True
-            )
-        
-            # base completa
-            ret = retornando_transp.copy()
-            ret["Mes"] = ret["Mes"].replace("Sem_Data_Coleta", "1977-07-01")
-            base_dev_transportes = bases["base"].copy()
-            base_dev_bravium = bases["base"].copy()
-            base_dev = base_dev_transportes
-
-            ret["Mes"] = pd.to_datetime(ret["Mes"].astype(str))
-            ret["Mes"] = ret["Mes"].dt.strftime("%B %Y").str.capitalize()
-
-            ret = ret[
-                ret["Mes"].isin(filtro_mes) &
-                ret["Transportadora"].isin(filtro_transportadora)
-            ]
-            
-            venda_mes = vendas_transp[
-                vendas_transp["Mes"].isin(filtro_mes) &
-                vendas_transp["Transportadora"].isin(filtro_transportadora)
-            ]["ValorVenda"].sum()
-
-            nfd_total = nfd_coleta["Valor_NFD"].sum()
-            
-            # ===== ADICIONE ESTAS 3 LINHAS =====
-            indice_nfd = nfd_total
-            atrasado = devolucao_atras_total
-            indice_atrasado = nfd_total + atrasado
-                        
-            
-            # converter datas
-            base_dev["DataColeta"] = pd.to_datetime(base_dev["DataColeta"], errors="coerce")
-            base_dev["DataÚltimoStatus"] = pd.to_datetime(base_dev["DataÚltimoStatus"], errors="coerce")
-
-            # mês baseado na coleta (Intelipost)
-            base_dev["MesFiltro"] = base_dev["DataColeta"].dt.strftime("%B %Y").str.capitalize()
-
-            # aplicar filtro de mês
-            base_dev = base_dev[
-                base_dev["MesFiltro"].isin(filtro_mes)
-            ]
-            # =====================================
-            # PRAZO DEVOLUÇÃO
-            # =====================================
-
-            base_dev["PrazoFinal"] = base_dev["DataÚltimoStatus"] + pd.Timedelta(days=30)
-
-            base_dev["DiasRestantesPrazo"] = (
-                base_dev["PrazoFinal"] - hoje
-            ).dt.days
-
-            # =====================================
-            # IMPACTO RETORNANDO POR MÊS DE COLETA
-            # =====================================
-
-            impacto_retornando = retornando_transp.copy()
-            impacto_retornando["Mes"] = impacto_retornando["Mes"].replace("Sem_Data_Coleta", "1977-07-01")
-            
-            impacto_retornando["Mes"] = pd.to_datetime(impacto_retornando["Mes"].astype(str))
-            impacto_retornando["Mes"] = impacto_retornando["Mes"].dt.strftime("%B %Y").str.capitalize()
-
-            impacto_retornando = impacto_retornando[
-                impacto_retornando["Mes"].isin(filtro_mes) &
-                impacto_retornando["Transportadora"].isin(filtro_transportadora)
-            ]
-
-            impacto_retornando = impacto_retornando.rename(
-                columns={"Mes": "MesColeta"}
-            )  
-
-            impacto_retornando = (
-                impacto_retornando
-                .groupby("MesColeta")["Impacto"]
-                .sum()
-                .reset_index()
-            )
-                      
-            # ==============================
-            # NFD POR MÊS DE COLETA
-            # ==============================
-
-            nfd_por_mes = (
-                nfd_coleta
-                .groupby("Mes_Coleta")["Valor_NFD"]
-                .sum()
-                .reset_index()
-            )
-
-            nfd_por_mes = nfd_por_mes.rename(
-                columns={
-                    "Mes_Coleta": "Mes",
-                    "Valor_NFD": "NFD"
-                }
-            )
-
-            # =====================================
-            # POTENCIAL TRIPLO
-            # =====================================
-
-            triplo_real = potencial["Potencial"].sum()
-            
-            # ==============================
-            # IMPACTO POR MÊS DE COLETA
-            # ==============================
-
-            impacto_mes = (
-                potencial
-                .groupby("Mes")["Potencial"]
-                .sum()
-                .reset_index()
-            )
-
-            impacto_mes = impacto_mes.rename(
-                columns={
-                    "Mes": "MesColeta",
-                    "Potencial": "ValorNota"
-                }
-            )   
-
-            # =====================================
-            # FUNÇÕES FORMATAÇÃO
-            # =====================================
-
-            # formatação
-            def moeda(x):
-                return f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-            
-            # =====================================
-            # EXIBIÇÃO
-            # =====================================
-
-            st.markdown("### Venda total")
-            
-            st.markdown(
-                f"""
-                <div style="
-                    background:white;
-                    padding:8px 12px;
-                    border-radius:10px;
-                    box-shadow:0 2px 6px rgba(0,0,0,0.06);
-                    text-align:center;
-                    display:inline-block;
-                    min-width:220px;
-                    margin-bottom:30px;
-                ">
-                    <div style="font-size:12px;color:#6b7280;">Venda Total</div>
-                    <div style="font-size:18px;font-weight:800;color:#0f2a44;">
-                        {moeda(venda_mes)}
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-                    
-            # ==============================
-            # GRÁFICO VENDAS POR MÊS - TRANSPORTES
-            # ==============================
-
-            graf_vendas = vendas_mes.copy()
-
-            graf_vendas["Mes"] = pd.to_datetime(graf_vendas["Mes"].astype(str))
-
-            graf_vendas = graf_vendas.sort_values("Mes")
-
-            fig = px.line(
-                graf_vendas,
-                x="Mes",
-                y="ValorVenda",
-                markers=True,
-                title="Venda mensal - Transportadoras"
-            )
-
-            fig.update_layout(
-                xaxis_title="Mês",
-                yaxis_title="Valor",
-                height=500
-            )
-
-            st.plotly_chart(
-                fig,
-                use_container_width=True
-            )
-
-            st.markdown("### NFD gerada")
-            st.write(f"{moeda(nfd_total)} | {perc_transportes(indice_nfd, venda_mes)}")
-
-            st.markdown("### Atrasado")
-            st.write(f"{moeda(atrasado)} | {perc_transportes(indice_atrasado, venda_mes)}")
-
-            st.markdown("### Retornando")
-            
-            st.write(f"Total: {moeda(retornando_total)}")
-
-            for _, row in impacto_retornando.iterrows():
-
-                mes = row["MesColeta"]
-                impacto_valor = row["Impacto"]
-
-                venda_mes_base = graf_vendas[
-                    graf_vendas["Mes"].dt.strftime("%B %Y").str.capitalize() == mes
-                ]["ValorVenda"].sum()
-
-                nfd_mes_base = nfd_por_mes[
-                    nfd_por_mes["Mes"] == mes
-                ]["NFD"].sum()
-
-                indice_atual = nfd_mes_base
-                indice_novo = nfd_mes_base + impacto_valor
-
-                st.write(
-                    f"Impacto {mes}: "
-                    f"{moeda(impacto_valor)} | "
-                    f"{perc_transportes(indice_atual, venda_mes_base)} → "
-                    f"{perc_transportes(indice_novo, venda_mes_base)}"
-                )
-            
-            st.markdown("### Potencial Triplo Prazo")
-
-            st.write(f"Total potencial: {moeda(triplo_real)}")
-            
-            for _, row in impacto_mes.iterrows():
-
-                mes = row["MesColeta"]
-                impacto_valor = row["ValorNota"]
-
-                venda_mes_base = graf_vendas[
-                    graf_vendas["Mes"].dt.strftime("%B %Y").str.capitalize() == mes
-                ]["ValorVenda"].sum()
-
-                nfd_mes_base = nfd_por_mes[
-                    nfd_por_mes["Mes"] == mes
-                ]["NFD"].sum()
-
-                indice_atual = nfd_mes_base
-                indice_novo = nfd_mes_base + impacto_valor
-
-                st.write(
-                    f"Impacto {mes}: "
-                    f"{moeda(impacto_valor)} | "
-                    f"{perc_transportes(indice_atual, venda_mes_base)} → "
-                    f"{perc_transportes(indice_novo, venda_mes_base)}"
-                )
-
-            st.markdown("</div>", unsafe_allow_html=True)
-            
-            # ==============================
-            # GRÁFICO IMPACTO POTENCIAL
-            # ==============================
-
-            graf_indice = vendas_mes.copy()
-
-            graf_indice["Mes"] = pd.to_datetime(graf_indice["Mes"].astype(str))
-
-            graf_indice = graf_indice.sort_values("Mes")
-
-            # transformar mes em periodo
-            graf_indice["MesPeriodo"] = graf_indice["Mes"].dt.to_period("M")
-
-            # mapa impacto por mes de coleta
-            impacto_map = dict(
-                zip(impacto_mes["MesColeta"], impacto_mes["ValorNota"])
-            )
-
-            graf_indice["Impacto"] = graf_indice["MesPeriodo"].map(impacto_map).fillna(0)
-
-            # índice atual (NFD daquele mês / venda daquele mês)
-            
-            graf_indice["Mes"] = graf_indice["Mes"].astype(str)
-            nfd_por_mes["Mes"] = nfd_por_mes["Mes"].astype(str)
-            graf_indice = graf_indice.merge(
-                nfd_por_mes,
-                on="Mes",
-                how="left"
-            )
-
-            graf_indice["NFD"] = graf_indice["NFD"].fillna(0)
-
-            graf_indice["IndiceAtual"] = graf_indice["NFD"] / graf_indice["ValorVenda"]
-
-            # índice considerando potencial
-            graf_indice["IndicePotencial"] = (
-                (graf_indice["NFD"] + graf_indice["Impacto"]) /
-                graf_indice["ValorVenda"]
-            )
-
-            # ==============================
-            # PLOT
-            # ==============================
-
-            fig = px.line(
-                graf_indice,
-                x="Mes",
-                y=["IndiceAtual", "IndicePotencial"],
-                markers=True,
-                title="Impacto Potencial Triplo no Índice de Devolução"
-            )
-
-            fig.update_layout(
-                yaxis_title="Índice %",
-                xaxis_title="Mês",
-                height=450
-            )
-
-            fig.update_yaxes(
-                tickformat=".2%"
-            )
-
-            st.plotly_chart(
-                fig,
-                use_container_width=True
+                col.astype(str)
+                .str.upper()
+                .str.strip()
+                .str.replace(r"\.0$", "", regex=True)
             )
             
-    # =====================================
-    # DEVOLUÇÃO - PAINEL BRAVIUM
-    # =====================================
-
-    with col_brav:
-
-        st.markdown(
-            '<div class="titulo-painel">Devolução - Painel Bravium</div>',
-            unsafe_allow_html=True
-        )
-
-        # ==============================
-        # BASE NFD (empresa)
-        # ==============================
-
-        base_nfd = retornando_det.copy()
-        
-        base_nfd["DataÚltimoStatus"] = pd.to_datetime(base_nfd["DataÚltimoStatus"], errors="coerce")
-        base_nfd["DataColeta"] = pd.to_datetime(base_nfd["DataColeta"], errors="coerce")
-
-        hoje = pd.Timestamp.today().normalize()
-        fim_mes = hoje + pd.offsets.MonthEnd(0)
-        dias_restantes_mes = (fim_mes - hoje).days
-
-        # ==============================
-        # FILTRO (POR COLETA)
-        # ==============================
-
-        base_nfd["MesFiltro"] = base_nfd["DataColeta"].dt.strftime("%B %Y").str.capitalize()
-
-        base_nfd = base_nfd[
-            (base_nfd["MesFiltro"].isin(filtro_mes)) &
-            (base_nfd["Transportadora"].isin(filtro_transportadora))
-        ]
-
-        # ==============================
-        # DIAS NO STATUS (BASE DA REGRA)
-        # ==============================
-
-        base_nfd["DiasNoStatus"] = (
-            hoje - base_nfd["DataÚltimoStatus"]
-        ).dt.days
-
-        # ==============================
-        # CLASSIFICAÇÃO CORRETA
-        # ==============================
-
-        # atrasado (já existente)
-        base_atrasado = devolucao_atras.copy()
-
-        base_atrasado = base_atrasado[
-            base_atrasado["Mes"].isin(filtro_mes) &
-            base_atrasado["Transportadora"].isin(filtro_transportadora)
-        ]
-
-        atrasado_brav = base_atrasado["Devolucao_Atrasada"].sum()
-        
-        # PROVÁVEL
-        provavel_brav = base_nfd[
-            (base_nfd["DiasNoStatus"] >= 20) &
-            (dias_restantes_mes >= 10)
-        ]["ValorNota"].sum()
-
-        # IMPROVÁVEL
-        improv_brav = base_nfd[
-            (base_nfd["DiasNoStatus"] < 10) &
-            (dias_restantes_mes <= 10)
-        ]["ValorNota"].sum()
-
-        # POSSÍVEL = resto
-        poss_brav = base_nfd[
-            ~(
-                ((base_nfd["DiasNoStatus"] >= 20) & (dias_restantes_mes >= 10)) |
-                ((base_nfd["DiasNoStatus"] < 10) & (dias_restantes_mes <= 10))
-            )
-        ]["ValorNota"].sum()
-
-        # ==============================
-        # NFD EMPRESA
-        # ==============================
-
-        vendas_mes_pedido["Mes_Pedido"] = pd.to_datetime(
-            vendas_mes_pedido["Mes_Pedido"].astype(str)
-        )
-        vendas_mes_pedido["Mes_Pedido"] = vendas_mes_pedido["Mes_Pedido"].dt.strftime("%B %Y").str.capitalize()
-
-        venda_mes = vendas_mes_pedido[
-            vendas_mes_pedido["Mes_Pedido"].isin(filtro_mes)
-        ]["ValorVenda"].sum()
-
-        nfd_empresa = nfd_mes["Valor_NFD"].sum()
-
-        # ==============================
-        # INDICES
-        # ==============================
-
-        indice_brav_nfd = nfd_empresa
-
-        indice_brav_atras = nfd_empresa + atrasado_brav
-
-        indice_brav_prov = nfd_empresa + atrasado_brav + provavel_brav
-
-        indice_brav_poss = nfd_empresa + atrasado_brav + provavel_brav + poss_brav
-
-        indice_brav_improv = nfd_empresa + atrasado_brav + provavel_brav + poss_brav + improv_brav
-
-        potencial_brav = potencial[
-            potencial["Mes"].isin(filtro_mes)
-        ]["Potencial"].sum()
-
-        indice_brav_potencial_1 = (
-            nfd_empresa
-            + atrasado_brav
-            + potencial_brav
-        )
-
-        indice_brav_potencial_2 = (
-            nfd_empresa
-            + atrasado_brav
-            + provavel_brav
-            + potencial_brav
-        )
-
-        indice_brav_potencial_poss = (
-            nfd_empresa
-            + atrasado_brav
-            + provavel_brav
-            + poss_brav
-            + potencial_brav
-        )
-        # ==============================
-        # FUNÇÃO PERCENTUAL BRAVIUM
-        # ==============================
-
-        def perc_bravium(x):
+        def perc_transportes(x, venda_mes):
             if venda_mes == 0:
                 return "0%"
             return f"{(x / venda_mes)*100:.2f}%".replace(".", ",")
 
-        # ==============================
-        # EXIBIÇÃO
-        # ==============================
-        
-        st.markdown("### Venda total(Empresa)")
+        def carregar_base_devolucao():
+            return pd.read_excel(
+                ARQ_DEVOLUCAO,
+                sheet_name=[
+                    "vendas_mes",
+                    "vendas_mes_pedido",
+                    "vendas_transportadora",
+                    "potencial_triplo",
+                    "devolucao_processo",
+                    "retornando_transportes",
+                    "devolucao_atrasada",
+                    "nfd_mes",
+                    "nfd_coleta",
+                    "base",
+                    "retornando_detalhado",
+                    "dev_atrasada_detalhado"
+                ]
+            )
+        @st.cache_data(ttl=2)
+        def ler_base(path):
+            if not os.path.exists(path):
+                return pd.DataFrame()
 
-        st.markdown(
-            f"""
-            <div style="
-                background:white;
-                padding:8px 12px;
-                border-radius:10px;
-                box-shadow:0 2px 6px rgba(0,0,0,0.06);
-                text-align:center;
-                display:inline-block;
-                min-width:220px;
-                margin-bottom:30px;
-            ">
-                <div style="font-size:12px;color:#6b7280;">Venda Total</div>
-                <div style="font-size:18px;font-weight:800;color:#0f2a44;">
-                    {moeda(venda_mes)}
-                </div>
-            </div>
-            """,
+            try:
+                if path.endswith(".csv"):
+                    df = pd.read_csv(path, sep=";", encoding="utf-8-sig")
+                else:
+                    df = pd.read_excel(path)
+            except Exception:
+                return pd.DataFrame()
+
+            # 🔥 PADRONIZA NOMES DAS COLUNAS
+            df.columns = df.columns.str.strip()
+
+            # 🔥 GARANTE PEDIDO
+            if "PedidoFormatado" in df.columns:
+                df["PedidoFormatado"] = normalizar_pedido(df["PedidoFormatado"])
+
+            # 🔥 GARANTE NIVEL IGOR (mesmo que venha com nome zoado)
+            col_igor = [c for c in df.columns if c.strip().upper() == "NIVEL_IGOR"]
+
+            if col_igor:
+                df["NIVEL_IGOR"] = df[col_igor[0]].astype(str).str.strip().str.upper()
+            else:
+                df["NIVEL_IGOR"] = ""
+
+            return df
+
+        def listar_dias():
+            if not os.path.exists(PASTA_HIST):
+                return []
+            arquivos = os.listdir(PASTA_HIST)
+            datas = set()
+            for a in arquivos:
+                m = re.match(r"(\d{2}-\d{2}-\d{4})_manha\.(xlsx|csv)$", a)
+                if m:
+                    datas.add(m.group(1))
+            return sorted(datas, key=lambda x: pd.to_datetime(x, format="%d-%m-%Y"))
+
+        def caminho(dia):
+            caminho_csv = os.path.join(PASTA_HIST, f"{dia}_manha.csv")
+            caminho_xlsx = os.path.join(PASTA_HIST, f"{dia}_manha.xlsx")
+
+            if os.path.exists(caminho_csv):
+                return caminho_csv
+
+            return caminho_xlsx
+
+        def pizza(tratados, restantes, titulo):
+            fig, ax = plt.subplots(figsize=(2.3, 2.3))
+            total = tratados + restantes
+            if total == 0:
+                ax.text(0.5, 0.5, "0", ha="center", va="center")
+            else:
+                ax.pie([tratados, restantes], autopct="%1.0f%%", startangle=90)
+            ax.set_title(titulo, fontsize=10)
+            buf = BytesIO()
+            fig.savefig(buf, format="png", bbox_inches="tight")
+            plt.close(fig)
+            buf.seek(0)
+            return buf.getvalue()
+            
+        if pagina == "Monitor de Pedidos":
+
+            # ==============================
+            # DOWNLOAD POR CARTEIRA (COM ABA EXTRA)
+            # ==============================
+            st.markdown("### 📥 Exportação por Carteira (300 em 300)")
+            if st.button("🔄 Atualizar dados"):
+                st.cache_data.clear()
+                st.rerun()
+
+            df_atual = ler_base(ARQ_ATUAL)
+            # 🔥 NORMALIZA CARTEIRA (CORRIGE IGOR SUMINDO)
+            if "Carteira" in df_atual.columns:
+                df_atual["Carteira"] = (
+                    df_atual["Carteira"]
+                    .astype(str)
+                    .str.strip()
+                )
+            # 🔥 GARANTE DIAS COMO NUMÉRICO (IGOR)
+            if "DiasDesdeUltimoStatus" in df_atual.columns:
+                df_atual["DiasDesdeUltimoStatus"] = pd.to_numeric(
+                    df_atual["DiasDesdeUltimoStatus"],
+                    errors="coerce"
+                )
+            # 🔥 NORMALIZA STATUS
+            if "Status" in df_atual.columns:
+                df_atual["Status"] = (
+                    df_atual["Status"]
+                    .astype(str)
+                    .str.upper()
+                    .str.strip()
+                )
+           
+            # ==============================
+            # 🚚 KPI GERAL - PRAZO TRANSPORTADORA
+            # ==============================
+
+            if not df_atual.empty and "PrazoTransportadorDiasUteis" in df_atual.columns:
+
+                df_tmp = df_atual.copy()
+
+                # 🚫 EXCLUIR Status fora de desempenho
+                status_devolucao = [
+                    "TSP - Aguardando Confirmar Devolução",
+                    "TSP - Trânsferência para Devolução",
+                    "TSP - Rota de Devolução",
+                    "TSP - Reentrega",
+                    "TSP - Aguardando Tratativa Transportadora",
+                    "TSP - Coleta Realizada",
+                    "TSP - Item Faltante",
+                    "TSP - REENTREGAR/ENDERECO CORRETO"
+                ]
+
+                df_tmp = df_tmp[~df_tmp["Status"].isin(status_devolucao)]
+
+                # 🚫 EXCLUIR AGUARDANDO EXPEDIÇÃO
+                df_tmp = df_tmp[
+                    ~df_tmp["Status"].str.contains("AGUARDANDO EXPED", na=False)
+                ]
+
+                # garante tipo numérico
+                df_tmp["DiasDesdeExpedicao"] = pd.to_numeric(df_tmp["DiasDesdeExpedicao"], errors="coerce")
+                df_tmp["PrazoTransportadorDiasUteis"] = pd.to_numeric(df_tmp["PrazoTransportadorDiasUteis"], errors="coerce")
+
+                # dentro / fora baseado SÓ na transportadora
+                dentro = len(df_tmp[
+                    df_tmp["DiasDesdeExpedicao"] <= df_tmp["PrazoTransportadorDiasUteis"]
+                ])
+
+                fora = len(df_tmp[
+                    df_tmp["DiasDesdeExpedicao"] > df_tmp["PrazoTransportadorDiasUteis"]
+                ])
+
+                total = dentro + fora
+
+                perc_dentro = (dentro / total * 100) if total > 0 else 0
+                perc_fora = (fora / total * 100) if total > 0 else 0
+
+                st.markdown("### 🚚 Prazo Transportadora (Geral)")
+
+                st.markdown(
+                    f"""
+                    <div style="
+                        background:white;
+                        padding:14px;
+                        border-radius:12px;
+                        box-shadow:0 2px 6px rgba(0,0,0,0.06);
+                        margin-bottom:20px;
+                    ">
+                        <div style="font-size:14px;color:#6b7280;">Transportadora</div>
+                        <div style="font-size:18px;font-weight:700;color:#0f2a44;">
+                            Dentro: {dentro} ({perc_dentro:.1f}%) &nbsp;&nbsp;|&nbsp;&nbsp;
+                            Fora: {fora} ({perc_fora:.1f}%)
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+            if "offsets_carteira" not in st.session_state:
+                st.session_state["offsets_carteira"] = {}
+
+            if not df_atual.empty and "Carteira" in df_atual.columns:
+
+                if "Ranking" in df_atual.columns:
+                    df_atual = df_atual.sort_values("Ranking").reset_index(drop=True)
+
+                carteiras = sorted(df_atual["Carteira"].dropna().unique())
+
+                # 🔥 REMOVE RENATO DO FRONT
+                carteiras = [c for c in carteiras if c != "Renato"]
+                carteiras = [c for c in carteiras if c != "Augusto"]
+
+                if "Igor" in df_atual["Carteira"].values and "Igor" not in carteiras:
+                    carteiras.append("Igor")
+
+                for carteira in carteiras:
                 
-        )
-        
-        # ==============================
-        # GRÁFICO VENDAS POR MÊS - BRAVIUM
-        # ==============================
-        
-        graf_bravium = bases["vendas_mes_pedido"].copy()
-
-        graf_bravium["Mes_Pedido"] = pd.to_datetime(
-            graf_bravium["Mes_Pedido"].astype(str)
-        )
-
-        graf_bravium = graf_bravium.sort_values("Mes_Pedido")
-
-        fig = px.line(
-            graf_bravium,
-            x="Mes_Pedido",
-            y="ValorVenda",
-            markers=True,
-            title="Venda mensal - Bravium"
-        )
-
-        fig.update_layout(
-            xaxis_title="Mês",
-            yaxis_title="Valor",
-            height=500
-        )
-
-        st.plotly_chart(
-            fig,
-            use_container_width=True
-        )
-
-        st.markdown("### NFD gerada (Empresa)")
-        st.write(f"{moeda(nfd_empresa)} | {perc_bravium(indice_brav_nfd)}")
-
-        st.markdown("### Atrasado")
-        st.write(f"{moeda(atrasado_brav)} | {perc_bravium(indice_brav_atras)}")
-
-        st.markdown("### Retornando")
-
-        st.write(f"Total: {moeda(retornando_total)}")
-
-        st.write(
-            f"Provável: {moeda(provavel_brav)} | "
-            f"{perc_bravium(indice_brav_atras)} → {perc_bravium(indice_brav_prov)}"
-        )
-
-        st.write(
-            f"Possível: {moeda(poss_brav)} | "
-            f"{perc_bravium(indice_brav_prov)} → {perc_bravium(indice_brav_poss)}"
-        )
-
-        st.write(
-            f"Improvável: {moeda(improv_brav)} | "
-            f"{perc_bravium(indice_brav_poss)} → {perc_bravium(indice_brav_improv)}"
-        )
-       
-
-        st.markdown("### Potencial no mês (Bravium)")
-
-        # 1. Potencial puro
-        st.write(
-            f"Cenário Potencial: {moeda(potencial_brav)} | "
-            f"{perc_bravium(indice_brav_atras)} → {perc_bravium(indice_brav_potencial_1)}"
-        )
-
-        # 2. Potencial + provável
-        st.write(
-            f"Cenário Potencial + Provável: {moeda(potencial_brav)} | "
-            f"{perc_bravium(indice_brav_potencial_1)} → {perc_bravium(indice_brav_potencial_2)}"
-        )
-
-        # 3. Potencial + provável + possível
-        st.write(
-            f"Cenário Potencial + Provável + Possível: {moeda(potencial_brav)} | "
-            f"{perc_bravium(indice_brav_potencial_2)} → {perc_bravium(indice_brav_potencial_poss)}"
-        )
                     
+                    if carteira == "Renato":
+                        continue
+
+                    if f"next_{carteira}" not in st.session_state:
+                        st.session_state[f"next_{carteira}"] = False
+
+                    df_carteira = df_atual[
+                        df_atual["Carteira"] == carteira
+                    ].copy()
+                    
+                    if carteira == "Igor" and df_carteira.empty:
+                        st.write("Igor sem dados — verificar base")
+                    
+                    # REMOVE DUPLICIDADE POR PEDIDO
+                    if "PedidoFormatado" in df_carteira.columns:
+                        df_carteira = df_carteira.drop_duplicates(subset=["PedidoFormatado"])
+
+                    # ==============================
+                    # 🎯 REGRA POR CARTEIRA
+                    # ==============================
+
+                    if carteira == "Igor":
+                        df_dentro_prazo = df_carteira[
+                        df_carteira["Nivel_Igor_30d"] == "Dentro"
+                        ]
+
+                        df_fora_prazo = df_carteira[
+                            df_carteira["Nivel_Igor_30d"] == "Fora"
+                        ].reset_index(drop=True)
+                           
+                    else:
+
+                        for col in ["Cliente_Dentro","Transportadora_Dentro","Status_Dentro","Regiao_Dentro"]:
+                            df_carteira[col] = df_carteira[col].astype(str).str.strip().str.upper()
+
+                        df_dentro_prazo = df_carteira[
+                            (df_carteira["Cliente_Dentro"] == "X") &
+                            (df_carteira["Transportadora_Dentro"] == "X") &
+                            (df_carteira["Status_Dentro"] == "X") &
+                            (df_carteira["Regiao_Dentro"] == "X")
+                        ]
+
+                        df_fora_prazo = df_carteira[
+                            ~(
+                                (df_carteira["Cliente_Dentro"] == "X") &
+                                (df_carteira["Transportadora_Dentro"] == "X") &
+                                (df_carteira["Status_Dentro"] == "X") &
+                                (df_carteira["Regiao_Dentro"] == "X")
+                            )
+                        ].reset_index(drop=True)
+
+                    total = len(df_fora_prazo)
+                    total_dentro = len(df_dentro_prazo)
+
+                    offset = st.session_state["offsets_carteira"].get(carteira, 0)
+                    if offset >= total:
+                        offset = 0
+                        st.session_state["offsets_carteira"][carteira] = 0
+
+                    if st.session_state[f"next_{carteira}"]:
+                        offset = offset + TAMANHO_LOTE
+                        st.session_state["offsets_carteira"][carteira] = offset
+                        st.session_state[f"next_{carteira}"] = False
+
+                    inicio = offset
+                    fim = min(offset + TAMANHO_LOTE, total)
+
+                    lote = df_fora_prazo.iloc[inicio:fim]
+
+                    if not lote.empty or carteira == "Igor":
+                        buffer = BytesIO()
+
+                        with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
+                            lote.to_excel(writer, index=False, sheet_name="Lote")
+
+                            df_status = df_carteira[
+                                df_carteira["Status"].isin(STATUS_DIARIOS)
+                            ]
+
+                            if not df_status.empty:
+                                df_status.to_excel(
+                                    writer,
+                                    index=False,
+                                    sheet_name="Status Diários"
+                                )
+
+                        buffer.seek(0)
+
+                        perc_fora = (total / (total + total_dentro)) * 100 if (total + total_dentro) > 0 else 0
+                        barra = int(perc_fora // 5)
+
+                        col1, col2 = st.columns([4, 2])
+
+                        total_geral = total + total_dentro
+
+                        perc_dentro = (total_dentro / total_geral) * 100 if total_geral > 0 else 0
+                        perc_fora = (total / total_geral) * 100 if total_geral > 0 else 0
+
+                        with col1:
+                            st.write(f"**{carteira}** — {inicio+1} até {fim} de {total}")
+                            st.write(
+                                f"Dentro do prazo: {total_dentro} ({perc_dentro:.1f}%) | "
+                                f"Fora do prazo: {total} ({perc_fora:.1f}%)"
+                            )
+                           
+                        with col2:
+                            if st.download_button(
+                                label=f"⬇️ Baixar {carteira}",
+                                data=buffer,
+                                file_name=f"{carteira}_{inicio+1}_a_{fim}.xlsx",
+                                key=f"dl_{carteira}_{offset}"
+                            ):
+                                st.session_state[f"next_{carteira}"] = True
+                                st.rerun()
+                                                 
+                          
+            # ==============================
+            # 🧑 CARTEIRA AUGUSTO (NOVA)
+            # ==============================
+
+            if "Carteira" in df_atual.columns:
+
+                df_augusto = df_atual[
+                    df_atual["Carteira"] == "Augusto"
+                ].copy()
+
+            else:
+                df_augusto = pd.DataFrame()
+
+            # REMOVE DUPLICIDADE POR PEDIDO
+            if "PedidoFormatado" in df_augusto.columns:
+                df_augusto = df_augusto.drop_duplicates(subset=["PedidoFormatado"])
+
+            total_augusto = len(df_augusto)
+
+            col1, col2 = st.columns([4,2])
+
+            with col1:
+                st.write(f"**Augusto** — 1 até {total_augusto} de {total_augusto}")
+                df_augusto["Cliente_Dentro"] = df_augusto["Cliente_Dentro"].astype(str).str.strip().str.upper()
+                df_augusto["Transportadora_Dentro"] = df_augusto["Transportadora_Dentro"].astype(str).str.strip().str.upper()
+                df_augusto["Status_Dentro"] = df_augusto["Status_Dentro"].astype(str).str.strip().str.upper()
+                df_augusto["Regiao_Dentro"] = df_augusto["Regiao_Dentro"].astype(str).str.strip().str.upper()
+
+                dentro = len(df_augusto[
+                    (df_augusto["Cliente_Dentro"] == "X") &
+                    (df_augusto["Transportadora_Dentro"] == "X") &
+                    (df_augusto["Status_Dentro"] == "X") &
+                    (df_augusto["Regiao_Dentro"] == "X")
+                ])
+
+                fora = len(df_augusto) - dentro
+
+                total = dentro + fora
+
+                perc_dentro = (dentro / total * 100) if total > 0 else 0
+                perc_fora = (fora / total * 100) if total > 0 else 0
+
+                st.write(
+                    f"Dentro do prazo: {dentro} ({perc_dentro:.1f}%) | "
+                    f"Fora do prazo: {fora} ({perc_fora:.1f}%)"
+                )
+
+            with col2:
+
+                buffer = BytesIO()
+                df_augusto.to_excel(buffer, index=False)
+                buffer.seek(0)
+
+                st.download_button(
+                    label="⬇️ Baixar Augusto",
+                    data=buffer,
+                    file_name="augusto.xlsx",
+                    key="dl_augusto"
+                )
+
+            st.divider()
+
+            # ==============================
+            # 🚚 EXPEDIÇÃO — 3+ DIAS NO STATUS
+            # ==============================
+            st.markdown("### 🚚 Expedição (3+ dias no status)")
+
+            if not df_atual.empty:
+
+                if (
+                    "Status" in df_atual.columns and
+                    "DiasDesdeUltimoStatus" in df_atual.columns
+                ):
+
+                    df_expedicao = df_atual[
+                        (df_atual["Status"].str.contains("AGUARDANDO EXPED", na=False)) &
+                        (df_atual["DiasDesdeUltimoStatus"] >= 3)
+                    ].copy()
+
+                    total = len(df_expedicao)
+
+                    col1, col2 = st.columns([4, 2])
+
+                    with col1:
+                        st.write(
+                            f"Pedidos aguardando expedição há ≥ 3 dias úteis: **{total}**"
+                        )
+
+                    with col2:
+                        if total > 0:
+
+                            colunas_exportar = [
+                                c for c in [
+                                    "PedidoFormatado",
+                                    "NotaFiscal",
+                                    "Armazém",
+                                    "Logistica",
+                                    "DiasDesdeUltimoStatus"
+                                ] if c in df_expedicao.columns
+                            ]
+
+                            df_export = df_expedicao[colunas_exportar].copy()
+
+                            df_export = df_export.rename(columns={
+                                "DiasDesdeUltimoStatus": "Dias_Parado_no_Status"
+                            })
+
+                            df_export = df_export.sort_values(
+                                "Dias_Parado_no_Status",
+                                ascending=False
+                            )
+
+                            buffer = BytesIO()
+                            df_export.to_excel(buffer, index=False)
+                            buffer.seek(0)
+
+                            st.download_button(
+                                label="⬇️ Baixar Expedição (3+ dias)",
+                                data=buffer,
+                                file_name="expedicao_parada_3_dias_ou_mais.xlsx",
+                                key="download_expedicao_3dias"
+                            )
+                        else:
+                            st.write("Nenhum pedido elegível.")
+                            
+                    # ==============================
+                    # 🚨 STATUS DIVERGENTES
+                    # ==============================
+                    st.markdown("### 🚨 Status Divergentes PRW x Intelipost")
+
+                    if not df_atual.empty:
+
+                        if "Divergencia_Intelipost" in df_atual.columns:
+
+                            df_divergente = df_atual[
+                                df_atual["Divergencia_Intelipost"] == True
+                            ].copy()
+
+                            total_divergente = len(df_divergente)
+
+                            col1, col2 = st.columns([4, 2])
+
+                            with col1:
+
+                                st.write(
+                                    f"Pedidos divergentes entre PRW e Intelipost: **{total_divergente}**"
+                                )
+
+                            with col2:
+
+                                if total_divergente > 0:
+
+                                    colunas_exportar = [
+                                        c for c in [
+                                            "PedidoFormatado",
+                                            "NotaFiscal",
+                                            "Status",
+                                            "Status Transportador",
+                                            "DataÚltimoStatus",
+                                            "Data do Último Status",
+                                            "Logistica"
+                                        ]
+                                        if c in df_divergente.columns
+                                    ]
+
+                                    df_export = df_divergente[
+                                        colunas_exportar
+                                    ].copy()
+
+                                    buffer = BytesIO()
+
+                                    df_export.to_excel(
+                                        buffer,
+                                        index=False
+                                    )
+
+                                    buffer.seek(0)
+
+                                    st.download_button(
+                                        label="⬇️ Baixar Divergentes",
+                                        data=buffer,
+                                        file_name="status_divergentes.xlsx",
+                                        key="download_divergentes"
+                                    )
+
+                                else:
+
+                                    st.write("Nenhum pedido divergente.")                
+
+            # ==============================
+            # BI EXECUTIVO
+            # ==============================
+            dias = listar_dias()
+
+            if len(dias) < 2:
+                st.warning("Histórico insuficiente na pasta data/historico.")
+                st.stop()
+
+            st.markdown("### 📈 Status Diários por Mês")
+
+            contagem = []
+
+            mes_atual = pd.Timestamp.today().to_period("M")
+
+            for dia_hist in dias:
+            
+                data = pd.to_datetime(dia_hist, format="%d-%m-%Y")
+
+                data = pd.to_datetime(dia_hist, format="%d-%m-%Y")
+                mes = data.to_period("M")
+
+                arquivo_mes = os.path.join(PASTA_MENSAL, f"{mes}.xlsx")
+
+                # Se o mês já estiver congelado
+                if mes != mes_atual and os.path.exists(arquivo_mes):
+
+                    df_mes = pd.read_excel(arquivo_mes)
+
+                    for _, row in df_mes.iterrows():
+                        contagem.append((row["Data"], row["Qtd"]))
+
+                    continue
+
+                # Caso contrário calcula normalmente
+                path = caminho(dia_hist)
+                df_temp = ler_base(path)
+
+                if df_temp.empty:
+                    continue
+
+                df_temp["Status"] = (
+                    df_temp["Status"]
+                    .astype(str)
+                    .str.upper()
+                    .str.strip()
+                )
+
+                def limpar_status(s):
+                    return (
+                        str(s)
+                        .upper()
+                        .strip()
+                        .replace("Ç", "C")
+                        .replace("Ã", "A")
+                        .replace("Á", "A")
+                    )
+
+                status_validos = [limpar_status(s) for s in STATUS_DIARIOS]
+
+                df_temp["Status"] = df_temp["Status"].apply(limpar_status)
+
+                qtd = df_temp[
+                    df_temp["Status"].isin(status_validos)
+                ].shape[0]
+
+                contagem.append((data, qtd))
+
+            if contagem:
+
+                df_graf = pd.DataFrame(contagem, columns=["Data", "Qtd"])
+                df_graf["Data"] = pd.to_datetime(df_graf["Data"], format="%d-%m-%Y")
+                df_graf = df_graf.sort_values("Data")
+                
+                # ==============================
+                # SALVAR MÊS FECHADO AUTOMATICAMENTE
+                # ==============================
+
+                mes_atual = pd.Timestamp.today().to_period("M")
+
+                for mes in df_graf["Data"].dt.to_period("M").unique():
+
+                    if mes == mes_atual:
+                        continue
+
+                    arquivo_mes = os.path.join(PASTA_MENSAL, f"{mes}.xlsx")
+
+                    # se ainda não existir, salva
+                    if not os.path.exists(arquivo_mes):
+
+                        df_mes = df_graf[
+                            df_graf["Data"].dt.to_period("M") == mes
+                        ].copy()
+                        
+                        # ajuste especial fevereiro 2026
+                        if mes.month == 2 and mes.year == 2026:
+                            df_mes = df_mes[df_mes["Data"].dt.day >= 18]
+
+                        df_mes.to_excel(arquivo_mes, index=False)
+
+                # Agrupa por Ano + Mês
+                df_graf["AnoMes"] = df_graf["Data"].dt.to_period("M")
+
+                meses = df_graf["AnoMes"].unique()
+
+                colunas = st.columns(len(meses))
+
+                for i, mes in enumerate(meses):
+
+                    df_mes = df_graf[df_graf["AnoMes"] == mes]
+                
+                    # Se for fevereiro de 2026 (ajuste o ano se necessário)
+                    if mes.month == 2 and mes.year == 2026:
+                        df_mes = df_mes[df_mes["Data"].dt.day >= 18]
+
+                    with colunas[i]:
+                    
+                        nome_mes = df_mes["Data"].dt.strftime("%B").iloc[0].capitalize()
+                        ano = df_mes["Data"].dt.year.iloc[0]
+
+                        fig = px.line(
+                            df_mes,
+                            x="Data",
+                            y="Qtd",
+                            title=f"{nome_mes}/{ano}"
+                        )
+
+                        fig.update_layout(
+                            height=220,
+                            margin=dict(l=10, r=10, t=40, b=10),
+                            xaxis_title="",
+                            yaxis_title=""
+                        )
+
+                        st.plotly_chart(
+                            fig,
+                            use_container_width=True
+                        )
+                        
+            # ==============================
+            # 📌 STATUS MANUAIS (POR MÊS - IGUAL DIÁRIOS)
+            # ==============================
+
+            st.markdown("### 📌 Status Manuais")
+
+            contagem = []
+            mes_atual = pd.Timestamp.today().to_period("M")
+
+            for dia_hist in dias:
+            
+                data = pd.to_datetime(dia_hist, format="%d-%m-%Y")
+
+                if data < pd.Timestamp("2026-05-01"):
+                    continue
+
+                data = pd.to_datetime(dia_hist, format="%d-%m-%Y")
+                mes = data.to_period("M")
+
+                arquivo_mes = os.path.join(PASTA_MENSAL, f"manuais_{mes}.xlsx")
+
+                # 🔒 usa mês já salvo
+                if (
+                    mes != mes_atual
+                    and os.path.exists(arquivo_mes)
+                    and mes >= pd.Period("2026-05", freq="M")
+                ):
+
+                    df_mes = pd.read_excel(arquivo_mes)
+
+                    for _, row in df_mes.iterrows():
+                        contagem.append((
+                        row["Data"],
+                        row["Total"],
+                        row.get("Entrou", 0),
+                        row.get("Tratados", 0)
+                    ))
+
+                    continue
+
+                # 🔄 calcula mês atual
+                df_temp = ler_base(caminho(dia_hist))
+
+                if df_temp.empty:
+                    continue
+
+                def limpar_status(s):
+                    return (
+                        str(s)
+                        .upper()
+                        .strip()
+                        .replace("Ç", "C")
+                        .replace("Ã", "A")
+                        .replace("Á", "A")
+                    )
+
+                df_temp["Status"] = df_temp["Status"].apply(limpar_status)
+                if "PedidoFormatado" in df_temp.columns:
+                    df_temp = df_temp.drop_duplicates(subset=["PedidoFormatado"])
+                status_validos = [limpar_status(s) for s in STATUS_Manuais]
+
+                atuais = df_temp[
+                    df_temp["Status"].isin(status_validos)
+                ].copy()
+                # 🔥 remover duplicidade
+                if "PedidoFormatado" in atuais.columns:
+                    atuais = atuais.drop_duplicates(subset=["PedidoFormatado"])
+
+                # 🔥 carregar dia anterior
+                idx = dias.index(dia_hist)
+
+                if idx > 0:
+                    dia_ant = dias[idx - 1]
+                    df_ant = ler_base(caminho(dia_ant))
+
+                    df_ant["Status"] = df_ant["Status"].apply(limpar_status)
+
+                    anteriores = df_ant[
+                        df_ant["Status"].isin(status_validos)
+                    ].copy()
+
+                    if "PedidoFormatado" in anteriores.columns:
+                        anteriores = anteriores.drop_duplicates(subset=["PedidoFormatado"])
+
+                else:
+                    anteriores = pd.DataFrame(columns=atuais.columns)
+
+                # 🔥 métricas
+                total = len(atuais)
+                tratados = len(anteriores[~anteriores["PedidoFormatado"].isin(atuais["PedidoFormatado"])])
+                entrou = len(atuais[~atuais["PedidoFormatado"].isin(anteriores["PedidoFormatado"])])
+
+                contagem.append((data, total, entrou, tratados))
+
+            if contagem:
+
+                df_graf = pd.DataFrame(contagem, columns=["Data", "Total", "Entrou", "Tratados"])
+                df_graf["Data"] = pd.to_datetime(df_graf["Data"])
+                df_graf = df_graf.sort_values("Data")
+
+                # 🔒 SALVAR MÊS FECHADO
+                for mes in df_graf["Data"].dt.to_period("M").unique():
+
+                    if mes == mes_atual:
+                        continue
+
+                    arquivo_mes = os.path.join(PASTA_MENSAL, f"manuais_{mes}.xlsx")
+
+                    if not os.path.exists(arquivo_mes):
+
+                        df_mes = df_graf[
+                            df_graf["Data"].dt.to_period("M") == mes
+                        ].copy()
+
+                        df_mes.to_excel(arquivo_mes, index=False)
+
+                # 📊 GRÁFICO POR MÊS (IGUAL DIÁRIOS)
+                df_graf["AnoMes"] = df_graf["Data"].dt.to_period("M")
+
+                meses = df_graf["AnoMes"].unique()
+                colunas = st.columns(len(meses))
+
+                for i, mes in enumerate(meses):
+
+                    df_mes = df_graf[df_graf["AnoMes"] == mes]
+
+                    with colunas[i]:
+
+                        df_plot = df_mes.melt(
+                            id_vars="Data",
+                            value_vars=["Total", "Entrou", "Tratados"],
+                            var_name="Tipo",
+                            value_name="Quantidade"
+                        )
+                        
+                        nome_mes = df_mes["Data"].dt.strftime("%B").iloc[0].capitalize()
+                        ano = df_mes["Data"].dt.year.iloc[0]
+
+                        fig = px.line(
+                            df_plot,
+                            x="Data",
+                            y="Quantidade",
+                            color="Tipo",
+                            title=f"{nome_mes}/{ano}"
+                        )
+
+                        fig.update_layout(
+                            height=250,
+                            margin=dict(l=10, r=10, t=40, b=10),
+                            xaxis_title="",
+                            yaxis_title=""
+                        )
+
+                        st.plotly_chart(
+                            fig,
+                            use_container_width=True
+                        )
+                
+            # ==============================
+            # LOOP ORIGINAL COMPLETO (PIZZAS)
+            # ==============================
+
+            dias_pizza = dias[-7:]
+
+            if len(dias_pizza) < 2:
+                st.warning("Histórico insuficiente para gráfico de pizza.")
+            else:
+                for i in range(len(dias_pizza)-1, 0, -1):
+
+                    dia_atual = dias_pizza[i]
+                    dia_ant = dias_pizza[i-1]
+
+                    df_hist_atual = ler_base(caminho(dia_atual))
+                    df_hist_ant = ler_base(caminho(dia_ant))
+                    
+                    df_hist_atual = df_hist_atual[
+                        df_hist_atual["Logistica"] != "ATRUS INTERMEDIACAO"
+                    ]
+
+                    df_hist_ant = df_hist_ant[
+                        df_hist_ant["Logistica"] != "ATRUS INTERMEDIACAO"
+                    ]
+
+                    if df_hist_atual.empty or df_hist_ant.empty:
+                        continue
+
+                    st.markdown(
+                        f'<p class="data-title">📅 {dia_ant} ➜ {dia_atual}</p>',
+                        unsafe_allow_html=True
+                    )
+
+                    col1, col2, col3, col4 = st.columns(4)
+
+                    # TRIPLO
+                    with col1:
+                        if "Transportadora_Triplo" in df_hist_atual.columns:
+                        
+                            atual = df_hist_atual[
+                                df_hist_atual["Transportadora_Triplo"]
+                                .astype(str)
+                                .str.strip()
+                                .str.upper() == "X"
+                            ]
+
+                            ant = df_hist_ant[
+                                df_hist_ant["Transportadora_Triplo"]
+                                .astype(str)
+                                .str.strip()
+                                .str.upper() == "X"
+                            ]
+                            restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
+                            entrou = atual[~atual["PedidoFormatado"].isin(ant["PedidoFormatado"])]
+                            tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
+
+                            valor_entrou = entrou["ValorNota"].sum() if "ValorNota" in entrou.columns else 0
+                            valor_restantes = restantes["ValorNota"].sum() if "ValorNota" in restantes.columns else 0
+
+                            valor_entrou_fmt = f"{valor_entrou:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+                            valor_restantes_fmt = f"{valor_restantes:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+                            st.image(pizza(len(tratados), len(restantes), "Triplo Transportadora"))
+
+                            st.markdown(
+                                f'<p class="metric-small">Tratados: {len(tratados)} / {len(ant)}</p>',
+                                unsafe_allow_html=True
+                            )
+
+                            st.markdown(
+                                f'<p class="metric-small">Entraram: {len(entrou)} | R$ {valor_entrou_fmt}</p>',
+                                unsafe_allow_html=True
+                            )
+
+                            st.markdown(
+                                f'<p class="metric-small">Remanescentes: {len(restantes)} | R$ {valor_restantes_fmt}</p>',
+                                unsafe_allow_html=True
+                            )
+
+                            buf = BytesIO()
+                            restantes.to_excel(buf, index=False)
+                            st.download_button(
+                                "Remanescentes Triplo",
+                                buf.getvalue(),
+                                file_name=f"remanescente_triplo_{dia_atual}.xlsx"
+                            )
+
+                    # STATUS 2X
+                    with col2:
+                        if "Status_Dobro" in df_hist_atual.columns:
+
+                            df_hist_atual["Status_Dobro"] = df_hist_atual["Status_Dobro"].astype(str).str.strip().str.upper()
+                            df_hist_ant["Status_Dobro"] = df_hist_ant["Status_Dobro"].astype(str).str.strip().str.upper()
+
+                            atual = df_hist_atual[
+                                (df_hist_atual["Status_Dobro"] == "X") |
+                                (df_hist_atual["Status_Triplo"] == "X")
+                            ]
+
+                            ant = df_hist_ant[
+                                df_hist_ant["Status_Dobro"] == "X"
+                            ]
+
+                            tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
+                            restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
+                            entrou = atual[~atual["PedidoFormatado"].isin(ant["PedidoFormatado"])]
+                            tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
+
+                            st.image(pizza(len(tratados), len(restantes), "Status Específico 2x"))
+
+                            st.markdown(
+                                f'<p class="metric-small">Tratados: {len(tratados)} / {len(ant)}</p>',
+                                unsafe_allow_html=True
+                            )
+
+                            st.markdown(
+                                f'<p class="metric-small">Entraram: {len(entrou)}</p>',
+                                unsafe_allow_html=True
+                            )
+
+                            buf = BytesIO()
+                            restantes.to_excel(buf, index=False)
+                            st.download_button(
+                                "Remanescentes Status 2x",
+                                buf.getvalue(),
+                                file_name=f"remanescente_status_{dia_atual}.xlsx"
+                            )
+
+                    # REGIÃO 2X
+                    with col3:
+                        if "Regiao_Dobro" in df_hist_atual.columns:
+
+                            atual = df_hist_atual[
+                                df_hist_atual["Regiao_Dobro"]
+                                .astype(str)
+                                .str.strip()
+                                .str.upper() == "X"
+                            ]
+
+                            ant = df_hist_ant[
+                                df_hist_ant["Regiao_Dobro"]
+                                .astype(str)
+                                .str.strip()
+                                .str.upper() == "X"
+                            ]
+
+                            tratados = ant[~ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
+                            restantes = ant[ant["PedidoFormatado"].isin(atual["PedidoFormatado"])]
+                            entrou = atual[~atual["PedidoFormatado"].isin(ant["PedidoFormatado"])]
+
+                            st.image(pizza(len(tratados), len(restantes), "Região 2x Prazo"))
+
+                            st.markdown(
+                                f'<p class="metric-small">Tratados: {len(tratados)} / {len(ant)}</p>',
+                                unsafe_allow_html=True
+                            )
+
+                            st.markdown(
+                                f'<p class="metric-small">Entraram: {len(entrou)}</p>',
+                                unsafe_allow_html=True
+                            )
+
+                            buf = BytesIO()
+                            restantes.to_excel(buf, index=False)
+                            st.download_button(
+                                "Remanescentes Região 2x",
+                                buf.getvalue(),
+                                file_name=f"remanescente_regiao_{dia_atual}.xlsx"
+                            )
+                            
+                    # CARTEIRA (TOP 300 DE CADA)
+
+                    with col4:
+
+                        if "Carteira" in df_hist_atual.columns:
+
+                            # ordenar se tiver ranking
+                            if "Ranking" in df_atual.columns:
+                                df_hist_atual = df_hist_atual.sort_values("Ranking")
+                                df_hist_ant = df_hist_ant.sort_values("Ranking")
+
+                            # pegar carteiras
+                            carteiras = df_hist_atual["Carteira"].dropna().unique()
+
+                            tratados_total = 0
+                            restantes_total = 0
+                            entrou_total = 0
+
+                            for c in carteiras:
+
+                                atual_carteira = df_hist_atual[df_hist_atual["Carteira"] == c].head(300)
+                                ant_carteira = df_hist_ant[df_hist_ant["Carteira"] == c].head(300)
+
+                                set_atual = set(atual_carteira["PedidoFormatado"])
+                                set_ant = set(ant_carteira["PedidoFormatado"])
+
+                                tratados = set_ant - set_atual
+                                restantes = set_ant & set_atual
+                                entrou = set_atual - set_ant
+
+                                tratados_total += len(tratados)
+                                restantes_total += len(restantes)
+                                entrou_total += len(entrou)
+                            # gráfico
+                            st.image(pizza(tratados_total, restantes_total, "Carteiras (Top 300)"))
+                            # métricas corretas
+                            st.markdown(
+                                f'<p class="metric-small">Tratados: {tratados_total} / {tratados_total + restantes_total}</p>',
+                                unsafe_allow_html=True
+                            )
+
+                            st.markdown(
+                                f'<p class="metric-small">Entraram: {entrou_total}</p>',
+                                unsafe_allow_html=True
+                            )
+
+                            # exportação correta
+                            restantes_df = pd.DataFrame()
+
+                            for c in carteiras:
+
+                                atual_carteira = df_hist_atual[df_hist_atual["Carteira"] == c].head(300)
+                                ant_carteira = df_hist_ant[df_hist_ant["Carteira"] == c].head(300)
+
+                                restantes_ids = set(ant_carteira["PedidoFormatado"]) & set(atual_carteira["PedidoFormatado"])
+
+                                restantes_df = pd.concat([
+                                    restantes_df,
+                                    ant_carteira[ant_carteira["PedidoFormatado"].isin(restantes_ids)]
+                                ])
+
+                            buf = BytesIO()
+                            restantes_df.to_excel(buf, index=False)
+
+                            st.download_button(
+                                "Remanescentes Carteiras",
+                                buf.getvalue(),
+                                file_name=f"remanescente_carteiras_{dia_atual}.xlsx"
+                            )
+
+                    st.divider()
+
+        # ==============================
+        # DESEMPENHO POR TRANSPORTADORA
+        # ==============================
+
+        elif pagina == "Desempenho por Transportadora":
+
+            st.markdown("### 🚚 Desempenho por Transportadora")
+
+            ARQ_TRANSP = os.path.join(PASTA_DATA, "Base_Transportadora.xlsx")
+            
+            if not os.path.exists(ARQ_TRANSP):
+                st.error(f"Arquivo não encontrado: {ARQ_TRANSP}")
+                st.stop()
+                
+            @st.cache_data(ttl=300)
+            def carregar_base_transportadora(path):
+                return pd.read_excel(path)
+
+            try:
+                df = carregar_base_transportadora(ARQ_TRANSP)
+            except Exception as e:
+                st.error(f"Erro ao ler o arquivo: {e}")
+                st.stop()
+
+            if df.empty:
+                st.warning("Sem dados.")
+                st.stop()
+
+            # ==============================
+            # TRATAMENTO
+            # ==============================
+
+            df["DataExpedicao"] = pd.to_datetime(df["DataExpedicao"], errors="coerce")
+            df["DataFinal"] = pd.to_datetime(df["DataFinal"], errors="coerce")
+            
+            df["DataFinal"] = pd.to_datetime(df["DataFinal"], errors="coerce")
+            df["DataPrevista"] = pd.to_datetime(df["DataPrevista"], errors="coerce")
+
+            df = df.dropna(subset=["Transportadora", "DataFinal", "DataPrevista"])
+
+            df["DentroPrazo"] = df["DataFinal"].dt.date <= df["DataPrevista"].dt.date
+            
+            df["Mes"] = df["DataFinal"].dt.to_period("M").astype(str)
+
+            mensal = (
+                df.groupby(["Mes", "Transportadora"])
+                .agg(
+                    Total=("DentroPrazo", "count"),
+                    Dentro=("DentroPrazo", "sum")
+                )
+                .reset_index()
+            )
+
+            mensal["% Dentro"] = (
+                mensal["Dentro"] / mensal["Total"]
+            ) * 100
+            
+
+            # ==============================
+            # REGRA PRAZO
+            # ==============================
+
+            resumo = (
+                df.groupby("Transportadora")
+                .agg(
+                    Total=("DentroPrazo", "count"),
+                    Dentro=("DentroPrazo", "sum")
+                )
+                .reset_index()
+            )
+
+            resumo["Fora"] = resumo["Total"] - resumo["Dentro"]
+
+            resumo["% Dentro"] = (resumo["Dentro"] / resumo["Total"]) * 100
+            resumo["% Fora"] = (resumo["Fora"] / resumo["Total"]) * 100
+
+            resumo = resumo.sort_values("% Fora", ascending=False)
+            
+            st.markdown("## 📈 Evolução Mensal")
+
+            transportadoras_graf = sorted(
+                df["Transportadora"].unique()
+            )
+
+            transp_sel = st.selectbox(
+                "Transportadora",
+                transportadoras_graf
+            )
+
+            df_graf = mensal[
+                mensal["Transportadora"] == transp_sel
+            ].copy()
+
+            df_graf = df_graf.sort_values("Mes")
+
+            df_graf["Mes"] = pd.to_datetime(df_graf["Mes"])
+
+            df_graf = df_graf.sort_values("Mes")
+
+            fig = px.line(
+                df_graf,
+                x="Mes",
+                y="% Dentro",
+                markers=True,
+                title=f"Desempenho Mensal - {transp_sel}"
+            )
+
+            fig.update_layout(
+                xaxis_title="Mês",
+                yaxis_title="% Dentro do Prazo",
+                height=450
+            )
+
+            st.plotly_chart(
+                fig,
+                use_container_width=True
+            )
+
+            # ==============================
+            # VISUAL (MESMO PADRÃO)
+            # ==============================
+
+            for _, row in resumo.iterrows():
+            
+                    transportadora = row["Transportadora"]
+
+                    df_transp = df[
+                        df["Transportadora"] == transportadora
+                    ].copy()
+
+                    df_fora = df_transp[
+                        df_transp["DentroPrazo"] == False
+                    ].copy()
+
+                    st.write(f"### {transportadora}")
+
+                    st.write(
+                        f"Dentro: {int(row['Dentro'])} ({row['% Dentro']:.1f}%) | "
+                        f"Fora: {int(row['Fora'])} ({row['% Fora']:.1f}%)"
+                    )
+                    
+                    if not df_fora.empty:
+
+                        df_export = df_fora.copy()
+
+                        # ==============================
+                        # STATUS FINAL
+                        # ==============================
+
+                        mapa_status = {
+                            5: "ENTREGUE",
+                            15: "ENTREGA SAT",
+                            25: "ENTREGUE SUJEITA REABERTURA",
+                            35: "ENTREGA SAT PRODUTO NAO POSTADO",
+                            105: "DEVOLVIDA",
+                            107: "EM TRANSFERENCIA",
+                            118: "DEVOLUCAO EM ROTA",
+                            119: "TRANSFERENCIA PARA DEVOLUCAO",
+                            182: "EM PROCESSO DE DEVOLUCAO",
+                            183: "EM ROTA DE DEVOLUCAO",
+                            185: "REENTREGA",
+                            573: "CANCELADO",
+                            611: "CANCELADO FRAUDE",
+                            847: "AGUARDANDO RETORNO CLIENTE DEVOLVIDO",
+                            957: "EXTRAVIO",
+                            977: "DEVOLUCAO ENV SAP",
+                            978: "DEVOLUCAO RET SAP",
+                            979: "DEVOLUCAO NF",
+                            983: "CANCELADO ENV SAP",
+                            986: "CANCELADO APOS ANALISE FRAUDE",
+                            987: "PEDIDO ENCERRADO"
+                        }
+
+                        if "idNumStatus" in df_export.columns:
+                            df_export["StatusFinal"] = (
+                                df_export["idNumStatus"]
+                                .map(mapa_status)
+                                .fillna(df_export["idNumStatus"].astype(str))
+                            )
+                        else:
+                            df_export["StatusFinal"] = ""
+
+                        # ==============================
+                        # RENOMEAR DATAS
+                        # ==============================
+
+                        if "DataPrevista" in df_export.columns:
+                            df_export = df_export.rename(columns={
+                                "DataPrevista": "DataEntregaPrevistaCotacao"
+                            })
+
+                        if "DataFinal" in df_export.columns:
+                            df_export = df_export.rename(columns={
+                                "DataFinal": "DataStatusFinal"
+                            })
+
+                        # ==============================
+                        # COLUNAS FINAIS
+                        # ==============================
+
+                        colunas_exportar = [
+                            c for c in [
+                                "PedidoFormatado",
+                                "Campanha",
+                                "Transportadora",
+                                "DataEntregaPrevistaCotacao",
+                                "DataStatusFinal",
+                                "StatusFinal"
+                            ]
+                            if c in df_export.columns
+                        ]
+
+                        df_export = df_export[colunas_exportar].copy()
+
+                        # ==============================
+                        # FORMATAÇÃO DATA
+                        # ==============================
+
+                        for col in [
+                            "DataEntregaPrevistaCotacao",
+                            "DataStatusFinal"
+                        ]:
+
+                            if col in df_export.columns:
+
+                                df_export[col] = pd.to_datetime(
+                                    df_export[col],
+                                    errors="coerce"
+                                ).dt.strftime("%d/%m/%Y")
+
+                        # ==============================
+                        # EXPORTAÇÃO
+                        # ==============================
+
+                        buffer = BytesIO()
+
+                        df_export.to_excel(
+                            buffer,
+                            index=False
+                        )
+
+                        buffer.seek(0)
+
+                        st.download_button(
+                            label=f"⬇️ Baixar atrasados - {transportadora}",
+                            data=buffer,
+                            file_name=f"atrasados_{transportadora}.xlsx",
+                            key=f"download_atrasados_{transportadora}"
+                        )
+
+                    
+        # ==============================
+        # INDICADOR DE DEVOLUÇÃO
+        # ==============================
+
+        elif pagina == "Indicador de Devolução":
+
+            if not os.path.exists(ARQ_DEVOLUCAO):
+                st.warning("Base de devolução ainda não foi gerada.")
+                st.stop()
+
+            try:
+
+                bases = carregar_base_devolucao()
+                dev_atrasada_det = bases["dev_atrasada_detalhado"]
+                retornando_det = bases["retornando_detalhado"]
+                
+                # ==============================
+                # AJUSTE Sem_Data_Coleta
+                # ==============================
+
+                for df in [retornando_det, dev_atrasada_det]:
+                    if "Mes" in df.columns:
+                        df["Mes"] = df["Mes"].replace("Sem_Data_Coleta", "1977-07-01")
+                
+
+                vendas_mes = bases["vendas_mes"]
+                vendas_mes_pedido = bases["vendas_mes_pedido"]
+                vendas_transp = bases["vendas_transportadora"]
+                potencial = bases["potencial_triplo"]
+                devolucao_proc = bases["devolucao_processo"]
+                retornando_transp = bases["retornando_transportes"]
+                if "Mes" in retornando_transp.columns:
+                    retornando_transp["Mes"] = retornando_transp["Mes"].replace("Sem_Data_Coleta", "1977-07-01")
+                devolucao_atras = bases["devolucao_atrasada"]
+                nfd_mes = bases["nfd_mes"]
+                nfd_coleta = bases["nfd_coleta"]
+
+            except Exception as e:
+                st.error(f"Erro ao ler base de devolução: {e}")
+                st.stop()
+
+            # PADRONIZAR TRANSPORTADORAS PARA O MERGE
+            vendas_transp["Transportadora"] = (
+                vendas_transp["Transportadora"]
+                .astype(str)
+                .str.strip()
+                .str.upper()
+            )
+            
+            potencial["Transportadora"] = (
+                potencial["Transportadora"]
+                .astype(str)
+                .str.strip()
+                .str.upper()
+            )
+
+            # ordenar os dados
+            vendas_mes = vendas_mes.sort_values("Mes")
+            vendas_transp = vendas_transp.sort_values(["Mes", "Transportadora"])
+            
+            # ==============================
+            # FORMATAR NOME DOS MESES
+            # ==============================
+
+            vendas_transp["Mes"] = pd.to_datetime(vendas_transp["Mes"].astype(str))
+            vendas_transp["Mes"] = vendas_transp["Mes"].dt.strftime("%B %Y").str.capitalize()
+            
+            potencial["Transportadora"] = (
+                potencial["Transportadora"]
+                .astype(str)
+                .str.strip()
+                .str.upper()
+            )
+
+            potencial["Mes"] = pd.to_datetime(potencial["Mes"].astype(str))
+            potencial["Mes"] = potencial["Mes"].dt.strftime("%B %Y").str.capitalize()
+            
+            devolucao_proc["Transportadora"] = (
+                devolucao_proc["Transportadora"]
+                .astype(str)
+                .str.strip()
+                .str.upper()
+            )
+
+            devolucao_proc["Mes"] = pd.to_datetime(devolucao_proc["Mes"].astype(str))
+            devolucao_proc["Mes"] = devolucao_proc["Mes"].dt.strftime("%B %Y").str.capitalize()
+            
+            devolucao_atras["Transportadora"] = (
+                devolucao_atras["Transportadora"]
+                .astype(str)
+                .str.strip()
+                .str.upper()
+            )
+
+            devolucao_atras["Mes"] = pd.to_datetime(devolucao_atras["Mes"].astype(str))
+            devolucao_atras["Mes"] = devolucao_atras["Mes"].dt.strftime("%B %Y").str.capitalize()
+            
+            if "Transportadora" in nfd_mes.columns:
+                nfd_mes["Transportadora"] = (
+                    nfd_mes["Transportadora"]
+                    .astype(str)
+                    .str.strip()
+                    .str.upper()
+                )
+            
+            nfd_mes["Mes_NFD"] = pd.to_datetime(nfd_mes["Mes_NFD"].astype(str))
+            nfd_mes["Mes_NFD"] = nfd_mes["Mes_NFD"].dt.strftime("%B %Y").str.capitalize()
+            
+            if "Transportadora" in nfd_coleta.columns:
+                nfd_coleta["Transportadora"] = (
+                    nfd_coleta["Transportadora"]
+                    .astype(str)
+                    .str.strip()
+                    .str.upper()
+                )
+
+            nfd_coleta["Mes_Coleta"] = pd.to_datetime(nfd_coleta["Mes_Coleta"].astype(str))
+            nfd_coleta["Mes_Coleta"] = nfd_coleta["Mes_Coleta"].dt.strftime("%B %Y").str.capitalize()
+            
+            
+            # ==============================
+            # FILTROS
+            # ==============================
+
+            meses = sorted(vendas_transp["Mes"].dropna().unique())
+            transportadoras = sorted(vendas_transp["Transportadora"].unique())
+            
+            # ==============================
+            # CONTROLE DE ABERTURA DOS FILTROS
+            # ==============================
+
+            if "abrir_filtro_mes" not in st.session_state:
+                st.session_state["abrir_filtro_mes"] = False
+
+            if "abrir_filtro_transp" not in st.session_state:
+                st.session_state["abrir_filtro_transp"] = False
+
+            col_space1, col_btn1, col_btn2, col_space2 = st.columns([2,1,1,2])
+
+            with col_btn1:
+                if st.button("Mês"):
+                    st.session_state["abrir_filtro_mes"] = not st.session_state["abrir_filtro_mes"]
+
+            with col_btn2:
+                if st.button("Transportadora"):
+                    st.session_state["abrir_filtro_transp"] = not st.session_state["abrir_filtro_transp"]
+
+
+            # ==============================
+            # FILTRO MÊS
+            # ==============================
+
+            if st.session_state["abrir_filtro_mes"]:
+
+                filtro_mes = st.multiselect(
+                    "Filtrar mês",
+                    options=meses,
+                    default=meses
+                )
+
+                if st.button("Aplicar filtro mês"):
+                    st.session_state["abrir_filtro_mes"] = False
+
+            else:
+                filtro_mes = meses
+
+
+            # ==============================
+            # FILTRO TRANSPORTADORA
+            # ==============================
+
+            if st.session_state["abrir_filtro_transp"]:
+
+                filtro_transportadora = st.multiselect(
+                    "Filtrar transportadora",
+                    options=transportadoras,
+                    default=transportadoras
+                )
+
+                if st.button("Aplicar filtro transportadora"):
+                    st.session_state["abrir_filtro_transp"] = False
+
+            else:
+                filtro_transportadora = transportadoras
+                
+            # filtros já existem aqui
+
+            retornando_det["ValorNota"] = retornando_det["ValorNota"].fillna(0)
+
+            retornando_det["DataColeta"] = pd.to_datetime(retornando_det["DataColeta"], errors="coerce")
+
+            retornando_det["Mes"] = (
+                retornando_det["DataColeta"]
+                .dt.strftime("%B %Y")
+                .str.capitalize()
+            )
+
+            retornando_total = retornando_det[
+                retornando_det["Mes"].isin(filtro_mes) &
+                retornando_det["Transportadora"].isin(filtro_transportadora)
+            ]["ValorNota"].sum()   
+            
+                  
+            # ==============================
+            # TOTAIS DOS INDICADORES
+            # ==============================
+
+            venda_total = vendas_transp[
+                vendas_transp["Mes"].isin(filtro_mes) &
+                vendas_transp["Transportadora"].isin(filtro_transportadora)
+            ]["ValorVenda"].sum()
+
+            devolucao_total = devolucao_proc[
+                devolucao_proc["Mes"].isin(filtro_mes) &
+                devolucao_proc["Transportadora"].isin(filtro_transportadora)
+            ]["Devolucao_Processo"].sum()
+
+            potencial_total = potencial[
+                potencial["Mes"].isin(filtro_mes) &
+                potencial["Transportadora"].isin(filtro_transportadora)
+            ]["Potencial"].sum()
+
+            devolucao_atras_total = devolucao_atras[
+                devolucao_atras["Mes"].isin(filtro_mes) &
+                devolucao_atras["Transportadora"].isin(filtro_transportadora)
+            ]["Devolucao_Atrasada"].sum()
+
+
+            # percentuais
+            perc_devolucao = devolucao_total / venda_total if venda_total > 0 else 0
+            perc_potencial = potencial_total / venda_total if venda_total > 0 else 0
+            perc_atrasada = devolucao_atras_total / venda_total if venda_total > 0 else 0
+            
+            # ==============================
+            # FILTRO NAS NFD POR TRANSPORTADORA
+            # ==============================
+
+            nfd_mes = nfd_mes[
+                nfd_mes["Mes_NFD"].isin(filtro_mes)
+            ]
+
+            nfd_coleta = nfd_coleta[
+                nfd_coleta["Mes_Coleta"].isin(filtro_mes)
+            ]
+
+
+            # formatação
+            def moeda(x):
+                return f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+                
+            col_transp, col_brav = st.columns([2,2])
+            
+            hoje = pd.Timestamp.today().normalize()
+            fim_mes = hoje + pd.offsets.MonthEnd(0)
+            dias_restantes_mes = (fim_mes - hoje).days
+                      
+            # =====================================
+            # DEVOLUÇÃO - PAINEL TRANSPORTES
+            # =====================================
+
+            with col_transp:
+            
+                    st.markdown(
+                        '<div class="titulo-painel">Devolução - Painel Transportes</div>',
+                        unsafe_allow_html=True
+                    )
+                
+                    # base completa
+                    ret = retornando_transp.copy()
+                    ret["Mes"] = ret["Mes"].replace("Sem_Data_Coleta", "1977-07-01")
+                    base_dev_transportes = bases["base"].copy()
+                    base_dev_bravium = bases["base"].copy()
+                    base_dev = base_dev_transportes
+
+                    ret["Mes"] = pd.to_datetime(ret["Mes"].astype(str))
+                    ret["Mes"] = ret["Mes"].dt.strftime("%B %Y").str.capitalize()
+
+                    ret = ret[
+                        ret["Mes"].isin(filtro_mes) &
+                        ret["Transportadora"].isin(filtro_transportadora)
+                    ]
+                    
+                    venda_mes = vendas_transp[
+                        vendas_transp["Mes"].isin(filtro_mes) &
+                        vendas_transp["Transportadora"].isin(filtro_transportadora)
+                    ]["ValorVenda"].sum()
+
+                    nfd_total = nfd_coleta["Valor_NFD"].sum()
+                    
+                    # ===== ADICIONE ESTAS 3 LINHAS =====
+                    indice_nfd = nfd_total
+                    atrasado = devolucao_atras_total
+                    indice_atrasado = nfd_total + atrasado
+                                
+                    
+                    # converter datas
+                    base_dev["DataColeta"] = pd.to_datetime(base_dev["DataColeta"], errors="coerce")
+                    base_dev["DataÚltimoStatus"] = pd.to_datetime(base_dev["DataÚltimoStatus"], errors="coerce")
+
+                    # mês baseado na coleta (Intelipost)
+                    base_dev["MesFiltro"] = base_dev["DataColeta"].dt.strftime("%B %Y").str.capitalize()
+
+                    # aplicar filtro de mês
+                    base_dev = base_dev[
+                        base_dev["MesFiltro"].isin(filtro_mes)
+                    ]
+                    # =====================================
+                    # PRAZO DEVOLUÇÃO
+                    # =====================================
+
+                    base_dev["PrazoFinal"] = base_dev["DataÚltimoStatus"] + pd.Timedelta(days=30)
+
+                    base_dev["DiasRestantesPrazo"] = (
+                        base_dev["PrazoFinal"] - hoje
+                    ).dt.days
+
+                    # =====================================
+                    # IMPACTO RETORNANDO POR MÊS DE COLETA
+                    # =====================================
+
+                    impacto_retornando = retornando_transp.copy()
+                    impacto_retornando["Mes"] = impacto_retornando["Mes"].replace("Sem_Data_Coleta", "1977-07-01")
+                    
+                    impacto_retornando["Mes"] = pd.to_datetime(impacto_retornando["Mes"].astype(str))
+                    impacto_retornando["Mes"] = impacto_retornando["Mes"].dt.strftime("%B %Y").str.capitalize()
+
+                    impacto_retornando = impacto_retornando[
+                        impacto_retornando["Mes"].isin(filtro_mes) &
+                        impacto_retornando["Transportadora"].isin(filtro_transportadora)
+                    ]
+
+                    impacto_retornando = impacto_retornando.rename(
+                        columns={"Mes": "MesColeta"}
+                    )  
+
+                    impacto_retornando = (
+                        impacto_retornando
+                        .groupby("MesColeta")["Impacto"]
+                        .sum()
+                        .reset_index()
+                    )
+                              
+                    # ==============================
+                    # NFD POR MÊS DE COLETA
+                    # ==============================
+
+                    nfd_por_mes = (
+                        nfd_coleta
+                        .groupby("Mes_Coleta")["Valor_NFD"]
+                        .sum()
+                        .reset_index()
+                    )
+
+                    nfd_por_mes = nfd_por_mes.rename(
+                        columns={
+                            "Mes_Coleta": "Mes",
+                            "Valor_NFD": "NFD"
+                        }
+                    )
+
+                    # =====================================
+                    # POTENCIAL TRIPLO
+                    # =====================================
+
+                    triplo_real = potencial["Potencial"].sum()
+                    
+                    # ==============================
+                    # IMPACTO POR MÊS DE COLETA
+                    # ==============================
+
+                    impacto_mes = (
+                        potencial
+                        .groupby("Mes")["Potencial"]
+                        .sum()
+                        .reset_index()
+                    )
+
+                    impacto_mes = impacto_mes.rename(
+                        columns={
+                            "Mes": "MesColeta",
+                            "Potencial": "ValorNota"
+                        }
+                    )   
+
+                    # =====================================
+                    # FUNÇÕES FORMATAÇÃO
+                    # =====================================
+
+                    # formatação
+                    def moeda(x):
+                        return f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+                    
+                    # =====================================
+                    # EXIBIÇÃO
+                    # =====================================
+
+                    st.markdown("### Venda total")
+                    
+                    st.markdown(
+                        f"""
+                        <div style="
+                            background:white;
+                            padding:8px 12px;
+                            border-radius:10px;
+                            box-shadow:0 2px 6px rgba(0,0,0,0.06);
+                            text-align:center;
+                            display:inline-block;
+                            min-width:220px;
+                            margin-bottom:30px;
+                        ">
+                            <div style="font-size:12px;color:#6b7280;">Venda Total</div>
+                            <div style="font-size:18px;font-weight:800;color:#0f2a44;">
+                                {moeda(venda_mes)}
+                            </div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+                            
+                    # ==============================
+                    # GRÁFICO VENDAS POR MÊS - TRANSPORTES
+                    # ==============================
+
+                    graf_vendas = vendas_mes.copy()
+
+                    graf_vendas["Mes"] = pd.to_datetime(graf_vendas["Mes"].astype(str))
+
+                    graf_vendas = graf_vendas.sort_values("Mes")
+
+                    fig = px.line(
+                        graf_vendas,
+                        x="Mes",
+                        y="ValorVenda",
+                        markers=True,
+                        title="Venda mensal - Transportadoras"
+                    )
+
+                    fig.update_layout(
+                        xaxis_title="Mês",
+                        yaxis_title="Valor",
+                        height=500
+                    )
+
+                    st.plotly_chart(
+                        fig,
+                        use_container_width=True
+                    )
+
+                    st.markdown("### NFD gerada")
+                    st.write(f"{moeda(nfd_total)} | {perc_transportes(indice_nfd, venda_mes)}")
+
+                    st.markdown("### Atrasado")
+                    st.write(f"{moeda(atrasado)} | {perc_transportes(indice_atrasado, venda_mes)}")
+
+                    st.markdown("### Retornando")
+                    
+                    st.write(f"Total: {moeda(retornando_total)}")
+
+                    for _, row in impacto_retornando.iterrows():
+
+                        mes = row["MesColeta"]
+                        impacto_valor = row["Impacto"]
+
+                        venda_mes_base = graf_vendas[
+                            graf_vendas["Mes"].dt.strftime("%B %Y").str.capitalize() == mes
+                        ]["ValorVenda"].sum()
+
+                        nfd_mes_base = nfd_por_mes[
+                            nfd_por_mes["Mes"] == mes
+                        ]["NFD"].sum()
+
+                        indice_atual = nfd_mes_base
+                        indice_novo = nfd_mes_base + impacto_valor
+
+                        st.write(
+                            f"Impacto {mes}: "
+                            f"{moeda(impacto_valor)} | "
+                            f"{perc_transportes(indice_atual, venda_mes_base)} → "
+                            f"{perc_transportes(indice_novo, venda_mes_base)}"
+                        )
+                    
+                    st.markdown("### Potencial Triplo Prazo")
+
+                    st.write(f"Total potencial: {moeda(triplo_real)}")
+                    
+                    for _, row in impacto_mes.iterrows():
+
+                        mes = row["MesColeta"]
+                        impacto_valor = row["ValorNota"]
+
+                        venda_mes_base = graf_vendas[
+                            graf_vendas["Mes"].dt.strftime("%B %Y").str.capitalize() == mes
+                        ]["ValorVenda"].sum()
+
+                        nfd_mes_base = nfd_por_mes[
+                            nfd_por_mes["Mes"] == mes
+                        ]["NFD"].sum()
+
+                        indice_atual = nfd_mes_base
+                        indice_novo = nfd_mes_base + impacto_valor
+
+                        st.write(
+                            f"Impacto {mes}: "
+                            f"{moeda(impacto_valor)} | "
+                            f"{perc_transportes(indice_atual, venda_mes_base)} → "
+                            f"{perc_transportes(indice_novo, venda_mes_base)}"
+                        )
+
+                    st.markdown("</div>", unsafe_allow_html=True)
+                    
+                    # ==============================
+                    # GRÁFICO IMPACTO POTENCIAL
+                    # ==============================
+
+                    graf_indice = vendas_mes.copy()
+
+                    graf_indice["Mes"] = pd.to_datetime(graf_indice["Mes"].astype(str))
+
+                    graf_indice = graf_indice.sort_values("Mes")
+
+                    # transformar mes em periodo
+                    graf_indice["MesPeriodo"] = graf_indice["Mes"].dt.to_period("M")
+
+                    # mapa impacto por mes de coleta
+                    impacto_map = dict(
+                        zip(impacto_mes["MesColeta"], impacto_mes["ValorNota"])
+                    )
+
+                    graf_indice["Impacto"] = graf_indice["MesPeriodo"].map(impacto_map).fillna(0)
+
+                    # índice atual (NFD daquele mês / venda daquele mês)
+                    
+                    graf_indice["Mes"] = graf_indice["Mes"].astype(str)
+                    nfd_por_mes["Mes"] = nfd_por_mes["Mes"].astype(str)
+                    graf_indice = graf_indice.merge(
+                        nfd_por_mes,
+                        on="Mes",
+                        how="left"
+                    )
+
+                    graf_indice["NFD"] = graf_indice["NFD"].fillna(0)
+
+                    graf_indice["IndiceAtual"] = graf_indice["NFD"] / graf_indice["ValorVenda"]
+
+                    # índice considerando potencial
+                    graf_indice["IndicePotencial"] = (
+                        (graf_indice["NFD"] + graf_indice["Impacto"]) /
+                        graf_indice["ValorVenda"]
+                    )
+
+                    # ==============================
+                    # PLOT
+                    # ==============================
+
+                    fig = px.line(
+                        graf_indice,
+                        x="Mes",
+                        y=["IndiceAtual", "IndicePotencial"],
+                        markers=True,
+                        title="Impacto Potencial Triplo no Índice de Devolução"
+                    )
+
+                    fig.update_layout(
+                        yaxis_title="Índice %",
+                        xaxis_title="Mês",
+                        height=450
+                    )
+
+                    fig.update_yaxes(
+                        tickformat=".2%"
+                    )
+
+                    st.plotly_chart(
+                        fig,
+                        use_container_width=True
+                    )
+                    
+            # =====================================
+            # DEVOLUÇÃO - PAINEL BRAVIUM
+            # =====================================
+
+            with col_brav:
+
+                st.markdown(
+                    '<div class="titulo-painel">Devolução - Painel Bravium</div>',
+                    unsafe_allow_html=True
+                )
+
+                # ==============================
+                # BASE NFD (empresa)
+                # ==============================
+
+                base_nfd = retornando_det.copy()
+                
+                base_nfd["DataÚltimoStatus"] = pd.to_datetime(base_nfd["DataÚltimoStatus"], errors="coerce")
+                base_nfd["DataColeta"] = pd.to_datetime(base_nfd["DataColeta"], errors="coerce")
+
+                hoje = pd.Timestamp.today().normalize()
+                fim_mes = hoje + pd.offsets.MonthEnd(0)
+                dias_restantes_mes = (fim_mes - hoje).days
+
+                # ==============================
+                # FILTRO (POR COLETA)
+                # ==============================
+
+                base_nfd["MesFiltro"] = base_nfd["DataColeta"].dt.strftime("%B %Y").str.capitalize()
+
+                base_nfd = base_nfd[
+                    (base_nfd["MesFiltro"].isin(filtro_mes)) &
+                    (base_nfd["Transportadora"].isin(filtro_transportadora))
+                ]
+
+                # ==============================
+                # DIAS NO STATUS (BASE DA REGRA)
+                # ==============================
+
+                base_nfd["DiasNoStatus"] = (
+                    hoje - base_nfd["DataÚltimoStatus"]
+                ).dt.days
+
+                # ==============================
+                # CLASSIFICAÇÃO CORRETA
+                # ==============================
+
+                # atrasado (já existente)
+                base_atrasado = devolucao_atras.copy()
+
+                base_atrasado = base_atrasado[
+                    base_atrasado["Mes"].isin(filtro_mes) &
+                    base_atrasado["Transportadora"].isin(filtro_transportadora)
+                ]
+
+                atrasado_brav = base_atrasado["Devolucao_Atrasada"].sum()
+                
+                # PROVÁVEL
+                provavel_brav = base_nfd[
+                    (base_nfd["DiasNoStatus"] >= 20) &
+                    (dias_restantes_mes >= 10)
+                ]["ValorNota"].sum()
+
+                # IMPROVÁVEL
+                improv_brav = base_nfd[
+                    (base_nfd["DiasNoStatus"] < 10) &
+                    (dias_restantes_mes <= 10)
+                ]["ValorNota"].sum()
+
+                # POSSÍVEL = resto
+                poss_brav = base_nfd[
+                    ~(
+                        ((base_nfd["DiasNoStatus"] >= 20) & (dias_restantes_mes >= 10)) |
+                        ((base_nfd["DiasNoStatus"] < 10) & (dias_restantes_mes <= 10))
+                    )
+                ]["ValorNota"].sum()
+
+                # ==============================
+                # NFD EMPRESA
+                # ==============================
+
+                vendas_mes_pedido["Mes_Pedido"] = pd.to_datetime(
+                    vendas_mes_pedido["Mes_Pedido"].astype(str)
+                )
+                vendas_mes_pedido["Mes_Pedido"] = vendas_mes_pedido["Mes_Pedido"].dt.strftime("%B %Y").str.capitalize()
+
+                venda_mes = vendas_mes_pedido[
+                    vendas_mes_pedido["Mes_Pedido"].isin(filtro_mes)
+                ]["ValorVenda"].sum()
+
+                nfd_empresa = nfd_mes["Valor_NFD"].sum()
+
+                # ==============================
+                # INDICES
+                # ==============================
+
+                indice_brav_nfd = nfd_empresa
+
+                indice_brav_atras = nfd_empresa + atrasado_brav
+
+                indice_brav_prov = nfd_empresa + atrasado_brav + provavel_brav
+
+                indice_brav_poss = nfd_empresa + atrasado_brav + provavel_brav + poss_brav
+
+                indice_brav_improv = nfd_empresa + atrasado_brav + provavel_brav + poss_brav + improv_brav
+
+                potencial_brav = potencial[
+                    potencial["Mes"].isin(filtro_mes)
+                ]["Potencial"].sum()
+
+                indice_brav_potencial_1 = (
+                    nfd_empresa
+                    + atrasado_brav
+                    + potencial_brav
+                )
+
+                indice_brav_potencial_2 = (
+                    nfd_empresa
+                    + atrasado_brav
+                    + provavel_brav
+                    + potencial_brav
+                )
+
+                indice_brav_potencial_poss = (
+                    nfd_empresa
+                    + atrasado_brav
+                    + provavel_brav
+                    + poss_brav
+                    + potencial_brav
+                )
+                # ==============================
+                # FUNÇÃO PERCENTUAL BRAVIUM
+                # ==============================
+
+                def perc_bravium(x):
+                    if venda_mes == 0:
+                        return "0%"
+                    return f"{(x / venda_mes)*100:.2f}%".replace(".", ",")
+
+                # ==============================
+                # EXIBIÇÃO
+                # ==============================
+                
+                st.markdown("### Venda total(Empresa)")
+
+                st.markdown(
+                    f"""
+                    <div style="
+                        background:white;
+                        padding:8px 12px;
+                        border-radius:10px;
+                        box-shadow:0 2px 6px rgba(0,0,0,0.06);
+                        text-align:center;
+                        display:inline-block;
+                        min-width:220px;
+                        margin-bottom:30px;
+                    ">
+                        <div style="font-size:12px;color:#6b7280;">Venda Total</div>
+                        <div style="font-size:18px;font-weight:800;color:#0f2a44;">
+                            {moeda(venda_mes)}
+                        </div>
+                    </div>
+                    """,
+                        
+                )
+                
+                # ==============================
+                # GRÁFICO VENDAS POR MÊS - BRAVIUM
+                # ==============================
+                
+                graf_bravium = bases["vendas_mes_pedido"].copy()
+
+                graf_bravium["Mes_Pedido"] = pd.to_datetime(
+                    graf_bravium["Mes_Pedido"].astype(str)
+                )
+
+                graf_bravium = graf_bravium.sort_values("Mes_Pedido")
+
+                fig = px.line(
+                    graf_bravium,
+                    x="Mes_Pedido",
+                    y="ValorVenda",
+                    markers=True,
+                    title="Venda mensal - Bravium"
+                )
+
+                fig.update_layout(
+                    xaxis_title="Mês",
+                    yaxis_title="Valor",
+                    height=500
+                )
+
+                st.plotly_chart(
+                    fig,
+                    use_container_width=True
+                )
+
+                st.markdown("### NFD gerada (Empresa)")
+                st.write(f"{moeda(nfd_empresa)} | {perc_bravium(indice_brav_nfd)}")
+
+                st.markdown("### Atrasado")
+                st.write(f"{moeda(atrasado_brav)} | {perc_bravium(indice_brav_atras)}")
+
+                st.markdown("### Retornando")
+
+                st.write(f"Total: {moeda(retornando_total)}")
+
+                st.write(
+                    f"Provável: {moeda(provavel_brav)} | "
+                    f"{perc_bravium(indice_brav_atras)} → {perc_bravium(indice_brav_prov)}"
+                )
+
+                st.write(
+                    f"Possível: {moeda(poss_brav)} | "
+                    f"{perc_bravium(indice_brav_prov)} → {perc_bravium(indice_brav_poss)}"
+                )
+
+                st.write(
+                    f"Improvável: {moeda(improv_brav)} | "
+                    f"{perc_bravium(indice_brav_poss)} → {perc_bravium(indice_brav_improv)}"
+                )
+               
+
+                st.markdown("### Potencial no mês (Bravium)")
+
+                # 1. Potencial puro
+                st.write(
+                    f"Cenário Potencial: {moeda(potencial_brav)} | "
+                    f"{perc_bravium(indice_brav_atras)} → {perc_bravium(indice_brav_potencial_1)}"
+                )
+
+                # 2. Potencial + provável
+                st.write(
+                    f"Cenário Potencial + Provável: {moeda(potencial_brav)} | "
+                    f"{perc_bravium(indice_brav_potencial_1)} → {perc_bravium(indice_brav_potencial_2)}"
+                )
+
+                # 3. Potencial + provável + possível
+                st.write(
+                    f"Cenário Potencial + Provável + Possível: {moeda(potencial_brav)} | "
+                    f"{perc_bravium(indice_brav_potencial_2)} → {perc_bravium(indice_brav_potencial_poss)}"
+                )
+                
+        # ==============================================
+        # TRADE-OFF LOGÍSTICO
+        # ==============================================
+
+        elif pagina == "Trade-Off Logístico":
+
+            st.markdown("## 🚚 Trade-Off Logístico")
+
+            st.caption(
+                "Simulação operacional entre transportadoras baseada em similaridade de CEP"
+            )
+
+            st.divider()
+
+            # =====================================================
+            # CARREGAR BASES
+            # =====================================================
+
+            df_trade = pd.read_excel(
+                r"data\Base_Pedidos_Codigo.xlsx"
+            )
+
+            df_sim = pd.read_excel(
+                r"data\Base_Similaridade_Tarifarios.xlsx"
+            )
+
+            # =====================================================
+            # FILTROS
+            # =====================================================
+
+            col1, col2, col3 = st.columns(3)
+
+            with col1:
+
+                transportadoras = sorted(
+
+                    df_trade["Transportadora"]
+                    .dropna()
+                    .unique()
+                )
+
+                transportadora_origem = st.selectbox(
+                    "Transportadora Atual",
+                    transportadoras
+                )
+
+            with col2:
+
+                transportadora_destino = st.selectbox(
+                    "Transportadora Simulada",
+                    [
+                        "MAGALU",
+                        "IMILE"
+                    ]
+                )
+
+            with col3:
+
+                periodo = st.selectbox(
+                    "Período",
+                    [
+                        "30 dias",
+                        "60 dias",
+                        "90 dias"
+                    ]
+                )
+
+            # =====================================================
+            # CÓDIGOS TARIFÁRIOS
+            # =====================================================
+
+            codigos = sorted(
+
+                df_trade[
+
+                    df_trade["Transportadora"]
+                    == transportadora_origem
+
+                ]["CodigoTarifario"]
+
+                .dropna()
+                .unique()
+            )
+
+            codigo_origem = st.selectbox(
+                "Código Tarifário",
+                codigos
+            )
+
+            st.divider()
+
+            # =====================================================
+            # FILTRAR SIMILARIDADE
+            # =====================================================
+
+            df_sim_filtrado = df_sim[
+
+                (df_sim["TransportadoraOrigem"] == transportadora_origem)
+
+                &
+
+                (df_sim["CodigoOrigem"] == codigo_origem)
+
+                &
+
+                (
+                    df_sim["TransportadoraDestino"]
+                    == transportadora_destino
+                )
+
+            ].copy()
+
+            # ordena
+            df_sim_filtrado = df_sim_filtrado.sort_values(
+                "Similaridade",
+                ascending=False
+            )
+
+            # =====================================================
+            # PEDIDOS ORIGEM
+            # =====================================================
+
+            df_origem = df_trade[
+
+                (df_trade["Transportadora"] == transportadora_origem)
+
+                &
+
+                (df_trade["CodigoTarifario"] == codigo_origem)
+
+            ].copy()
+
+            total_pedidos = len(df_origem)
+
+            # =====================================================
+            # PEDIDOS SIMULADOS
+            # =====================================================
+
+            df_sim_filtrado["PedidosSimulados"] = (
+
+                total_pedidos
+
+                *
+
+                (df_sim_filtrado["Similaridade"] / 100)
+
+            ).round(0)
+
+            # =====================================================
+            # KPIs
+            # =====================================================
+
+            similaridade_media = round(
+
+                df_sim_filtrado["Similaridade"].mean(),
+
+                2
+            )
+
+            pedidos_simulados = int(
+
+                df_sim_filtrado["PedidosSimulados"].sum()
+
+            )
+
+            k1, k2, k3 = st.columns(3)
+
+            with k1:
+
+                st.metric(
+                    "Pedidos Origem",
+                    f"{total_pedidos:,}"
+                )
+
+            with k2:
+
+                st.metric(
+                    "Similaridade Média",
+                    f"{similaridade_media}%"
+                )
+
+            with k3:
+
+                st.metric(
+                    "Pedidos Simulados",
+                    f"{pedidos_simulados:,}"
+                )
+
+            st.divider()
+
+            # =====================================================
+            # TABELA
+            # =====================================================
+
+            st.markdown("### 🔄 Redistribuição Operacional")
+
+            tabela = df_sim_filtrado[
+                [
+                    "CodigoDestino",
+                    "Similaridade",
+                    "PedidosSimulados"
+                ]
+            ].copy()
+
+            tabela = tabela.rename(columns={
+
+                "CodigoDestino": "Código Destino",
+                "Similaridade": "Similaridade %",
+                "PedidosSimulados": "Pedidos Simulados"
+
+            })
+
+            st.dataframe(
+                tabela,
+                use_container_width=True,
+                hide_index=True
+            )
+
+            st.divider()
+
+            # =====================================================
+            # RESUMO EXECUTIVO
+            # =====================================================
+
+            st.markdown("### 📌 Resumo Executivo")
+
+            st.info(f"""
+
+            Se os pedidos do código tarifário:
+
+            • {codigo_origem}
+
+            da transportadora:
+
+            • {transportadora_origem}
+
+            fossem redistribuídos para:
+
+            • {transportadora_destino}
+
+            aproximadamente:
+
+            • {pedidos_simulados:,} pedidos
+
+            seriam redistribuídos entre os códigos equivalentes encontrados.
+
+            """)
+                
+                            
