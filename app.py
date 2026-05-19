@@ -2400,10 +2400,10 @@ elif pagina == "Trade-Off Logístico":
 
         df_trade = pd.DataFrame()
 
-    if os.path.exists("data/Base_Similaridade_Tarifarios.xlsx"):
+    if os.path.exists("data/Base_Similaridade_Tarifarios2.xlsx"):
 
         df_sim = pd.read_excel(
-            "data/Base_Similaridade_Tarifarios.xlsx"
+            "data/Base_Similaridade_Tarifarios2.xlsx"
         )
 
     else:
