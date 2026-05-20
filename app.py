@@ -159,9 +159,9 @@ if os.path.exists(LOGO_PATH):
             f.read()
         ).decode()
 
-    logo_html = (
-        f'<img src="data:image/png;base64,{logo_base64}" width="120">'
-    )
+    logo_html = f"""
+    <img src="data:image/png;base64,{logo_base64}" width="120">
+    """
 
 st.markdown(
     f"""
