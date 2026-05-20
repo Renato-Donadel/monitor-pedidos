@@ -3,7 +3,6 @@ import pandas as pd
 from io import BytesIO
 import plotly.express as px
 import matplotlib.pyplot as plt
-from app import *
 
 def render_tradeoff():
 
