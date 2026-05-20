@@ -1,8 +1,11 @@
 import streamlit as st
 import pandas as pd
+import os
 from io import BytesIO
 import plotly.express as px
 import matplotlib.pyplot as plt
+
+from utils import PASTA_DATA
 
 def render_desempenho():
 

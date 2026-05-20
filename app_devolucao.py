@@ -1,8 +1,15 @@
 import streamlit as st
 import pandas as pd
+import os
 from io import BytesIO
 import plotly.express as px
 import matplotlib.pyplot as plt
+
+from utils import (
+    carregar_base_devolucao,
+    perc_transportes,
+    ARQ_DEVOLUCAO
+)
 
 def render_devolucao():
 
