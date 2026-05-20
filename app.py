@@ -149,56 +149,9 @@ pagina = st.sidebar.radio(
 # HEADER
 # ==============================
 
-logo_html = ""
-logo_base64 = ""
-
-if os.path.exists(LOGO_PATH):
-
-    with open(LOGO_PATH, "rb") as f:
-        logo_base64 = base64.b64encode(
-            f.read()
-        ).decode()
-
-    logo_html = f"""
-    <img src="data:image/png;base64,{logo_base64}" width="120">
-    """
-
-st.markdown(
-    f"""
-    <style>
-
-    .stApp::before {{
-
-        content: "";
-
-        position: fixed;
-
-        top: 0;
-        left: 0;
-
-        width: 100%;
-        height: 100%;
-
-        background-image:
-        url("data:image/png;base64,{logo_base64}");
-
-        background-repeat: no-repeat;
-
-        background-position: center;
-
-        background-size: 700px;
-
-        opacity: 0.03;
-
-        pointer-events: none;
-
-        z-index: 0;
-    }}
-
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+# ==============================
+# HEADER
+# ==============================
 
 if pagina == "Monitor de Pedidos":
 
@@ -235,28 +188,45 @@ elif pagina == "Trade-Off Logístico":
         "Simulação Estratégica • SLA • "
         "NFD • Frete • Similaridade CEP"
     )
-header_html = f"""
-<div class="header-box">
 
-    {logo_html}
+col1, col2 = st.columns([1, 7])
 
-    <div>
-        <p class="header-title">
+with col1:
+
+    if os.path.exists(LOGO_PATH):
+        st.image(LOGO_PATH, width=140)
+
+with col2:
+
+    st.markdown(
+        f"""
+        <div style="
+            background: linear-gradient(90deg,#0f2a44,#1f4e79);
+            padding:20px;
+            border-radius:14px;
+        ">
+
+        <div style="
+            color:white;
+            font-size:28px;
+            font-weight:700;
+        ">
             {titulo}
-        </p>
+        </div>
 
-        <p class="header-sub">
+        <div style="
+            color:white;
+            opacity:0.85;
+            font-size:15px;
+            margin-top:5px;
+        ">
             {subtitulo}
-        </p>
-    </div>
+        </div>
 
-</div>
-"""
-
-st.markdown(
-    header_html,
-    unsafe_allow_html=True
-)
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 # ==============================
 # ROTEAMENTO
