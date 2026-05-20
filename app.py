@@ -1,7 +1,3 @@
-from app_monitor import render_monitor
-from app_devolucao import render_devolucao
-from app_desempenho import render_desempenho
-from app_tradeoff import render_tradeoff
 import streamlit as st
 import pandas as pd
 import os
@@ -343,6 +339,12 @@ def pizza(tratados, restantes, titulo):
     plt.close(fig)
     buf.seek(0)
     return buf.getvalue()
+    
+    
+from app_monitor import render_monitor
+from app_devolucao import render_devolucao
+from app_desempenho import render_desempenho
+from app_tradeoff import render_tradeoff
         
 
                     
