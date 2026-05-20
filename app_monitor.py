@@ -3,6 +3,16 @@ import pandas as pd
 from io import BytesIO
 import plotly.express as px
 import matplotlib.pyplot as plt
+from app import (
+    ler_base,
+    ARQ_ATUAL,
+    STATUS_DIARIOS,
+    STATUS_Manuais,
+    listar_dias,
+    PASTA_MENSAL,
+    TAMANHO_LOTE,
+    caminho
+)
 
 def render_monitor():
 
