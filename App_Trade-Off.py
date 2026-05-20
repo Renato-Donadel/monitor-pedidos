@@ -1,8 +1,15 @@
+import streamlit as st
+import pandas as pd
+from io import BytesIO
+import plotly.express as px
+import matplotlib.pyplot as plt
+from app import *
+
+def render_tradeoff():
+
 # ==============================================
 # TRADE-OFF LOGÍSTICO
 # ==============================================
-
-elif pagina == "Trade-Off Logístico":
 
     st.markdown("## 🚚 Trade-Off Logístico")
 
