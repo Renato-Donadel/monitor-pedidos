@@ -235,27 +235,26 @@ elif pagina == "Trade-Off Logístico":
         "Simulação Estratégica • SLA • "
         "NFD • Frete • Similaridade CEP"
     )
+header_html = f"""
+<div class="header-box">
+
+    {logo_html}
+
+    <div>
+        <p class="header-title">
+            {titulo}
+        </p>
+
+        <p class="header-sub">
+            {subtitulo}
+        </p>
+    </div>
+
+</div>
+"""
 
 st.markdown(
-    f"""
-    <div class="header-box">
-
-        {logo_html}
-
-        <div>
-
-            <p class="header-title">
-                {titulo}
-            </p>
-
-            <p class="header-sub">
-                {subtitulo}
-            </p>
-
-        </div>
-
-    </div>
-    """,
+    header_html,
     unsafe_allow_html=True
 )
 
