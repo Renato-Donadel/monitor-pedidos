@@ -3,7 +3,7 @@ import pandas as pd
 from io import BytesIO
 import plotly.express as px
 import matplotlib.pyplot as plt
-from app import (
+from utils import (
     ler_base,
     ARQ_ATUAL,
     STATUS_DIARIOS,
