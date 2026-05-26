@@ -458,9 +458,9 @@ def render_tradeoff():
 
     styled = (
         tabela.style
-        .applymap(color_sla, subset=["Δ SLA (pp)"])
-        .applymap(color_tm,  subset=["Δ TM (R$)"])
-        .applymap(color_nfd, subset=["Δ NFD (pp)"])
+        .map(color_sla, subset=["Δ SLA (pp)"])
+        .map(color_tm,  subset=["Δ TM (R$)"])
+        .map(color_nfd, subset=["Δ NFD (pp)"])
         .format({
             "TM Destino (R$)":      "R$ {:,.2f}",
             "Δ TM (R$)":            "{:+,.2f}",
