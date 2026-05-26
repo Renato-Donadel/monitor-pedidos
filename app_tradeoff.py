@@ -314,99 +314,111 @@ def render_tradeoff():
     st.divider()
 
     # ====================================================
-    # GRÁFICO DE BARRAS AGRUPADAS
+    # 3 MINI GRÁFICOS LADO A LADO
     # ====================================================
 
     st.markdown("### 📈 Comparativo por Código Tarifário Destino")
 
-    metrica_sel = st.radio(
-        "Selecione a métrica:",
-        ["SLA (%)", "Ticket Médio (R$)", "NFD (%)"],
-        horizontal=True
-    )
+    codigos_x  = df_comp["CodigoDestino"].tolist()
+    percentuais = df_comp["Percentual"].tolist()
 
-    if metrica_sel == "SLA (%)":
-        col_dest   = "SLA_Dest_pct"
-        val_ref    = sla_origem
-        titulo_y   = "SLA (%)"
-        fmt_v      = lambda v: f"{v:.2f}%"
-        melhor_alto = True
-    elif metrica_sel == "Ticket Médio (R$)":
-        col_dest   = "TM_Dest"
-        val_ref    = tm_origem
-        titulo_y   = "Ticket Médio (R$)"
-        fmt_v      = lambda v: f"R$ {v:,.2f}"
-        melhor_alto = False
-    else:
-        col_dest   = "NFD_Dest_pct"
-        val_ref    = nfd_origem
-        titulo_y   = "NFD (%)"
-        fmt_v      = lambda v: f"{v:.2f}%"
-        melhor_alto = False
+    def mini_grafico(col_dest, val_ref, titulo_y, fmt_v, maiores_melhores):
+        vals = df_comp[col_dest].tolist()
+        cores = [
+            COR_OK if (maiores_melhores and v >= val_ref) or
+                      (not maiores_melhores and v <= val_ref)
+            else COR_ALERTA
+            for v in vals
+        ]
 
-    codigos_x    = df_comp["CodigoDestino"].tolist()
-    vals_destino = df_comp[col_dest].tolist()
-    percentuais  = df_comp["Percentual"].tolist()
+        fig = go.Figure()
 
-    # Cor por código: verde se melhora, vermelho se piora
-    cores_dest = []
-    for v in vals_destino:
-        if melhor_alto:
-            cores_dest.append(COR_OK if v >= val_ref else COR_ALERTA)
-        else:
-            cores_dest.append(COR_OK if v <= val_ref else COR_ALERTA)
+        # Barra origem (referência)
+        fig.add_trace(go.Bar(
+            name=f"{transportadora_origem} (atual)",
+            x=codigos_x,
+            y=[val_ref] * len(codigos_x),
+            marker_color=COR_ORIGEM,
+            opacity=0.75,
+            text=[fmt_v(val_ref)] * len(codigos_x),
+            textposition="outside",
+            textfont=dict(size=11),
+        ))
 
-    fig = go.Figure()
+        # Barra destino
+        fig.add_trace(go.Bar(
+            name=f"{transportadora_destino} (simulado)",
+            x=codigos_x,
+            y=vals,
+            marker_color=cores,
+            text=[
+                f"{fmt_v(v)}<br>({p:.1f}%)"
+                for v, p in zip(vals, percentuais)
+            ],
+            textposition="outside",
+            textfont=dict(size=11),
+        ))
 
-    # Barra referência (origem)
-    fig.add_trace(go.Bar(
-        name=f"{transportadora_origem} — {codigo_origem} (atual)",
-        x=codigos_x,
-        y=[val_ref] * len(codigos_x),
-        marker_color=COR_ORIGEM,
-        opacity=0.7,
-        text=[fmt_v(val_ref)] * len(codigos_x),
-        textposition="outside",
-    ))
+        fig.update_layout(
+            barmode="group",
+            title=dict(text=titulo_y, font=dict(size=13), x=0),
+            yaxis_title=titulo_y,
+            xaxis=dict(tickfont=dict(size=11)),
+            legend=dict(orientation="h", y=-0.35, font=dict(size=11)),
+            height=320,
+            plot_bgcolor="#f4f6f9",
+            paper_bgcolor="#f4f6f9",
+            font=dict(family="Arial", size=12),
+            margin=dict(t=40, b=80, l=50, r=10),
+        )
 
-    # Barra destino
-    fig.add_trace(go.Bar(
-        name=f"{transportadora_destino} (simulado)",
-        x=codigos_x,
-        y=vals_destino,
-        marker_color=cores_dest,
-        text=[
-            f"{fmt_v(v)}<br>({p:.1f}% dos ped.)"
-            for v, p in zip(vals_destino, percentuais)
-        ],
-        textposition="outside",
-    ))
+        fig.add_hline(
+            y=val_ref,
+            line_dash="dash",
+            line_color=COR_NEUTRO,
+            annotation_text=f"Ref: {fmt_v(val_ref)}",
+            annotation_font_size=11,
+            annotation_position="top left"
+        )
 
-    fig.update_layout(
-        barmode="group",
-        yaxis_title=titulo_y,
-        xaxis_title="Código Tarifário Destino",
-        legend=dict(orientation="h", y=-0.28),
-        height=500,
-        plot_bgcolor="#f4f6f9",
-        paper_bgcolor="#f4f6f9",
-        font=dict(family="Arial", size=13),
-        margin=dict(t=40, b=90),
-    )
+        return fig
 
-    fig.add_hline(
-        y=val_ref,
-        line_dash="dash",
-        line_color=COR_NEUTRO,
-        annotation_text=f"Referência origem: {fmt_v(val_ref)}",
-        annotation_position="top left"
-    )
+    g1, g2, g3 = st.columns(3)
 
-    st.plotly_chart(fig, use_container_width=True)
+    with g1:
+        st.plotly_chart(
+            mini_grafico(
+                "SLA_Dest_pct", sla_origem,
+                "SLA (%)", lambda v: f"{v:.1f}%", True
+            ),
+            use_container_width=True,
+            key="graf_sla"
+        )
+
+    with g2:
+        st.plotly_chart(
+            mini_grafico(
+                "TM_Dest", tm_origem,
+                "Ticket Médio (R$)", lambda v: f"R${v:.2f}", False
+            ),
+            use_container_width=True,
+            key="graf_tm"
+        )
+
+    with g3:
+        st.plotly_chart(
+            mini_grafico(
+                "NFD_Dest_pct", nfd_origem,
+                "NFD (%)", lambda v: f"{v:.1f}%", False
+            ),
+            use_container_width=True,
+            key="graf_nfd"
+        )
+
     st.caption(
         "🟢 Verde = melhora vs origem  |  "
         "🔴 Vermelho = piora vs origem  |  "
-        "Tracejado laranja = valor de referência da transportadora atual"
+        "Tracejado laranja = referência da transportadora atual"
     )
 
     st.divider()
@@ -458,9 +470,9 @@ def render_tradeoff():
 
     styled = (
         tabela.style
-        .applymap(color_sla, subset=["Δ SLA (pp)"])
-        .applymap(color_tm,  subset=["Δ TM (R$)"])
-        .applymap(color_nfd, subset=["Δ NFD (pp)"])
+        .map(color_sla, subset=["Δ SLA (pp)"])
+        .map(color_tm,  subset=["Δ TM (R$)"])
+        .map(color_nfd, subset=["Δ NFD (pp)"])
         .format({
             "TM Destino (R$)":      "R$ {:,.2f}",
             "Δ TM (R$)":            "{:+,.2f}",
