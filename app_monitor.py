@@ -12,7 +12,8 @@ from utils import (
     listar_dias,
     PASTA_MENSAL,
     TAMANHO_LOTE,
-    caminho
+    caminho,
+    pizza
 )
 
 def render_monitor():
