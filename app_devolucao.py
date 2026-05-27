@@ -536,19 +536,34 @@ def render_devolucao():
             graf_indice["MesPeriodo"] = graf_indice["Mes"].dt.to_period("M")
 
             # mapa impacto por mes de coleta
+            # Converte MesColeta ("Janeiro 2026") para YYYY-MM para casar com MesKey
+            impacto_mes["MesKey"] = pd.to_datetime(
+                impacto_mes["MesColeta"].astype(str), errors="coerce"
+            ).dt.strftime("%Y-%m")
+
             impacto_map = dict(
-                zip(impacto_mes["MesColeta"], impacto_mes["ValorNota"])
+                zip(impacto_mes["MesKey"], impacto_mes["ValorNota"])
             )
 
-            graf_indice["Impacto"] = graf_indice["MesPeriodo"].map(impacto_map).fillna(0)
+            graf_indice["MesKey"] = pd.to_datetime(
+                graf_indice["Mes"].astype(str), errors="coerce"
+            ).dt.strftime("%Y-%m")
+
+            graf_indice["Impacto"] = graf_indice["MesKey"].map(impacto_map).fillna(0)
 
             # índice atual (NFD daquele mês / venda daquele mês)
-            
-            graf_indice["Mes"] = graf_indice["Mes"].astype(str)
-            nfd_por_mes["Mes"] = nfd_por_mes["Mes"].astype(str)
+            # Normaliza ambos para "YYYY-MM" antes do merge
+            graf_indice["MesKey"] = pd.to_datetime(
+                graf_indice["Mes"].astype(str), errors="coerce"
+            ).dt.strftime("%Y-%m")
+
+            nfd_por_mes["MesKey"] = pd.to_datetime(
+                nfd_por_mes["Mes"].astype(str), errors="coerce"
+            ).dt.strftime("%Y-%m")
+
             graf_indice = graf_indice.merge(
-                nfd_por_mes,
-                on="Mes",
+                nfd_por_mes[["MesKey", "NFD"]],
+                on="MesKey",
                 how="left"
             )
 
@@ -752,7 +767,7 @@ def render_devolucao():
                 </div>
             </div>
             """,
-                
+            unsafe_allow_html=True
         )
         
         # ==============================
