@@ -485,6 +485,95 @@ def render_tradeoff():
         "Tracejado laranja = referência da transportadora atual"
     )
 
+
+    # ====================================================
+    # SEÇÃO DE COTAÇÃO
+    # ====================================================
+
+    st.markdown("### 🏷️ Comparativo por Cotação de Leilão")
+    st.caption(
+        "Baseado nos pedidos em que a transportadora destino participou do leilão — "
+        "comparação direta entre o valor cotado por ela e o valor cotado pela origem, "
+        "nos exatos mesmos pedidos."
+    )
+
+    # Totais de cotação ponderados pelos pedidos simulados
+    total_com_cotacao = int(df_comp["Pedidos_Com_Cotacao_Destino"].fillna(0).sum())
+    total_sem_cotacao = int(df_comp["PedidosSimulados"].sum()) - total_com_cotacao
+    pct_com_cotacao   = round(total_com_cotacao / df_comp["PedidosSimulados"].sum() * 100, 1) if df_comp["PedidosSimulados"].sum() > 0 else 0
+
+    if total_com_cotacao == 0:
+        st.warning(
+            f"⚠️ Nenhum pedido de **{codigo_origem}** ({transportadora_origem}) "
+            f"teve cotação registrada de **{transportadora_destino}** no período. "
+            "Verifique se a transportadora participa do leilão nessa região."
+        )
+    else:
+
+        # KPIs de cotação
+        c1, c2, c3, c4, c5 = st.columns(5)
+
+        # Ponderação dos TMs de cotação pelos pedidos com cotação
+        mask = df_comp["Pedidos_Com_Cotacao_Destino"] > 0
+        df_com_cot = df_comp[mask].copy()
+
+        if len(df_com_cot) > 0:
+            tm_cot_dest_pond = round(
+                (df_com_cot["TM_Cotacao_Destino"] * df_com_cot["Pedidos_Com_Cotacao_Destino"]).sum()
+                / df_com_cot["Pedidos_Com_Cotacao_Destino"].sum(), 2
+            )
+            tm_cot_orig_pond = round(
+                (df_com_cot["TM_Cotacao_Origem"] * df_com_cot["Pedidos_Com_Cotacao_Destino"]).sum()
+                / df_com_cot["Pedidos_Com_Cotacao_Destino"].sum(), 2
+            )
+            delta_cot_pond = round(tm_cot_dest_pond - tm_cot_orig_pond, 2)
+            val_total_dest = round(df_com_cot["ValorTotal_Cotacao_Destino"].sum(), 2)
+            val_total_orig = round(df_com_cot["ValorTotal_Cotacao_Origem"].sum(), 2)
+            economia_cot   = round(val_total_orig - val_total_dest, 2)
+        else:
+            tm_cot_dest_pond = tm_cot_orig_pond = delta_cot_pond = 0
+            val_total_dest = val_total_orig = economia_cot = 0
+
+        with c1:
+            st.metric(
+                "📋 Pedidos c/ Cotação Destino",
+                f"{total_com_cotacao:,}",
+                delta=f"{pct_com_cotacao:.1f}% dos pedidos simulados"
+            )
+        with c2:
+            st.metric(
+                f"TM Cotação {transportadora_origem}",
+                fmt_brl(tm_cot_orig_pond)
+            )
+        with c3:
+            st.metric(
+                f"TM Cotação {transportadora_destino}",
+                fmt_brl(tm_cot_dest_pond),
+                delta=f"R$ {delta_cot_pond:+,.2f}",
+                delta_color="inverse"
+            )
+        with c4:
+            st.metric(
+                f"Total Cotação {transportadora_destino}",
+                fmt_brl(val_total_dest)
+            )
+        with c5:
+            label_eco = "Economia na Cotação" if economia_cot >= 0 else "Custo Adicional na Cotação"
+            st.metric(
+                label_eco,
+                fmt_brl(abs(economia_cot)),
+                delta=fmt_brl(economia_cot),
+                delta_color="normal" if economia_cot >= 0 else "inverse"
+            )
+
+        st.caption(
+            f"📌 Comparação feita nos **{total_com_cotacao:,} pedidos** em que {transportadora_destino} "
+            f"participou do leilão. Os outros **{total_sem_cotacao:,} pedidos** não tiveram cotação "
+            f"registrada de {transportadora_destino}."
+        )
+
+    st.divider()
+
     st.divider()
 
     # ====================================================
