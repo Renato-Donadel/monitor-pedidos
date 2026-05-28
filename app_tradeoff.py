@@ -487,7 +487,7 @@ def render_tradeoff():
 
 
     # ====================================================
-    # SEÇÃO DE COTAÇÃO
+    # COMPARATIVO POR COTAÇÃO DE LEILÃO
     # ====================================================
 
     st.markdown("### 🏷️ Comparativo por Cotação de Leilão")
@@ -497,7 +497,6 @@ def render_tradeoff():
         "nos exatos mesmos pedidos."
     )
 
-    # Totais de cotação ponderados pelos pedidos simulados
     total_com_cotacao = int(df_comp["Pedidos_Com_Cotacao_Destino"].fillna(0).sum())
     total_sem_cotacao = int(df_comp["PedidosSimulados"].sum()) - total_com_cotacao
     pct_com_cotacao   = round(total_com_cotacao / df_comp["PedidosSimulados"].sum() * 100, 1) if df_comp["PedidosSimulados"].sum() > 0 else 0
@@ -509,70 +508,106 @@ def render_tradeoff():
             "Verifique se a transportadora participa do leilão nessa região."
         )
     else:
-
-        # KPIs de cotação
-        c1, c2, c3, c4, c5 = st.columns(5)
-
-        # Ponderação dos TMs de cotação pelos pedidos com cotação
         mask = df_comp["Pedidos_Com_Cotacao_Destino"] > 0
         df_com_cot = df_comp[mask].copy()
 
-        if len(df_com_cot) > 0:
-            tm_cot_dest_pond = round(
-                (df_com_cot["TM_Cotacao_Destino"] * df_com_cot["Pedidos_Com_Cotacao_Destino"]).sum()
-                / df_com_cot["Pedidos_Com_Cotacao_Destino"].sum(), 2
-            )
-            tm_cot_orig_pond = round(
-                (df_com_cot["TM_Cotacao_Origem"] * df_com_cot["Pedidos_Com_Cotacao_Destino"]).sum()
-                / df_com_cot["Pedidos_Com_Cotacao_Destino"].sum(), 2
-            )
-            delta_cot_pond = round(tm_cot_dest_pond - tm_cot_orig_pond, 2)
-            val_total_dest = round(df_com_cot["ValorTotal_Cotacao_Destino"].sum(), 2)
-            val_total_orig = round(df_com_cot["ValorTotal_Cotacao_Origem"].sum(), 2)
-            economia_cot   = round(val_total_orig - val_total_dest, 2)
-        else:
-            tm_cot_dest_pond = tm_cot_orig_pond = delta_cot_pond = 0
-            val_total_dest = val_total_orig = economia_cot = 0
+        tm_cot_dest_pond = round(
+            (df_com_cot["TM_Cotacao_Destino"] * df_com_cot["Pedidos_Com_Cotacao_Destino"]).sum()
+            / df_com_cot["Pedidos_Com_Cotacao_Destino"].sum(), 2
+        ) if df_com_cot["Pedidos_Com_Cotacao_Destino"].sum() > 0 else 0
 
-        with c1:
-            st.metric(
-                "📋 Pedidos c/ Cotação Destino",
-                f"{total_com_cotacao:,}",
-                delta=f"{pct_com_cotacao:.1f}% dos pedidos simulados"
-            )
-        with c2:
-            st.metric(
-                f"TM Cotação {transportadora_origem}",
-                fmt_brl(tm_cot_orig_pond)
-            )
-        with c3:
-            st.metric(
-                f"TM Cotação {transportadora_destino}",
-                fmt_brl(tm_cot_dest_pond),
-                delta=f"R$ {delta_cot_pond:+,.2f}",
-                delta_color="inverse"
-            )
-        with c4:
-            st.metric(
-                f"Total Cotação {transportadora_destino}",
-                fmt_brl(val_total_dest)
-            )
-        with c5:
-            label_eco = "Economia na Cotação" if economia_cot >= 0 else "Custo Adicional na Cotação"
-            st.metric(
-                label_eco,
-                fmt_brl(abs(economia_cot)),
-                delta=fmt_brl(economia_cot),
-                delta_color="normal" if economia_cot >= 0 else "inverse"
-            )
+        tm_cot_orig_pond = round(
+            (df_com_cot["TM_Cotacao_Origem"] * df_com_cot["Pedidos_Com_Cotacao_Destino"]).sum()
+            / df_com_cot["Pedidos_Com_Cotacao_Destino"].sum(), 2
+        ) if df_com_cot["Pedidos_Com_Cotacao_Destino"].sum() > 0 else 0
+
+        val_total_cot_dest = round(df_com_cot["ValorTotal_Cotacao_Destino"].sum(), 2)
+        val_total_cot_orig = round(df_com_cot["ValorTotal_Cotacao_Origem"].sum(), 2)
+        economia_cot = round(val_total_cot_orig - val_total_cot_dest, 2)
+        delta_cot    = round(tm_cot_dest_pond - tm_cot_orig_pond, 2)
+
+        # Prazo médio ponderado
+        if "Prazo_Cotacao_Destino" in df_com_cot.columns and "Prazo_Cotacao_Origem" in df_com_cot.columns:
+            prazo_dest = round(
+                (df_com_cot["Prazo_Cotacao_Destino"].fillna(0) * df_com_cot["Pedidos_Com_Cotacao_Destino"]).sum()
+                / df_com_cot["Pedidos_Com_Cotacao_Destino"].sum(), 1
+            ) if df_com_cot["Pedidos_Com_Cotacao_Destino"].sum() > 0 else 0
+
+            prazo_orig = round(
+                (df_com_cot["Prazo_Cotacao_Origem"].fillna(0) * df_com_cot["Pedidos_Com_Cotacao_Destino"]).sum()
+                / df_com_cot["Pedidos_Com_Cotacao_Destino"].sum(), 1
+            ) if df_com_cot["Pedidos_Com_Cotacao_Destino"].sum() > 0 else 0
+
+            delta_prazo = round(prazo_dest - prazo_orig, 1)
+        else:
+            prazo_dest = prazo_orig = delta_prazo = None
+
+        # Gasto projetado (histórico destino) nos pedidos com cotação
+        gasto_proj_cot = round(
+            (df_com_cot["TM_Dest"] * df_com_cot["Pedidos_Com_Cotacao_Destino"]).sum(), 2
+        )
+        gasto_atual_cot = round(
+            (df_com_cot["TM_Cotacao_Origem"] * df_com_cot["Pedidos_Com_Cotacao_Destino"]).sum(), 2
+        )
+        economia_proj_cot = round(gasto_atual_cot - gasto_proj_cot, 2)
+
+        # ---- 9 KPIs ----
+        k1,k2,k3,k4,k5,k6,k7,k8,k9 = st.columns(9)
+
+        with k1:
+            st.metric("📋 Pedidos c/ Cotação", f"{total_com_cotacao:,}",
+                      delta=f"{pct_com_cotacao:.1f}% dos simulados")
+        with k2:
+            st.metric("Gasto Atual (c/ cobertura)", fmt_brl(gasto_referencia))
+        with k3:
+            st.metric(f"Gasto Projetado ({transportadora_destino})",
+                      fmt_brl(gasto_projetado))
+        with k4:
+            st.metric(f"Gasto Cotação ({transportadora_destino})",
+                      fmt_brl(val_total_cot_dest))
+        with k5:
+            st.metric(f"TM Cotação {transportadora_origem}", fmt_brl(tm_cot_orig_pond))
+        with k6:
+            st.metric(f"TM Cotação {transportadora_destino}",
+                      fmt_brl(tm_cot_dest_pond),
+                      delta=f"R$ {delta_cot:+,.2f}", delta_color="inverse")
+        with k7:
+            st.metric(f"TM Projetado ({transportadora_destino})",
+                      fmt_brl(tm_destino_pond))
+        with k8:
+            label_eco = "Economia Projetada" if economia_projetada >= 0 else "Custo Adicional Proj."
+            st.metric(label_eco, fmt_brl(abs(economia_projetada)),
+                      delta=fmt_brl(economia_projetada),
+                      delta_color="normal" if economia_projetada >= 0 else "inverse")
+        with k9:
+            label_cot = "Economia na Cotação" if economia_cot >= 0 else "Custo Adicional Cot."
+            st.metric(label_cot, fmt_brl(abs(economia_cot)),
+                      delta=fmt_brl(economia_cot),
+                      delta_color="normal" if economia_cot >= 0 else "inverse")
+
+        # ---- Prazo ----
+        if prazo_dest is not None:
+            st.markdown("#### 📅 Ganho/Perda de Prazo na Cotação")
+            p1, p2, p3 = st.columns(3)
+            with p1:
+                st.metric(f"Prazo Médio Cotação {transportadora_origem}", f"{prazo_orig:.1f} dias úteis")
+            with p2:
+                st.metric(f"Prazo Médio Cotação {transportadora_destino}", f"{prazo_dest:.1f} dias úteis",
+                          delta=f"{delta_prazo:+.1f} dias",
+                          delta_color="inverse" if delta_prazo > 0 else "normal")
+            with p3:
+                if delta_prazo < 0:
+                    st.metric("Resultado", f"{abs(delta_prazo):.1f} dias mais rápido 🟢")
+                elif delta_prazo > 0:
+                    st.metric("Resultado", f"{delta_prazo:.1f} dias mais lento 🔴")
+                else:
+                    st.metric("Resultado", "Mesmo prazo ➡️")
 
         st.caption(
             f"📌 Comparação feita nos **{total_com_cotacao:,} pedidos** em que {transportadora_destino} "
             f"participou do leilão. Os outros **{total_sem_cotacao:,} pedidos** não tiveram cotação "
             f"registrada de {transportadora_destino}."
         )
-
-    st.divider()
 
     st.divider()
 
@@ -643,29 +678,6 @@ def render_tradeoff():
     st.divider()
 
     # ====================================================
-    # PROJEÇÃO FINANCEIRA
-    # ====================================================
-
-    st.markdown("### 💰 Projeção Financeira (pedidos com cobertura)")
-
-    f1, f2, f3 = st.columns(3)
-
-    with f1:
-        st.metric("Gasto Atual (c/ cobertura)", fmt_brl(gasto_referencia))
-    with f2:
-        st.metric(f"Gasto Projetado ({transportadora_destino})", fmt_brl(gasto_projetado))
-    with f3:
-        label = "Economia Projetada" if economia_projetada >= 0 else "Custo Adicional"
-        st.metric(
-            label,
-            fmt_brl(abs(economia_projetada)),
-            delta=f"{fmt_brl(economia_projetada)}",
-            delta_color="normal" if economia_projetada >= 0 else "inverse"
-        )
-
-    st.divider()
-
-    # ====================================================
     # RESUMO EXECUTIVO
     # ====================================================
 
@@ -675,6 +687,25 @@ def render_tradeoff():
     tm_dir   = "redução" if delta_tm_pond  <= 0 else "aumento"
     nfd_dir  = "redução" if delta_nfd_pond <= 0 else "aumento"
     eco_dir  = "economia" if economia_projetada >= 0 else "custo adicional"
+
+    # Monta texto de cotação para o resumo
+    if total_com_cotacao > 0:
+        cot_txt = (
+            f"\n\n**Comparativo por Cotação de Leilão** ({total_com_cotacao:,} pedidos com cotação registrada):\n"
+            f"- 💲 **TM Cotação {transportadora_origem}:** {fmt_brl(tm_cot_orig_pond)} | "
+            f"**TM Cotação {transportadora_destino}:** {fmt_brl(tm_cot_dest_pond)} "
+            f"({'economia' if delta_cot <= 0 else 'custo adicional'} de {fmt_brl(abs(delta_cot))} por pedido)\n"
+            f"- 💰 **Impacto financeiro na cotação:** "
+            f"{'economia' if economia_cot >= 0 else 'custo adicional'} de **{fmt_brl(abs(economia_cot))}**"
+        )
+        if prazo_dest is not None and delta_prazo is not None:
+            cot_txt += (
+                f"\n- 📅 **Prazo:** {transportadora_origem} cotou {prazo_orig:.1f} dias vs "
+                f"{transportadora_destino} cotou {prazo_dest:.1f} dias "
+                f"({'mais rápido 🟢' if delta_prazo < 0 else 'mais lento 🔴' if delta_prazo > 0 else 'mesmo prazo ➡️'})"
+            )
+    else:
+        cot_txt = f"\n\n⚠️ **Cotação:** {transportadora_destino} não participou do leilão para esse código no período."
 
     st.info(f"""
 **Cenário simulado:** migrar os pedidos do código **{codigo_origem}** ({transportadora_origem}) \
@@ -689,10 +720,11 @@ Os **{pedidos_com_cobertura:,}** pedidos migráveis seriam redistribuídos entre
 
 - 🎯 **SLA:** {sla_dir} de **{abs(delta_sla_pond):.2f}pp** \
 ({sla_origem:.2f}% → {sla_destino_pond:.2f}%)
-- 💲 **Ticket Médio:** {tm_dir} de {fmt_brl(abs(delta_tm_pond))} por pedido \
+- 💲 **Ticket Médio Histórico:** {tm_dir} de {fmt_brl(abs(delta_tm_pond))} por pedido \
 ({fmt_brl(tm_origem)} → {fmt_brl(tm_destino_pond)})
 - 📄 **NFD:** {nfd_dir} de **{abs(delta_nfd_pond):.2f}pp** \
 ({nfd_origem:.2f}% → {nfd_destino_pond:.2f}%)
-- 💰 **Impacto financeiro:** {eco_dir} de **{fmt_brl(abs(economia_projetada))}** \
+- 💰 **Impacto financeiro projetado:** {eco_dir} de **{fmt_brl(abs(economia_projetada))}** \
 sobre os pedidos migráveis
+{cot_txt}
 """)
