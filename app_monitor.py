@@ -944,7 +944,7 @@ def render_monitor():
                         df_hist_atual = df_hist_atual.sort_values("Ranking")
                         df_hist_ant   = df_hist_ant.sort_values("Ranking")
 
-                    # Pizza Débora (Top 300)
+                    # Pizza Débora e Julia (Top 300)
                     for carteira_nome in ["Debora", "Julia"]:
 
                         df_c_atual = df_hist_atual[
