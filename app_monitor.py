@@ -29,6 +29,56 @@ def render_monitor():
         st.rerun()
 
     df_atual = ler_base(ARQ_ATUAL)
+
+    # ==============================
+    # BOTÃO — PEDIDOS COM ERRO DE CÁLCULO
+    # ==============================
+
+    if not df_atual.empty:
+
+        # Colunas que podem ter vazios e são relevantes para cálculo
+        # (excluindo Nivel_Igor_30d e colunas de texto livre)
+        colunas_verificar = [
+            c for c in [
+                "DataPrevisaoTransportador",
+                "DataExpedição",
+                "PrazoTransportadorDiasUteis",
+                "DiasDesdeExpedicao",
+                "Cliente_Dentro",
+                "Transportadora_Dentro",
+                "Status_Dentro",
+                "Regiao_Dentro",
+            ]
+            if c in df_atual.columns
+        ]
+
+        df_erros = df_atual[
+            df_atual[colunas_verificar].isnull().any(axis=1)
+        ].copy()
+
+        total_erros = len(df_erros)
+
+        if total_erros > 0:
+            with st.expander(f"⚠️ {total_erros:,} pedidos com campos vazios — clique para ver"):
+                # Resumo por coluna
+                resumo = {
+                    c: int(df_erros[c].isnull().sum())
+                    for c in colunas_verificar
+                    if df_erros[c].isnull().sum() > 0
+                }
+                st.write("**Campos com valores ausentes:**")
+                for col, qtd in resumo.items():
+                    st.write(f"- `{col}`: {qtd:,} pedidos")
+
+                buf = BytesIO()
+                df_erros.to_excel(buf, index=False)
+                buf.seek(0)
+                st.download_button(
+                    "⬇️ Baixar pedidos com erro",
+                    data=buf,
+                    file_name="pedidos_com_erro.xlsx",
+                    key="dl_erros"
+                )
     # 🔥 NORMALIZA CARTEIRA (CORRIGE IGOR SUMINDO)
     if "Carteira" in df_atual.columns:
         df_atual["Carteira"] = (
@@ -55,46 +105,21 @@ def render_monitor():
     # 🚚 KPI GERAL - PRAZO TRANSPORTADORA
     # ==============================
 
-    if not df_atual.empty and "PrazoTransportadorDiasUteis" in df_atual.columns:
+    if not df_atual.empty and "Transportadora_Dentro" in df_atual.columns:
 
         df_tmp = df_atual.copy()
 
-        # 🚫 EXCLUIR Status fora de desempenho
-        status_devolucao = [
-            "TSP - Aguardando Confirmar Devolução",
-            "TSP - Trânsferência para Devolução",
-            "TSP - Rota de Devolução",
-            "TSP - Reentrega",
-            "TSP - Aguardando Tratativa Transportadora",
-            "TSP - Coleta Realizada",
-            "TSP - Item Faltante",
-            "TSP - REENTREGAR/ENDERECO CORRETO"
-        ]
+        df_tmp["Transportadora_Dentro"] = (
+            df_tmp["Transportadora_Dentro"]
+            .astype(str).str.strip().str.upper()
+        )
 
-        df_tmp = df_tmp[~df_tmp["Status"].isin(status_devolucao)]
-
-        # 🚫 EXCLUIR AGUARDANDO EXPEDIÇÃO
-        df_tmp = df_tmp[
-            ~df_tmp["Status"].str.contains("AGUARDANDO EXPED", na=False)
-        ]
-
-        # garante tipo numérico
-        df_tmp["DiasDesdeExpedicao"] = pd.to_numeric(df_tmp["DiasDesdeExpedicao"], errors="coerce")
-        df_tmp["PrazoTransportadorDiasUteis"] = pd.to_numeric(df_tmp["PrazoTransportadorDiasUteis"], errors="coerce")
-
-        # dentro / fora baseado SÓ na transportadora
-        dentro = len(df_tmp[
-            df_tmp["DiasDesdeExpedicao"] <= df_tmp["PrazoTransportadorDiasUteis"]
-        ])
-
-        fora = len(df_tmp[
-            df_tmp["DiasDesdeExpedicao"] > df_tmp["PrazoTransportadorDiasUteis"]
-        ])
-
-        total = dentro + fora
+        dentro = (df_tmp["Transportadora_Dentro"] == "X").sum()
+        fora   = (df_tmp["Transportadora_Dentro"] != "X").sum()
+        total  = dentro + fora
 
         perc_dentro = (dentro / total * 100) if total > 0 else 0
-        perc_fora = (fora / total * 100) if total > 0 else 0
+        perc_fora   = (fora   / total * 100) if total > 0 else 0
 
         st.markdown("### 🚚 Prazo Transportadora (Geral)")
 
@@ -109,8 +134,8 @@ def render_monitor():
             ">
                 <div style="font-size:14px;color:#6b7280;">Transportadora</div>
                 <div style="font-size:18px;font-weight:700;color:#0f2a44;">
-                    Dentro: {dentro} ({perc_dentro:.1f}%) &nbsp;&nbsp;|&nbsp;&nbsp;
-                    Fora: {fora} ({perc_fora:.1f}%)
+                    Dentro: {dentro:,} ({perc_dentro:.1f}%) &nbsp;&nbsp;|&nbsp;&nbsp;
+                    Fora: {fora:,} ({perc_fora:.1f}%)
                 </div>
             </div>
             """,
@@ -914,68 +939,84 @@ def render_monitor():
 
                 if "Carteira" in df_hist_atual.columns:
 
-                    # ordenar se tiver ranking
-                    if "Ranking" in df_atual.columns:
+                    # ordenar por ranking
+                    if "Ranking" in df_hist_atual.columns:
                         df_hist_atual = df_hist_atual.sort_values("Ranking")
-                        df_hist_ant = df_hist_ant.sort_values("Ranking")
+                        df_hist_ant   = df_hist_ant.sort_values("Ranking")
 
-                    # pegar carteiras
-                    carteiras = df_hist_atual["Carteira"].dropna().unique()
+                    # Pizza Débora (Top 300)
+                    for carteira_nome in ["Debora", "Julia"]:
 
-                    tratados_total = 0
-                    restantes_total = 0
-                    entrou_total = 0
+                        df_c_atual = df_hist_atual[
+                            df_hist_atual["Carteira"] == carteira_nome
+                        ].head(300)
 
-                    for c in carteiras:
+                        df_c_ant = df_hist_ant[
+                            df_hist_ant["Carteira"] == carteira_nome
+                        ].head(300)
 
-                        atual_carteira = df_hist_atual[df_hist_atual["Carteira"] == c].head(300)
-                        ant_carteira = df_hist_ant[df_hist_ant["Carteira"] == c].head(300)
+                        if df_c_ant.empty and df_c_atual.empty:
+                            continue
 
-                        set_atual = set(atual_carteira["PedidoFormatado"])
-                        set_ant = set(ant_carteira["PedidoFormatado"])
+                        set_atual = set(df_c_atual["PedidoFormatado"])
+                        set_ant   = set(df_c_ant["PedidoFormatado"])
 
-                        tratados = set_ant - set_atual
-                        restantes = set_ant & set_atual
-                        entrou = set_atual - set_ant
+                        tratados   = len(set_ant - set_atual)
+                        restantes  = len(set_ant & set_atual)
+                        entrou     = len(set_atual - set_ant)
+                        total_ant  = len(set_ant)
 
-                        tratados_total += len(tratados)
-                        restantes_total += len(restantes)
-                        entrou_total += len(entrou)
-                    # gráfico
-                    st.image(pizza(tratados_total, restantes_total, "Carteiras (Top 300)"))
-                    # métricas corretas
+                        st.image(pizza(tratados, restantes, f"{carteira_nome} (Top 300)"))
+                        st.markdown(
+                            f'<p class="metric-small">Tratados: {tratados} / {total_ant}</p>',
+                            unsafe_allow_html=True
+                        )
+                        st.markdown(
+                            f'<p class="metric-small">Entraram: {entrou} | Remanescentes: {restantes}</p>',
+                            unsafe_allow_html=True
+                        )
+
+                        restantes_df = df_c_ant[
+                            df_c_ant["PedidoFormatado"].isin(set_ant & set_atual)
+                        ]
+
+                        buf = BytesIO()
+                        restantes_df.to_excel(buf, index=False)
+                        st.download_button(
+                            f"Remanescentes {carteira_nome}",
+                            buf.getvalue(),
+                            file_name=f"remanescente_{carteira_nome}_{dia_atual}.xlsx",
+                            key=f"dl_rem_{carteira_nome}_{dia_atual}"
+                        )
+
+            # ==============================
+            # PIZZA TSP - COLETADO
+            # ==============================
+
+            if "Status" in df_hist_atual.columns:
+
+                coletados_atual = set(df_hist_atual[
+                    df_hist_atual["Status"].astype(str).str.strip().str.upper() == "TSP - COLETADO"
+                ]["PedidoFormatado"])
+
+                coletados_ant = set(df_hist_ant[
+                    df_hist_ant["Status"].astype(str).str.strip().str.upper() == "TSP - COLETADO"
+                ]["PedidoFormatado"])
+
+                tratados_col  = len(coletados_ant - coletados_atual)
+                restantes_col = len(coletados_ant & coletados_atual)
+                entrou_col    = len(coletados_atual - coletados_ant)
+                total_col_ant = len(coletados_ant)
+
+                if total_col_ant > 0 or entrou_col > 0:
+                    st.image(pizza(tratados_col, restantes_col, "TSP - Coletado"))
                     st.markdown(
-                        f'<p class="metric-small">Tratados: {tratados_total} / {tratados_total + restantes_total}</p>',
+                        f'<p class="metric-small">Tratados: {tratados_col} / {total_col_ant}</p>',
                         unsafe_allow_html=True
                     )
-
                     st.markdown(
-                        f'<p class="metric-small">Entraram: {entrou_total}</p>',
+                        f'<p class="metric-small">Entraram: {entrou_col} | Remanescentes: {restantes_col}</p>',
                         unsafe_allow_html=True
-                    )
-
-                    # exportação correta
-                    restantes_df = pd.DataFrame()
-
-                    for c in carteiras:
-
-                        atual_carteira = df_hist_atual[df_hist_atual["Carteira"] == c].head(300)
-                        ant_carteira = df_hist_ant[df_hist_ant["Carteira"] == c].head(300)
-
-                        restantes_ids = set(ant_carteira["PedidoFormatado"]) & set(atual_carteira["PedidoFormatado"])
-
-                        restantes_df = pd.concat([
-                            restantes_df,
-                            ant_carteira[ant_carteira["PedidoFormatado"].isin(restantes_ids)]
-                        ])
-
-                    buf = BytesIO()
-                    restantes_df.to_excel(buf, index=False)
-
-                    st.download_button(
-                        "Remanescentes Carteiras",
-                        buf.getvalue(),
-                        file_name=f"remanescente_carteiras_{dia_atual}.xlsx"
                     )
 
             st.divider()
