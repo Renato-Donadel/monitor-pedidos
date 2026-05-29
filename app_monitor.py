@@ -796,7 +796,7 @@ def render_monitor():
                 unsafe_allow_html=True
             )
 
-            col1, col2, col3, col4 = st.columns(4)
+            col1, col2, col3, col4, col5, col6 = st.columns(6)
 
             # TRIPLO
             with col1:
@@ -852,6 +852,7 @@ def render_monitor():
 
             # STATUS 2X
             with col2:
+
                 if "Status_Dobro" in df_hist_atual.columns:
 
                     df_hist_atual["Status_Dobro"] = df_hist_atual["Status_Dobro"].astype(str).str.strip().str.upper()
@@ -893,6 +894,7 @@ def render_monitor():
 
             # REGIÃO 2X
             with col3:
+
                 if "Regiao_Dobro" in df_hist_atual.columns:
 
                     atual = df_hist_atual[
@@ -933,90 +935,88 @@ def render_monitor():
                         file_name=f"remanescente_regiao_{dia_atual}.xlsx"
                     )
                     
-            # CARTEIRA (TOP 300 DE CADA)
+            # CARTEIRA TOP 300 — DEBORA
+            if "Ranking" in df_hist_atual.columns:
+                df_hist_atual = df_hist_atual.sort_values("Ranking")
+                df_hist_ant   = df_hist_ant.sort_values("Ranking")
 
-            with col4:
+            for carteira_nome, col_carteira in [("Debora", col4), ("Julia", col5)]:
 
-                if "Carteira" in df_hist_atual.columns:
+                if "Carteira" not in df_hist_atual.columns:
+                    continue
 
-                    # ordenar por ranking
-                    if "Ranking" in df_hist_atual.columns:
-                        df_hist_atual = df_hist_atual.sort_values("Ranking")
-                        df_hist_ant   = df_hist_ant.sort_values("Ranking")
+                df_c_atual = df_hist_atual[
+                    df_hist_atual["Carteira"] == carteira_nome
+                ].head(300)
 
-                    # Pizza Débora e Julia (Top 300)
-                    for carteira_nome in ["Debora", "Julia"]:
+                df_c_ant = df_hist_ant[
+                    df_hist_ant["Carteira"] == carteira_nome
+                ].head(300)
 
-                        df_c_atual = df_hist_atual[
-                            df_hist_atual["Carteira"] == carteira_nome
-                        ].head(300)
+                if df_c_ant.empty and df_c_atual.empty:
+                    continue
 
-                        df_c_ant = df_hist_ant[
-                            df_hist_ant["Carteira"] == carteira_nome
-                        ].head(300)
+                set_atual = set(df_c_atual["PedidoFormatado"])
+                set_ant   = set(df_c_ant["PedidoFormatado"])
 
-                        if df_c_ant.empty and df_c_atual.empty:
-                            continue
+                tratados   = len(set_ant - set_atual)
+                restantes  = len(set_ant & set_atual)
+                entrou     = len(set_atual - set_ant)
+                total_ant  = len(set_ant)
 
-                        set_atual = set(df_c_atual["PedidoFormatado"])
-                        set_ant   = set(df_c_ant["PedidoFormatado"])
-
-                        tratados   = len(set_ant - set_atual)
-                        restantes  = len(set_ant & set_atual)
-                        entrou     = len(set_atual - set_ant)
-                        total_ant  = len(set_ant)
-
-                        st.image(pizza(tratados, restantes, f"{carteira_nome} (Top 300)"))
-                        st.markdown(
-                            f'<p class="metric-small">Tratados: {tratados} / {total_ant}</p>',
-                            unsafe_allow_html=True
-                        )
-                        st.markdown(
-                            f'<p class="metric-small">Entraram: {entrou} | Remanescentes: {restantes}</p>',
-                            unsafe_allow_html=True
-                        )
-
-                        restantes_df = df_c_ant[
-                            df_c_ant["PedidoFormatado"].isin(set_ant & set_atual)
-                        ]
-
-                        buf = BytesIO()
-                        restantes_df.to_excel(buf, index=False)
-                        st.download_button(
-                            f"Remanescentes {carteira_nome}",
-                            buf.getvalue(),
-                            file_name=f"remanescente_{carteira_nome}_{dia_atual}.xlsx",
-                            key=f"dl_rem_{carteira_nome}_{dia_atual}"
-                        )
-
-            # ==============================
-            # PIZZA TSP - COLETADO
-            # ==============================
-
-            if "Status" in df_hist_atual.columns:
-
-                coletados_atual = set(df_hist_atual[
-                    df_hist_atual["Status"].astype(str).str.strip().str.upper() == "TSP - COLETADO"
-                ]["PedidoFormatado"])
-
-                coletados_ant = set(df_hist_ant[
-                    df_hist_ant["Status"].astype(str).str.strip().str.upper() == "TSP - COLETADO"
-                ]["PedidoFormatado"])
-
-                tratados_col  = len(coletados_ant - coletados_atual)
-                restantes_col = len(coletados_ant & coletados_atual)
-                entrou_col    = len(coletados_atual - coletados_ant)
-                total_col_ant = len(coletados_ant)
-
-                if total_col_ant > 0 or entrou_col > 0:
-                    st.image(pizza(tratados_col, restantes_col, "TSP - Coletado"))
+                with col_carteira:
+                    st.image(pizza(tratados, restantes, f"{carteira_nome} (Top 300)"))
                     st.markdown(
-                        f'<p class="metric-small">Tratados: {tratados_col} / {total_col_ant}</p>',
+                        f'<p class="metric-small">Tratados: {tratados} / {total_ant}</p>',
                         unsafe_allow_html=True
                     )
                     st.markdown(
-                        f'<p class="metric-small">Entraram: {entrou_col} | Remanescentes: {restantes_col}</p>',
+                        f'<p class="metric-small">Entraram: {entrou} | Remanescentes: {restantes}</p>',
                         unsafe_allow_html=True
                     )
+
+                    restantes_df = df_c_ant[
+                        df_c_ant["PedidoFormatado"].isin(set_ant & set_atual)
+                    ]
+
+                    buf = BytesIO()
+                    restantes_df.to_excel(buf, index=False)
+                    st.download_button(
+                        f"Remanescentes {carteira_nome}",
+                        buf.getvalue(),
+                        file_name=f"remanescente_{carteira_nome}_{dia_atual}.xlsx",
+                        key=f"dl_rem_{carteira_nome}_{dia_atual}"
+                    )
+
+            # ==============================
+            # PIZZA TSP - COLETADO (col6)
+            # ==============================
+
+            with col6:
+                if "Status" in df_hist_atual.columns:
+
+                    coletados_atual = set(df_hist_atual[
+                        df_hist_atual["Status"].astype(str).str.strip().str.upper() == "TSP - COLETADO"
+                    ]["PedidoFormatado"])
+
+                    coletados_ant = set(df_hist_ant[
+                        df_hist_ant["Status"].astype(str).str.strip().str.upper() == "TSP - COLETADO"
+                    ]["PedidoFormatado"])
+
+                    tratados_col  = len(coletados_ant - coletados_atual)
+                    restantes_col = len(coletados_ant & coletados_atual)
+                    entrou_col    = len(coletados_atual - coletados_ant)
+                    total_col_ant = len(coletados_ant)
+
+                    if total_col_ant > 0 or entrou_col > 0:
+                        st.image(pizza(tratados_col, restantes_col, "TSP - Coletado"))
+                        st.markdown(
+                            f'<p class="metric-small">Tratados: {tratados_col} / {total_col_ant}</p>',
+                            unsafe_allow_html=True
+                        )
+                        st.markdown(
+                            f'<p class="metric-small">Entraram: {entrou_col} | Remanescentes: {restantes_col}</p>',
+                            unsafe_allow_html=True
+                        )
 
             st.divider()
