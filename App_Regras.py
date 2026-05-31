@@ -78,7 +78,7 @@ def render_regras():
             n    = row["Regra"]
             desc = row["Descricao"]
             viols = int(row["Violacoes"])
-            total = int(row["TotalCotacoes"])
+            total = int(row["TotalPedidos"])
             pct_v = round(viols / total * 100, 2) if total > 0 else 0
 
             with st.expander(f"🔴 Regra **{n}** — {desc}  |  {viols} violação(ões) ({pct_v}%)"):
