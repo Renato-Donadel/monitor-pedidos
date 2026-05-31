@@ -17,6 +17,7 @@ from app_monitor import render_monitor
 from app_devolucao import render_devolucao
 from app_desempenho import render_desempenho
 from app_tradeoff import render_tradeoff
+from App_Regras import render_regras
 
 # ==============================
 # CONFIG STREAMLIT
@@ -141,13 +142,10 @@ pagina = st.sidebar.radio(
         "Monitor de Pedidos",
         "Indicador de Devolução",
         "Desempenho por Transportadora",
-        "Trade-Off Logístico"
+        "Trade-Off Logístico",
+        "Regras PRW",
     ]
 )
-
-# ==============================
-# HEADER
-# ==============================
 
 # ==============================
 # HEADER
@@ -187,6 +185,15 @@ elif pagina == "Trade-Off Logístico":
     subtitulo = (
         "Simulação Estratégica • SLA • "
         "NFD • Frete • Similaridade CEP"
+    )
+
+elif pagina == "Regras PRW":
+
+    titulo = "Monitor de Regras PRW"
+
+    subtitulo = (
+        "Conformidade das Regras de Cotação • "
+        "Bloqueios • Leilões • Restrições"
     )
 
 col1, col2 = st.columns([1, 7])
@@ -243,3 +250,6 @@ elif pagina == "Desempenho por Transportadora":
 
 elif pagina == "Trade-Off Logístico":
     render_tradeoff()
+
+elif pagina == "Regras PRW":
+    render_regras()
