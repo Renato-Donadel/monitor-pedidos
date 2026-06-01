@@ -103,10 +103,7 @@ def render_regras():
             with st.expander(f"🔴 Regra **{n}** — {desc}  |  {viols} violação(ões) ({pct_v}%)"):
                 amostra = df_viols[df_viols["Regra"] == n]
                 if not amostra.empty:
-                    cols_show = [c for c in [
-                        "PedidoID","NF","Campanha","Escolhida",
-                        "Origem","UF","Cidade","CEP","Peso","DataCotacao"
-                    ] if c in amostra.columns]
+                    cols_show = [c for c in amostra.columns if c != "Regra"]
                     st.dataframe(amostra[cols_show], use_container_width=True)
                 else:
                     st.info("Amostra não disponível.")
