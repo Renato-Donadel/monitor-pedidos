@@ -119,8 +119,6 @@ def render_regras():
             with st.expander(titulo):
                 if n == 26 and not df_r26_cots.empty:
                     # Regra 26: mostra todas as cotações dos pedidos violados
-                    st.info("Todas as cotações dos pedidos que fugiram do mais barato. "
-                            "A linha com CotacaoRow=1 é a mais barata disponível.")
                     pedidos_disp = sorted(df_r26_cots["PedidoID"].unique()) if "PedidoID" in df_r26_cots.columns else []
                     sel_pedido   = st.selectbox(f"Filtrar pedido (Regra 26)", ["Todos"] + [str(p) for p in pedidos_disp], key=f"sel26")
                     if sel_pedido != "Todos":
