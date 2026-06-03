@@ -156,6 +156,283 @@ def render_tradeoff():
     st.divider()
 
     # ====================================================
+    # SIMULAÇÃO — IMPACTO DE BLOQUEAR OS 10 PIORES CÓDIGOS
+    # ====================================================
+
+    st.markdown("### 🚫 Simulação: Impacto de Bloquear os 10 Piores Códigos Tarifários")
+    st.caption(
+        "Simulação retroativa nos últimos 90 dias — como teriam ficado SLA, TM, NFD e valor total "
+        "se tivéssemos migrado os pedidos dos 10 piores códigos para as transportadoras alternativas."
+    )
+
+    if not df_trade.empty and not df_sim_base.empty and "TemNFD" in df_trade.columns:
+
+        # Pega os 10 piores códigos (mínimo 30 pedidos)
+        nfd_full = (
+            df_trade.groupby(["Transportadora", "CodigoTarifario"])
+            .agg(Pedidos=("TemNFD", "count"), NFD=("TemNFD", "sum"))
+            .reset_index()
+        )
+        nfd_full = nfd_full[nfd_full["Pedidos"] >= 30].copy()
+        nfd_full["NFD%"] = (nfd_full["NFD"] / nfd_full["Pedidos"] * 100).round(2)
+        top10 = nfd_full.sort_values("NFD%", ascending=False).head(10)
+
+        # Pedidos dos 10 piores códigos
+        mask_piores = (
+            df_trade[["Transportadora", "CodigoTarifario"]]
+            .apply(tuple, axis=1)
+            .isin(top10[["Transportadora", "CodigoTarifario"]].apply(tuple, axis=1))
+        )
+        df_piores = df_trade[mask_piores].copy()
+        df_resto  = df_trade[~mask_piores].copy()
+
+        # Para cada pedido dos piores, busca o destino ponderado no df_sim_base
+        # (usa o código destino com maior Percentual para cada par origem/código)
+        destino_map = (
+            df_sim_base.sort_values("Percentual", ascending=False)
+            .drop_duplicates(subset=["TransportadoraOrigem", "CodigoOrigem"])
+            [[
+                "TransportadoraOrigem", "CodigoOrigem",
+                "TransportadoraDestino", "CodigoDestino",
+                "SLADestino", "NFDDestino", "TM_Destino",
+                "TM_Cotacao_Destino", "Pedidos_Com_Cotacao_Destino"
+            ]]
+            .copy()
+        )
+
+        df_piores_sim = df_piores.merge(
+            destino_map,
+            left_on=["Transportadora", "CodigoTarifario"],
+            right_on=["TransportadoraOrigem", "CodigoOrigem"],
+            how="left"
+        )
+
+        tem_destino    = df_piores_sim["TransportadoraDestino"].notna()
+        df_migrados    = df_piores_sim[tem_destino].copy()
+        df_sem_destino = df_piores_sim[~tem_destino].copy()
+
+        # ── KPIs ANTES ──────────────────────────────────────────
+        total_antes       = len(df_trade)
+        sla_antes         = df_trade["DentroPrazo"].mean() * 100 if "DentroPrazo" in df_trade.columns else 0
+        nfd_antes         = df_trade["TemNFD"].mean() * 100
+        tm_antes          = df_trade["ValorFrete"].astype(float).mean() if "ValorFrete" in df_trade.columns else 0
+        total_frete_antes = df_trade["ValorFrete"].astype(float).sum() if "ValorFrete" in df_trade.columns else 0
+
+        # ── KPIs DEPOIS — TM HISTÓRICO ──────────────────────────
+        # Pedidos migrados: usa SLA/NFD/TM do destino histórico
+        # Pedidos sem destino mapeado: mantém como está (não bloqueia)
+        # Pedidos fora dos piores: mantém como está
+
+        sla_mig_hist  = df_migrados["SLADestino"].fillna(df_migrados["DentroPrazo"]).mean() * 100 if len(df_migrados) > 0 else 0
+        nfd_mig_hist  = df_migrados["NFDDestino"].fillna(df_migrados["TemNFD"]).mean() * 100 if len(df_migrados) > 0 else 0
+        tm_mig_hist   = df_migrados["TM_Destino"].fillna(df_migrados["ValorFrete"].astype(float)).mean() if len(df_migrados) > 0 else 0
+        frete_mig_hist = (df_migrados["TM_Destino"].fillna(df_migrados["ValorFrete"].astype(float)) * 1).sum()
+
+        n_mig    = len(df_migrados)
+        n_resto  = len(df_resto) + len(df_sem_destino)
+
+        sla_depois_hist = (
+            (sla_mig_hist * n_mig + df_resto["DentroPrazo"].mean() * 100 * len(df_resto) if "DentroPrazo" in df_resto.columns else 0)
+            / total_antes if total_antes > 0 else 0
+        )
+        sla_depois_hist = (
+            sla_mig_hist * n_mig +
+            (df_resto["DentroPrazo"].mean() * 100 * len(df_resto) if "DentroPrazo" in df_resto.columns else 0) +
+            (df_sem_destino["DentroPrazo"].mean() * 100 * len(df_sem_destino) if "DentroPrazo" in df_sem_destino.columns else 0)
+        ) / total_antes
+
+        nfd_depois_hist = (
+            nfd_mig_hist * n_mig +
+            df_resto["TemNFD"].mean() * 100 * len(df_resto) +
+            df_sem_destino["TemNFD"].mean() * 100 * len(df_sem_destino)
+        ) / total_antes
+
+        tm_depois_hist = (
+            tm_mig_hist * n_mig +
+            df_resto["ValorFrete"].astype(float).sum() +
+            df_sem_destino["ValorFrete"].astype(float).sum()
+        ) / total_antes if "ValorFrete" in df_resto.columns else 0
+
+        total_frete_depois_hist = (
+            frete_mig_hist +
+            df_resto["ValorFrete"].astype(float).sum() +
+            df_sem_destino["ValorFrete"].astype(float).sum()
+        )
+
+        # ── KPIs DEPOIS — TM COTAÇÃO ────────────────────────────
+        tm_mig_cot = df_migrados["TM_Cotacao_Destino"].fillna(df_migrados["TM_Destino"].fillna(df_migrados["ValorFrete"].astype(float))).mean() if len(df_migrados) > 0 else 0
+        frete_mig_cot = df_migrados["TM_Cotacao_Destino"].fillna(df_migrados["TM_Destino"].fillna(df_migrados["ValorFrete"].astype(float))).sum()
+
+        tm_depois_cot = (
+            tm_mig_cot * n_mig +
+            df_resto["ValorFrete"].astype(float).sum() +
+            df_sem_destino["ValorFrete"].astype(float).sum()
+        ) / total_antes if "ValorFrete" in df_resto.columns else 0
+
+        total_frete_depois_cot = (
+            frete_mig_cot +
+            df_resto["ValorFrete"].astype(float).sum() +
+            df_sem_destino["ValorFrete"].astype(float).sum()
+        )
+
+        # ── RESUMO KPIs ─────────────────────────────────────────
+        st.markdown("#### 📌 Impacto Consolidado da Migração")
+
+        k1, k2, k3, k4 = st.columns(4)
+
+        delta_sla = round(sla_depois_hist - sla_antes, 2)
+        delta_nfd = round(nfd_depois_hist - nfd_antes, 2)
+        delta_tm_hist = round(tm_depois_hist - tm_antes, 2)
+        delta_frete_hist = round(total_frete_depois_hist - total_frete_antes, 2)
+
+        with k1:
+            st.metric(
+                "SLA (antes → depois)",
+                fmt_pct(sla_depois_hist),
+                delta=f"{delta_sla:+.2f}pp",
+                delta_color="normal" if delta_sla >= 0 else "inverse"
+            )
+        with k2:
+            st.metric(
+                "NFD (antes → depois)",
+                fmt_pct(nfd_depois_hist),
+                delta=f"{delta_nfd:+.2f}pp",
+                delta_color="inverse" if delta_nfd > 0 else "normal"
+            )
+        with k3:
+            st.metric(
+                "TM Médio — Histórico",
+                fmt_brl(tm_depois_hist),
+                delta=f"R$ {delta_tm_hist:+,.2f}",
+                delta_color="inverse" if delta_tm_hist > 0 else "normal"
+            )
+        with k4:
+            st.metric(
+                "TM Médio — Cotação",
+                fmt_brl(tm_depois_cot),
+                delta=fmt_brl(round(tm_depois_cot - tm_antes, 2)),
+                delta_color="inverse" if tm_depois_cot > tm_antes else "normal"
+            )
+
+        st.caption(
+            f"📦 {n_mig:,} pedidos migrados para transportadora alternativa  |  "
+            f"{len(df_sem_destino):,} pedidos sem destino mapeado (mantidos)"
+        )
+
+        st.divider()
+
+        # ── GRÁFICO 1 — TM HISTÓRICO ────────────────────────────
+        st.markdown("#### 📈 Comparativo por KPI — Base Histórica de TM")
+
+        categorias  = ["SLA (%)", "NFD (%)", "TM Médio (R$)", "Frete Total (R$)"]
+        vals_antes  = [sla_antes, nfd_antes, tm_antes, total_frete_antes]
+        vals_depois = [sla_depois_hist, nfd_depois_hist, tm_depois_hist, total_frete_depois_hist]
+
+        fig_hist = go.Figure()
+
+        fig_hist.add_trace(go.Bar(
+            name="Antes do bloqueio",
+            x=categorias,
+            y=vals_antes,
+            marker_color=COR_ORIGEM,
+            text=[
+                f"{sla_antes:.2f}%", f"{nfd_antes:.2f}%",
+                fmt_brl(tm_antes), fmt_brl(total_frete_antes)
+            ],
+            textposition="outside",
+        ))
+
+        fig_hist.add_trace(go.Bar(
+            name="Depois do bloqueio (TM histórico)",
+            x=categorias,
+            y=vals_depois,
+            marker_color=[
+                COR_OK if sla_depois_hist >= sla_antes else COR_ALERTA,
+                COR_OK if nfd_depois_hist <= nfd_antes else COR_ALERTA,
+                COR_OK if tm_depois_hist  <= tm_antes  else COR_ALERTA,
+                COR_OK if total_frete_depois_hist <= total_frete_antes else COR_ALERTA,
+            ],
+            text=[
+                f"{sla_depois_hist:.2f}%", f"{nfd_depois_hist:.2f}%",
+                fmt_brl(tm_depois_hist), fmt_brl(total_frete_depois_hist)
+            ],
+            textposition="outside",
+        ))
+
+        fig_hist.update_layout(
+            barmode="group",
+            height=380,
+            plot_bgcolor="#f4f6f9",
+            paper_bgcolor="#f4f6f9",
+            font=dict(family="Arial", size=12),
+            legend=dict(orientation="h", y=-0.25),
+            margin=dict(t=30, b=80, l=10, r=10),
+            yaxis=dict(showticklabels=False),
+        )
+
+        st.plotly_chart(fig_hist, use_container_width=True)
+
+        # ── GRÁFICO 2 — TM COTAÇÃO ──────────────────────────────
+        st.markdown("#### 📈 Comparativo por KPI — Base de Cotação de Leilão")
+
+        vals_depois_cot = [sla_depois_hist, nfd_depois_hist, tm_depois_cot, total_frete_depois_cot]
+
+        fig_cot = go.Figure()
+
+        fig_cot.add_trace(go.Bar(
+            name="Antes do bloqueio",
+            x=categorias,
+            y=vals_antes,
+            marker_color=COR_ORIGEM,
+            text=[
+                f"{sla_antes:.2f}%", f"{nfd_antes:.2f}%",
+                fmt_brl(tm_antes), fmt_brl(total_frete_antes)
+            ],
+            textposition="outside",
+        ))
+
+        fig_cot.add_trace(go.Bar(
+            name="Depois do bloqueio (TM cotação)",
+            x=categorias,
+            y=vals_depois_cot,
+            marker_color=[
+                COR_OK if sla_depois_hist >= sla_antes else COR_ALERTA,
+                COR_OK if nfd_depois_hist <= nfd_antes else COR_ALERTA,
+                COR_OK if tm_depois_cot   <= tm_antes  else COR_ALERTA,
+                COR_OK if total_frete_depois_cot <= total_frete_antes else COR_ALERTA,
+            ],
+            text=[
+                f"{sla_depois_hist:.2f}%", f"{nfd_depois_hist:.2f}%",
+                fmt_brl(tm_depois_cot), fmt_brl(total_frete_depois_cot)
+            ],
+            textposition="outside",
+        ))
+
+        fig_cot.update_layout(
+            barmode="group",
+            height=380,
+            plot_bgcolor="#f4f6f9",
+            paper_bgcolor="#f4f6f9",
+            font=dict(family="Arial", size=12),
+            legend=dict(orientation="h", y=-0.25),
+            margin=dict(t=30, b=80, l=10, r=10),
+            yaxis=dict(showticklabels=False),
+        )
+
+        st.plotly_chart(fig_cot, use_container_width=True)
+
+        st.caption(
+            "🟢 Verde = melhora vs situação atual  |  "
+            "🔴 Vermelho = piora vs situação atual  |  "
+            f"SLA e NFD são iguais nos dois gráficos pois dependem do histórico real de entrega"
+        )
+
+    else:
+        st.warning("Dados insuficientes para simulação.")
+
+    st.divider()
+
+    # ====================================================
     # FILTROS
     # ====================================================
 
