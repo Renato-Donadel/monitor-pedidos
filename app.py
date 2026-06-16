@@ -249,6 +249,7 @@ elif pagina == "Desempenho por Transportadora":
     render_desempenho()
 
 elif pagina == "Trade-Off Logístico":
+    # atualizado 16/06
     render_tradeoff()
 
 elif pagina == "Regras PRW":
