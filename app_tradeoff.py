@@ -77,15 +77,16 @@ def render_tradeoff():
     total_vendas_geral  = df_intel["TotalVendasR$"].iloc[0]     if not df_intel.empty and "TotalVendasR$"       in df_intel.columns else None
     total_sem_valor     = int(df_intel["PedidosSemValorNota"].iloc[0]) if not df_intel.empty and "PedidosSemValorNota" in df_intel.columns else None
 
-    # NFD real do banco
-    chaves_intel = set(df_trade["ChaveNF"].astype(str).str.strip()) if not df_trade.empty else set()
-
+    # NFD real do banco — cruzamento já feito no ETL
     if not df_nfd_real.empty:
         df_nfd_tsp = df_nfd_real[df_nfd_real["TemNFD"] == True].copy()
-        df_nfd_tsp["ChaveNFD"] = df_nfd_tsp["ChaveNFD"].astype(str).str.strip()
 
-        nfd_cruzou     = df_nfd_tsp[df_nfd_tsp["ChaveNFD"].isin(chaves_intel)]
-        nfd_nao_cruzou = df_nfd_tsp[~df_nfd_tsp["ChaveNFD"].isin(chaves_intel)]
+        if "CruzouIntelipost" in df_nfd_tsp.columns:
+            nfd_cruzou     = df_nfd_tsp[df_nfd_tsp["CruzouIntelipost"] == True]
+            nfd_nao_cruzou = df_nfd_tsp[df_nfd_tsp["CruzouIntelipost"] == False]
+        else:
+            nfd_cruzou     = df_nfd_tsp
+            nfd_nao_cruzou = pd.DataFrame()
 
         total_nfd_real     = df_nfd_tsp["ValorNota"].sum()
         total_nfd_cruzou   = nfd_cruzou["ValorNota"].sum()
