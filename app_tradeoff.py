@@ -75,6 +75,68 @@ def render_tradeoff():
 
     st.divider()
 
+    # ── VISÃO GERAL DA TRANSPORTADORA ────────────────────
+    st.markdown(f"### Visao Geral — {transp_sel} | Ultimos {dias} dias")
+
+    total_ped     = len(df_periodo)
+    total_notas   = df_periodo["ValorNota"].sum()   if "ValorNota" in df_periodo.columns else None
+    total_nfd_n   = int(df_periodo["TemNFD"].sum()) if "TemNFD"    in df_periodo.columns else 0
+    nfd_pct_ger   = total_nfd_n / total_ped * 100   if total_ped > 0 else 0
+    nfd_valor_ger = (total_notas * nfd_pct_ger / 100) if total_notas else None
+
+    g1,g2,g3,g4,g5 = st.columns(5)
+    g1.markdown(kpi_box("Total de Pedidos",    fmt_int(total_ped)), unsafe_allow_html=True)
+    g2.markdown(kpi_box("Total de Vendas (R$)",fmt_brl(total_notas) if total_notas else "sem dado"), unsafe_allow_html=True)
+    g3.markdown(kpi_box("Pedidos com NFD",     fmt_int(total_nfd_n)), unsafe_allow_html=True)
+    g4.markdown(kpi_box("Valor NFD (R$)",      fmt_brl(nfd_valor_ger) if nfd_valor_ger else "sem dado", cor_valor=COR_ALERTA), unsafe_allow_html=True)
+    g5.markdown(kpi_box("% NFD",              fmt_pct(nfd_pct_ger),
+        cor_valor=COR_ALERTA if nfd_pct_ger>=5 else COR_NEUTRO if nfd_pct_ger>=2 else COR_OK),
+        unsafe_allow_html=True)
+
+    st.divider()
+
+    # ── VISÃO POR TRANSPORTADORA ──────────────────────────
+    st.markdown(f"### NFD por Transportadora | Ultimos {dias} dias")
+
+    df_todas = df_trade[df_trade["DataFinal"] >= data_corte].copy()
+
+    resumo_tsp = (
+        df_todas.groupby("Transportadora")
+        .agg(
+            Pedidos    = ("TemNFD",    "count"),
+            NFD_n      = ("TemNFD",    "sum"),
+            ValorNotas = ("ValorNota", "sum"),
+        ).reset_index()
+    )
+    resumo_tsp["NFD_pct"]  = (resumo_tsp["NFD_n"] / resumo_tsp["Pedidos"] * 100).round(2)
+    resumo_tsp["ValorNFD"] = resumo_tsp["ValorNotas"] * resumo_tsp["NFD_pct"] / 100
+    resumo_tsp = resumo_tsp.sort_values("NFD_pct", ascending=False)
+
+    df_exib = resumo_tsp.copy()
+    df_exib = df_exib.rename(columns={
+        "Pedidos":    "Pedidos",
+        "ValorNotas": "Valor Vendas (R$)",
+        "NFD_n":      "Pedidos NFD",
+        "ValorNFD":   "Valor NFD (R$)",
+        "NFD_pct":    "% NFD",
+    })[["Transportadora","Pedidos","Valor Vendas (R$)","Pedidos NFD","Valor NFD (R$)","% NFD"]]
+
+    st.dataframe(
+        df_exib.style
+        .format({
+            "Pedidos":          "{:,.0f}",
+            "Valor Vendas (R$)":"R$ {:,.2f}",
+            "Pedidos NFD":      "{:,.0f}",
+            "Valor NFD (R$)":   "R$ {:,.2f}",
+            "% NFD":            "{:.2f}%",
+        })
+        .background_gradient(subset=["% NFD"], cmap="RdYlGn_r"),
+        use_container_width=True,
+        hide_index=True
+    )
+
+    st.divider()
+
     # ── RANKING ──────────────────────────────────────────
     st.markdown("### Ranking — Piores Codigos Tarifarios por NFD")
     st.caption(f"Baseado nos ultimos {dias} dias | Minimo 30 pedidos")
