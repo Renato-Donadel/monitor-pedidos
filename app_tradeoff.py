@@ -69,36 +69,30 @@ def render_tradeoff():
         (df_trade["DataFinal"] >= data_corte)
     ].copy()
 
-    if df_periodo.empty:
-        st.warning("Nenhum pedido encontrado para esse filtro.")
-        return
+    # ── VISÃO GERAL DA EMPRESA (sem filtro de transportadora) ──
+    df_todas = df_trade[df_trade["DataFinal"] >= data_corte].copy()
 
-    st.divider()
+    st.markdown(f"### Visao Geral da Empresa | Ultimos {dias} dias")
 
-    # ── VISÃO GERAL DA TRANSPORTADORA ────────────────────
-    st.markdown(f"### Visao Geral — {transp_sel} | Ultimos {dias} dias")
+    emp_ped    = len(df_todas)
+    emp_notas  = df_todas["ValorNota"].sum()   if "ValorNota" in df_todas.columns else None
+    emp_nfd_n  = int(df_todas["TemNFD"].sum()) if "TemNFD"    in df_todas.columns else 0
+    emp_nfd_pct= emp_nfd_n / emp_ped * 100     if emp_ped > 0 else 0
+    emp_nfd_val= (emp_notas * emp_nfd_pct / 100) if emp_notas else None
 
-    total_ped     = len(df_periodo)
-    total_notas   = df_periodo["ValorNota"].sum()   if "ValorNota" in df_periodo.columns else None
-    total_nfd_n   = int(df_periodo["TemNFD"].sum()) if "TemNFD"    in df_periodo.columns else 0
-    nfd_pct_ger   = total_nfd_n / total_ped * 100   if total_ped > 0 else 0
-    nfd_valor_ger = (total_notas * nfd_pct_ger / 100) if total_notas else None
-
-    g1,g2,g3,g4,g5 = st.columns(5)
-    g1.markdown(kpi_box("Total de Pedidos",    fmt_int(total_ped)), unsafe_allow_html=True)
-    g2.markdown(kpi_box("Total de Vendas (R$)",fmt_brl(total_notas) if total_notas else "sem dado"), unsafe_allow_html=True)
-    g3.markdown(kpi_box("Pedidos com NFD",     fmt_int(total_nfd_n)), unsafe_allow_html=True)
-    g4.markdown(kpi_box("Valor NFD (R$)",      fmt_brl(nfd_valor_ger) if nfd_valor_ger else "sem dado", cor_valor=COR_ALERTA), unsafe_allow_html=True)
-    g5.markdown(kpi_box("% NFD",              fmt_pct(nfd_pct_ger),
-        cor_valor=COR_ALERTA if nfd_pct_ger>=5 else COR_NEUTRO if nfd_pct_ger>=2 else COR_OK),
+    e1,e2,e3,e4,e5 = st.columns(5)
+    e1.markdown(kpi_box("Total de Pedidos",    fmt_int(emp_ped)), unsafe_allow_html=True)
+    e2.markdown(kpi_box("Total de Vendas (R$)",fmt_brl(emp_notas) if emp_notas else "sem dado"), unsafe_allow_html=True)
+    e3.markdown(kpi_box("Pedidos com NFD",     fmt_int(emp_nfd_n)), unsafe_allow_html=True)
+    e4.markdown(kpi_box("Valor NFD (R$)",      fmt_brl(emp_nfd_val) if emp_nfd_val else "sem dado", cor_valor=COR_ALERTA), unsafe_allow_html=True)
+    e5.markdown(kpi_box("% NFD",               fmt_pct(emp_nfd_pct),
+        cor_valor=COR_ALERTA if emp_nfd_pct>=5 else COR_NEUTRO if emp_nfd_pct>=2 else COR_OK),
         unsafe_allow_html=True)
 
     st.divider()
 
     # ── VISÃO POR TRANSPORTADORA ──────────────────────────
     st.markdown(f"### NFD por Transportadora | Ultimos {dias} dias")
-
-    df_todas = df_trade[df_trade["DataFinal"] >= data_corte].copy()
 
     resumo_tsp = (
         df_todas.groupby("Transportadora")
@@ -112,9 +106,7 @@ def render_tradeoff():
     resumo_tsp["ValorNFD"] = resumo_tsp["ValorNotas"] * resumo_tsp["NFD_pct"] / 100
     resumo_tsp = resumo_tsp.sort_values("NFD_pct", ascending=False)
 
-    df_exib = resumo_tsp.copy()
-    df_exib = df_exib.rename(columns={
-        "Pedidos":    "Pedidos",
+    df_exib = resumo_tsp.rename(columns={
         "ValorNotas": "Valor Vendas (R$)",
         "NFD_n":      "Pedidos NFD",
         "ValorNFD":   "Valor NFD (R$)",
@@ -124,11 +116,11 @@ def render_tradeoff():
     st.dataframe(
         df_exib.style
         .format({
-            "Pedidos":          "{:,.0f}",
-            "Valor Vendas (R$)":"R$ {:,.2f}",
-            "Pedidos NFD":      "{:,.0f}",
-            "Valor NFD (R$)":   "R$ {:,.2f}",
-            "% NFD":            "{:.2f}%",
+            "Pedidos":           "{:,.0f}",
+            "Valor Vendas (R$)": "R$ {:,.2f}",
+            "Pedidos NFD":       "{:,.0f}",
+            "Valor NFD (R$)":    "R$ {:,.2f}",
+            "% NFD":             "{:.2f}%",
         })
         .background_gradient(subset=["% NFD"], cmap="RdYlGn_r"),
         use_container_width=True,
@@ -137,8 +129,31 @@ def render_tradeoff():
 
     st.divider()
 
+    # ── VISÃO GERAL DA TRANSPORTADORA SELECIONADA ─────────
+    if df_periodo.empty:
+        st.warning("Nenhum pedido encontrado para esse filtro.")
+        return
+
+    st.markdown(f"### Visao Geral — {transp_sel} | Ultimos {dias} dias")
+
+    total_ped     = len(df_periodo)
+    total_notas   = df_periodo["ValorNota"].sum()   if "ValorNota" in df_periodo.columns else None
+    total_nfd_n   = int(df_periodo["TemNFD"].sum()) if "TemNFD"    in df_periodo.columns else 0
+    nfd_pct_ger   = total_nfd_n / total_ped * 100   if total_ped > 0 else 0
+    nfd_valor_ger = (total_notas * nfd_pct_ger / 100) if total_notas else None
+
+    g1,g2,g3,g4,g5 = st.columns(5)
+    g1.markdown(kpi_box("Total de Pedidos",    fmt_int(total_ped)), unsafe_allow_html=True)
+    g2.markdown(kpi_box("Total de Vendas (R$)",fmt_brl(total_notas) if total_notas else "sem dado"), unsafe_allow_html=True)
+    g3.markdown(kpi_box("Pedidos com NFD",     fmt_int(total_nfd_n)), unsafe_allow_html=True)
+    g4.markdown(kpi_box("Valor NFD (R$)",      fmt_brl(nfd_valor_ger) if nfd_valor_ger else "sem dado", cor_valor=COR_ALERTA), unsafe_allow_html=True)
+    g5.markdown(kpi_box("% NFD",               fmt_pct(nfd_pct_ger),
+        cor_valor=COR_ALERTA if nfd_pct_ger>=5 else COR_NEUTRO if nfd_pct_ger>=2 else COR_OK),
+        unsafe_allow_html=True)
+
+    st.divider()
+
     # ── RANKING ──────────────────────────────────────────
-    st.markdown("### Ranking — Piores Codigos Tarifarios por NFD")
     st.caption(f"Baseado nos ultimos {dias} dias | Minimo 30 pedidos")
 
     nfd_rank = (
@@ -237,12 +252,13 @@ def render_tradeoff():
             nfd_orig_valor= (valor_notas * nfd_orig_pct / 100) if valor_notas else None
 
             st.markdown("**Situacao atual**")
-            c1,c2,c3,c4,c5 = st.columns(5)
+            c1,c2,c3,c4,c5,c6 = st.columns(6)
             c1.markdown(kpi_box("Pedidos",    fmt_int(pedidos_orig)), unsafe_allow_html=True)
             c2.markdown(kpi_box("SLA",        fmt_pct(sla_orig),    cor_valor=COR_OK if sla_orig>=95 else COR_ALERTA), unsafe_allow_html=True)
             c3.markdown(kpi_box("TM Frete",   fmt_brl(tm_orig)),    unsafe_allow_html=True)
             c4.markdown(kpi_box("NFD %",      fmt_pct(nfd_orig_pct),cor_valor=COR_ALERTA if nfd_orig_pct>=5 else COR_NEUTRO if nfd_orig_pct>=2 else COR_OK), unsafe_allow_html=True)
-            c5.markdown(kpi_box("Valor Notas",fmt_brl(valor_notas) if valor_notas else "sem dado"), unsafe_allow_html=True)
+            c5.markdown(kpi_box("NFD R$",     fmt_brl(nfd_orig_valor) if nfd_orig_valor else "sem dado", cor_valor=COR_ALERTA), unsafe_allow_html=True)
+            c6.markdown(kpi_box("Valor Notas",fmt_brl(valor_notas) if valor_notas else "sem dado"), unsafe_allow_html=True)
 
             st.markdown("<br>", unsafe_allow_html=True)
 
@@ -330,42 +346,46 @@ def render_tradeoff():
                     unsafe_allow_html=True
                 )
 
-                d1,d2,d3,d4,d5,d6,d7 = st.columns(7)
+                d1,d2,d3,d4,d5,d6,d7,d8 = st.columns(8)
 
                 delta_sla_v = (row["SLADestino"] - sla_orig) if row["SLADestino"] is not None else None
                 delta_nfd_v = (row["NFDDestino"] - nfd_orig_pct) if row["NFDDestino"] is not None else None
                 dh = row["DeltaFreteHist"]
                 dc = row["DeltaFreteCot"]
+                notas_dest_val = row.get("ValorNotasDest")
 
-                d1.markdown(kpi_box("SLA Hist.",
+                d1.markdown(kpi_box("Valor Dest.",
+                    fmt_brl(notas_dest_val) if pd.notna(notas_dest_val) else "sem dado"), unsafe_allow_html=True)
+
+                d2.markdown(kpi_box("SLA Hist.",
                     fmt_pct(row["SLADestino"]),
                     cor_valor=COR_OK if (row["SLADestino"] or 0)>=95 else COR_ALERTA,
                     delta=f"{delta_sla_v:+.1f}pp" if delta_sla_v is not None else None,
                     delta_cor=COR_OK if (delta_sla_v or 0)>=0 else COR_ALERTA), unsafe_allow_html=True)
 
-                d2.markdown(kpi_box("NFD % Hist.",
+                d3.markdown(kpi_box("NFD % Hist.",
                     fmt_pct(row["NFDDestino"]),
                     cor_valor=COR_ALERTA if (row["NFDDestino"] or 0)>=5 else COR_NEUTRO if (row["NFDDestino"] or 0)>=2 else COR_OK,
                     delta=f"{delta_nfd_v:+.1f}pp" if delta_nfd_v is not None else None,
                     delta_cor=COR_OK if (delta_nfd_v or 0)<=0 else COR_ALERTA), unsafe_allow_html=True)
 
-                d3.markdown(kpi_box("TM Hist.", fmt_brl(row["TM_Hist"])), unsafe_allow_html=True)
+                d4.markdown(kpi_box("TM Hist.", fmt_brl(row["TM_Hist"])), unsafe_allow_html=True)
 
-                d4.markdown(kpi_box("TM Cotacao", fmt_brl(row["TM_Cotacao"]) if row["TM_Cotacao"] else "sem cot."), unsafe_allow_html=True)
+                d5.markdown(kpi_box("TM Cotacao", fmt_brl(row["TM_Cotacao"]) if row["TM_Cotacao"] else "sem cot."), unsafe_allow_html=True)
 
-                d5.markdown(kpi_box("Delta Frete Hist.",
+                d6.markdown(kpi_box("Delta Frete Hist.",
                     fmt_brl(abs(dh)) if dh is not None else "—",
                     cor_valor=COR_OK if (dh or 0)<=0 else COR_ALERTA,
                     delta="ganho" if (dh or 0)<=0 else "perda",
                     delta_cor=COR_OK if (dh or 0)<=0 else COR_ALERTA), unsafe_allow_html=True)
 
-                d6.markdown(kpi_box("Delta Frete Cot.",
+                d7.markdown(kpi_box("Delta Frete Cot.",
                     fmt_brl(abs(dc)) if dc is not None else "—",
                     cor_valor=COR_OK if (dc or 0)<=0 else COR_ALERTA,
                     delta="ganho" if (dc or 0)<=0 else "perda",
                     delta_cor=COR_OK if (dc or 0)<=0 else COR_ALERTA), unsafe_allow_html=True)
 
-                d7.markdown(kpi_box("NFD R$ Est.",
+                d8.markdown(kpi_box("NFD R$ Est.",
                     fmt_brl(row["NFDValorDest"]) if pd.notna(row.get("NFDValorDest")) else "sem dado"), unsafe_allow_html=True)
 
                 st.markdown("<div style='margin-bottom:8px'></div>", unsafe_allow_html=True)
@@ -548,3 +568,228 @@ def render_tradeoff():
     <div style="font-size:24px;font-weight:800;color:{cor_saldo}">{fmt_brl(abs(saldo))}</div>
     <div style="font-size:10px;color:{cor_saldo};margin-top:4px">Ganho NFD + Ganho Frete Hist.</div>
     </div>""", unsafe_allow_html=True)
+
+    # ====================================================
+    # PROJEÇÃO ATÉ FIM DO ANO
+    # ====================================================
+
+    st.divider()
+    st.markdown("### 📅 Projeção até 31/12/2026")
+
+    from datetime import date
+    hoje        = date.today()
+    fim_ano     = date(2026, 12, 31)
+    dias_rest   = (fim_ano - hoje).days
+    dias_period = dias
+
+    def proj(valor, dias_base, dias_futuros):
+        if not valor or dias_base == 0:
+            return None
+        return (valor / dias_base) * dias_futuros
+
+    # ── BLOCO 1 — Com os filtros aplicados ───────────────
+    st.markdown(f"#### Com os filtros aplicados — {transp_sel} | Codigos selecionados")
+    st.caption(
+        f"Base: ultimos {dias_period} dias ({dias_period} dias) → "
+        f"media diaria × {dias_rest} dias restantes ate 31/12"
+    )
+
+    proj_ganho_nfd       = proj(ganho_nfd,        dias_period, dias_rest)
+    proj_ganho_frete_hist= proj(ganho_frete_hist, dias_period, dias_rest)
+    proj_ganho_frete_cot = proj(ganho_frete_cot,  dias_period, dias_rest) if ganho_frete_cot else None
+    proj_delta_sla       = delta_sla  # SLA é percentual, não acumula
+    proj_saldo           = (proj_ganho_nfd or 0) + (proj_ganho_frete_hist or 0)
+
+    p1,p2,p3,p4,p5 = st.columns(5)
+
+    def proj_cartao(col, titulo, valor, ganho, descricao=""):
+        cor   = COR_OK if ganho else COR_ALERTA
+        label = "ganho proj." if ganho else "perda proj."
+        col.markdown(
+            f"""<div style="background:#fff;border-radius:12px;padding:16px;
+                border-left:5px solid {cor};text-align:center">
+            <div style="font-size:11px;color:#888">{titulo}</div>
+            <div style="font-size:20px;font-weight:700;color:{cor}">{valor}</div>
+            <div style="font-size:11px;color:{cor};margin-top:3px;font-weight:600">{label}</div>
+            <div style="font-size:10px;color:#aaa;margin-top:2px">{descricao}</div>
+            </div>""",
+            unsafe_allow_html=True
+        )
+
+    proj_cartao(p1, "NFD (R$)",
+        fmt_brl(abs(proj_ganho_nfd)) if proj_ganho_nfd else "—",
+        (proj_ganho_nfd or 0) >= 0,
+        f"{fmt_brl(ganho_nfd / dias_period)}/dia" if ganho_nfd else ""
+    )
+    proj_cartao(p2, "Frete Historico",
+        fmt_brl(abs(proj_ganho_frete_hist)) if proj_ganho_frete_hist else "—",
+        (proj_ganho_frete_hist or 0) >= 0,
+        f"{fmt_brl(ganho_frete_hist / dias_period)}/dia" if ganho_frete_hist else ""
+    )
+    proj_cartao(p3, "Frete Cotacao",
+        fmt_brl(abs(proj_ganho_frete_cot)) if proj_ganho_frete_cot else "sem dados",
+        (proj_ganho_frete_cot or 0) >= 0,
+        f"{fmt_brl(ganho_frete_cot / dias_period)}/dia" if ganho_frete_cot else ""
+    )
+
+    cor_sla_p = COR_OK if proj_delta_sla >= 0 else COR_ALERTA
+    p4.markdown(
+        f"""<div style="background:#fff;border-radius:12px;padding:16px;
+            border-left:5px solid {cor_sla_p};text-align:center">
+        <div style="font-size:11px;color:#888">SLA</div>
+        <div style="font-size:20px;font-weight:700;color:{cor_sla_p}">{proj_delta_sla:+.2f}pp</div>
+        <div style="font-size:11px;color:{cor_sla_p};margin-top:3px;font-weight:600">
+            {"ganho proj." if proj_delta_sla >= 0 else "perda proj."}</div>
+        <div style="font-size:10px;color:#aaa;margin-top:2px">{fmt_pct(sla_orig_pond)} → {fmt_pct(sla_dest_pond)}</div>
+        </div>""",
+        unsafe_allow_html=True
+    )
+
+    cor_sp = COR_OK if proj_saldo >= 0 else COR_ALERTA
+    label_sp = "GANHO PROJ." if proj_saldo >= 0 else "PERDA PROJ."
+    p5.markdown(
+        f"""<div style="background:{cor_sp}18;border-radius:12px;padding:16px;
+            border:2px solid {cor_sp};text-align:center">
+        <div style="font-size:11px;color:{cor_sp};font-weight:700">{label_sp}</div>
+        <div style="font-size:22px;font-weight:800;color:{cor_sp}">{fmt_brl(abs(proj_saldo))}</div>
+        <div style="font-size:10px;color:{cor_sp};margin-top:3px">NFD + Frete Hist. projetados</div>
+        </div>""",
+        unsafe_allow_html=True
+    )
+
+    st.divider()
+
+    # ── BLOCO 2 — Empresa toda (10 piores de todas as TSPs) ──
+    st.markdown("#### Empresa toda — 10 piores codigos (todas as transportadoras)")
+    st.caption(
+        f"Baseado nos ultimos 90 dias | "
+        f"Media diaria × {dias_rest} dias restantes ate 31/12"
+    )
+
+    # Recalcula para todas as transportadoras, últimos 90 dias
+    data_corte_90 = pd.Timestamp.today() - pd.Timedelta(days=90)
+    df_emp = df_trade[df_trade["DataFinal"] >= data_corte_90].copy()
+
+    nfd_emp = (
+        df_emp.groupby(["Transportadora", "CodigoTarifario"])
+        .agg(
+            Pedidos    = ("TemNFD",      "count"),
+            NFD_n      = ("TemNFD",      "sum"),
+            SLA_pct    = ("DentroPrazo", "mean"),
+            ValorNotas = ("ValorNota",   "sum"),
+            ValorFrete = ("ValorFrete",  "sum"),
+        ).reset_index()
+    )
+    nfd_emp = nfd_emp[nfd_emp["Pedidos"] >= 30].copy()
+    nfd_emp["NFD_pct"]  = (nfd_emp["NFD_n"] / nfd_emp["Pedidos"] * 100).round(2)
+    nfd_emp["SLA_pct"]  = (nfd_emp["SLA_pct"] * 100).round(2)
+    nfd_emp["ValorNFD"] = nfd_emp["ValorNotas"] * nfd_emp["NFD_pct"] / 100
+    top10_emp = nfd_emp.sort_values("NFD_pct", ascending=False).head(10)
+
+    # Para cada código, busca o destino na base de similaridade
+    total_nfd_emp       = 0
+    total_frete_emp     = 0
+    total_nfd_dest_emp  = 0
+    total_fh_dest_emp   = 0
+    total_fc_dest_emp   = 0
+    total_fc_orig_emp   = 0
+    sla_orig_emp_pond   = 0
+    sla_dest_emp_pond   = 0
+    total_ped_emp       = 0
+
+    for _, r in top10_emp.iterrows():
+        tsp_o = r["Transportadora"]
+        cod_o = r["CodigoTarifario"]
+        ped_o = r["Pedidos"]
+        nfd_v = r["ValorNFD"]
+        fr_o  = r["ValorFrete"]
+        sla_o = r["SLA_pct"]
+
+        total_nfd_emp   += nfd_v or 0
+        total_frete_emp += fr_o  or 0
+        sla_orig_emp_pond += (sla_o or 0) * ped_o
+        total_ped_emp   += ped_o
+
+        df_s = df_sim[
+            (df_sim["TransportadoraOrigem"] == tsp_o) &
+            (df_sim["CodigoOrigem"] == cod_o)
+        ]
+        if df_s.empty:
+            total_nfd_dest_emp += nfd_v or 0
+            total_fh_dest_emp  += fr_o  or 0
+            sla_dest_emp_pond  += (sla_o or 0) * ped_o
+            continue
+
+        ped_sim_total = df_s["Pedidos"].sum()
+        for _, sd in df_s.iterrows():
+            w = sd["Pedidos"] / ped_sim_total if ped_sim_total > 0 else 0
+            notas_p = (r["ValorNotas"] or 0) * w
+            nfd_d   = (sd.get("NFD_Hist") or 0) * 100
+            total_nfd_dest_emp += notas_p * nfd_d / 100
+            total_fh_dest_emp  += (sd.get("ProjecaoFreteHist") or 0)
+            total_fc_dest_emp  += (sd.get("ValorCotacaoDestTotal") or 0)
+            total_fc_orig_emp  += (sd.get("ValorCotacaoOrigTotal") or 0)
+            sla_dest_emp_pond  += (sd.get("SLA_Hist") or 0) * 100 * sd["Pedidos"]
+
+    sla_orig_emp_m = sla_orig_emp_pond / total_ped_emp if total_ped_emp > 0 else 0
+    sla_dest_emp_m = sla_dest_emp_pond / total_ped_emp if total_ped_emp > 0 else 0
+    delta_sla_emp  = sla_dest_emp_m - sla_orig_emp_m
+
+    ganho_nfd_emp  = total_nfd_emp   - total_nfd_dest_emp
+    ganho_fh_emp   = total_frete_emp - total_fh_dest_emp
+    ganho_fc_emp   = total_fc_orig_emp - total_fc_dest_emp if total_fc_orig_emp else None
+    saldo_emp      = ganho_nfd_emp + ganho_fh_emp
+
+    # Projeções (base 90 dias)
+    pp_nfd  = proj(ganho_nfd_emp,  90, dias_rest)
+    pp_fh   = proj(ganho_fh_emp,   90, dias_rest)
+    pp_fc   = proj(ganho_fc_emp,   90, dias_rest) if ganho_fc_emp else None
+    pp_sal  = (pp_nfd or 0) + (pp_fh or 0)
+
+    q1,q2,q3,q4,q5 = st.columns(5)
+
+    proj_cartao(q1, "NFD (R$)",
+        fmt_brl(abs(pp_nfd)) if pp_nfd else "—",
+        (pp_nfd or 0) >= 0,
+        f"{fmt_brl(ganho_nfd_emp/90)}/dia"
+    )
+    proj_cartao(q2, "Frete Historico",
+        fmt_brl(abs(pp_fh)) if pp_fh else "—",
+        (pp_fh or 0) >= 0,
+        f"{fmt_brl(ganho_fh_emp/90)}/dia"
+    )
+    proj_cartao(q3, "Frete Cotacao",
+        fmt_brl(abs(pp_fc)) if pp_fc else "sem dados",
+        (pp_fc or 0) >= 0,
+        f"{fmt_brl(ganho_fc_emp/90)}/dia" if ganho_fc_emp else ""
+    )
+
+    cor_sla_e = COR_OK if delta_sla_emp >= 0 else COR_ALERTA
+    q4.markdown(
+        f"""<div style="background:#fff;border-radius:12px;padding:16px;
+            border-left:5px solid {cor_sla_e};text-align:center">
+        <div style="font-size:11px;color:#888">SLA</div>
+        <div style="font-size:20px;font-weight:700;color:{cor_sla_e}">{delta_sla_emp:+.2f}pp</div>
+        <div style="font-size:11px;color:{cor_sla_e};margin-top:3px;font-weight:600">
+            {"ganho proj." if delta_sla_emp >= 0 else "perda proj."}</div>
+        <div style="font-size:10px;color:#aaa;margin-top:2px">{fmt_pct(sla_orig_emp_m)} → {fmt_pct(sla_dest_emp_m)}</div>
+        </div>""",
+        unsafe_allow_html=True
+    )
+
+    cor_se = COR_OK if pp_sal >= 0 else COR_ALERTA
+    label_se = "GANHO PROJ." if pp_sal >= 0 else "PERDA PROJ."
+    q5.markdown(
+        f"""<div style="background:{cor_se}18;border-radius:12px;padding:16px;
+            border:2px solid {cor_se};text-align:center">
+        <div style="font-size:11px;color:{cor_se};font-weight:700">{label_se}</div>
+        <div style="font-size:22px;font-weight:800;color:{cor_se}">{fmt_brl(abs(pp_sal))}</div>
+        <div style="font-size:10px;color:{cor_se};margin-top:3px">NFD + Frete Hist. projetados</div>
+        </div>""",
+        unsafe_allow_html=True
+    )
+
+    st.caption(
+        f"10 piores codigos: " +
+        ", ".join(f"{r['Transportadora']}/{r['CodigoTarifario']}" for _, r in top10_emp.iterrows())
+    )
