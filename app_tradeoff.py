@@ -36,58 +36,130 @@ def kpi_box(label, valor, cor_valor="#0f2a44", fundo="#ffffff", delta=None, delt
 def carregar_bases():
     arq_pedidos = "data/Base_Pedidos_Codigo.xlsx"
     arq_sim     = "data/Base_Similaridade_Tarifarios.xlsx"
+    arq_nfd     = "data/Base_NFD_Real.xlsx"
+    arq_intel   = "data/Base_Intelipost_Resumo.xlsx"
+
     df_trade = pd.read_excel(arq_pedidos) if os.path.exists(arq_pedidos) else pd.DataFrame()
     df_sim   = pd.read_excel(arq_sim)     if os.path.exists(arq_sim)     else pd.DataFrame()
+    df_nfd   = pd.read_excel(arq_nfd)     if os.path.exists(arq_nfd)     else pd.DataFrame()
+    df_intel = pd.read_excel(arq_intel)   if os.path.exists(arq_intel)   else pd.DataFrame()
+
     if not df_trade.empty:
         df_trade.columns = df_trade.columns.str.strip()
-        if "DataFinal"   in df_trade.columns: df_trade["DataFinal"]   = pd.to_datetime(df_trade["DataFinal"],   errors="coerce")
-        if "TemNFD"      in df_trade.columns: df_trade["TemNFD"]      = df_trade["TemNFD"].fillna(False).astype(bool)
-        if "DentroPrazo" in df_trade.columns: df_trade["DentroPrazo"] = df_trade["DentroPrazo"].fillna(False).astype(bool)
-        if "ValorFrete"  in df_trade.columns: df_trade["ValorFrete"]  = pd.to_numeric(df_trade["ValorFrete"],  errors="coerce")
-        if "ValorNota"   in df_trade.columns: df_trade["ValorNota"]   = pd.to_numeric(df_trade["ValorNota"],   errors="coerce")
-    return df_trade, df_sim
+        if "DataFinal"      in df_trade.columns: df_trade["DataFinal"]   = pd.to_datetime(df_trade["DataFinal"],   errors="coerce")
+        if "TemNFD"         in df_trade.columns: df_trade["TemNFD"]      = df_trade["TemNFD"].fillna(False).astype(bool)
+        if "DentroPrazo"    in df_trade.columns: df_trade["DentroPrazo"] = df_trade["DentroPrazo"].fillna(False).astype(bool)
+        if "ValorFrete"     in df_trade.columns: df_trade["ValorFrete"]  = pd.to_numeric(df_trade["ValorFrete"],  errors="coerce")
+        if "ValorNota"      in df_trade.columns: df_trade["ValorNota"]   = pd.to_numeric(df_trade["ValorNota"],   errors="coerce")
+
+    if not df_nfd.empty:
+        df_nfd.columns = df_nfd.columns.str.strip()
+        if "DataExpedicao" in df_nfd.columns: df_nfd["DataExpedicao"] = pd.to_datetime(df_nfd["DataExpedicao"], errors="coerce")
+        if "ValorNota"     in df_nfd.columns: df_nfd["ValorNota"]     = pd.to_numeric(df_nfd["ValorNota"],      errors="coerce")
+        if "TemNFD"        in df_nfd.columns: df_nfd["TemNFD"]        = df_nfd["TemNFD"].fillna(False).astype(bool)
+
+    return df_trade, df_sim, df_nfd, df_intel
 
 def render_tradeoff():
 
-    df_trade, df_sim = carregar_bases()
+    df_trade, df_sim, df_nfd_real, df_intel = carregar_bases()
     if df_trade.empty or df_sim.empty:
         st.error("Bases nao encontradas. Execute o ETL primeiro.")
         return
 
-    # ── FILTROS ──────────────────────────────────────────
-    col1, col2 = st.columns(2)
-    with col1:
-        transportadoras = sorted(df_trade["Transportadora"].dropna().unique())
-        transp_sel = st.selectbox("Transportadora", transportadoras)
-    with col2:
+    # ====================================================
+    # TOTAIS GERAIS (sem filtro — dados históricos completos)
+    # ====================================================
+
+    st.markdown("### Visao Geral da Empresa — Totais Historicos")
+
+    # Total de vendas do Intelipost completo
+    total_vendas_geral  = df_intel["TotalVendasR$"].iloc[0]     if not df_intel.empty and "TotalVendasR$"       in df_intel.columns else None
+    total_sem_valor     = int(df_intel["PedidosSemValorNota"].iloc[0]) if not df_intel.empty and "PedidosSemValorNota" in df_intel.columns else None
+
+    # NFD real do banco
+    chaves_intel = set(df_trade["ChaveNF"].astype(str).str.strip()) if not df_trade.empty else set()
+
+    if not df_nfd_real.empty:
+        df_nfd_tsp = df_nfd_real[df_nfd_real["TemNFD"] == True].copy()
+        df_nfd_tsp["ChaveNFD"] = df_nfd_tsp["ChaveNFD"].astype(str).str.strip()
+
+        nfd_cruzou     = df_nfd_tsp[df_nfd_tsp["ChaveNFD"].isin(chaves_intel)]
+        nfd_nao_cruzou = df_nfd_tsp[~df_nfd_tsp["ChaveNFD"].isin(chaves_intel)]
+
+        total_nfd_real     = df_nfd_tsp["ValorNota"].sum()
+        total_nfd_cruzou   = nfd_cruzou["ValorNota"].sum()
+        total_nfd_nao_cruz = nfd_nao_cruzou["ValorNota"].sum()
+        pct_nfd_real       = (total_nfd_real / total_vendas_geral * 100) if total_vendas_geral else None
+    else:
+        total_nfd_real = total_nfd_cruzou = total_nfd_nao_cruz = None
+        nfd_nao_cruzou = pd.DataFrame()
+        pct_nfd_real   = None
+
+    g1,g2,g3,g4,g5,g6 = st.columns(6)
+    g1.markdown(kpi_box("Total de Vendas (R$)", fmt_brl(total_vendas_geral) if total_vendas_geral else "sem dado"), unsafe_allow_html=True)
+    g2.markdown(kpi_box("Total NFD TSP (R$)",   fmt_brl(total_nfd_real)     if total_nfd_real     else "sem dado", cor_valor=COR_ALERTA), unsafe_allow_html=True)
+    g3.markdown(kpi_box("NFD no Intelipost (R$)",fmt_brl(total_nfd_cruzou)  if total_nfd_cruzou   else "sem dado"), unsafe_allow_html=True)
+    g4.markdown(kpi_box("NFD fora Intelipost (R$)",fmt_brl(total_nfd_nao_cruz) if total_nfd_nao_cruz else "sem dado", cor_valor=COR_ALERTA), unsafe_allow_html=True)
+    g5.markdown(kpi_box("% NFD / Vendas",        fmt_pct(pct_nfd_real)      if pct_nfd_real       else "sem dado",
+        cor_valor=COR_ALERTA if (pct_nfd_real or 0)>=5 else COR_NEUTRO if (pct_nfd_real or 0)>=2 else COR_OK), unsafe_allow_html=True)
+    g6.markdown(kpi_box("NFs sem Valor",         fmt_int(total_sem_valor)   if total_sem_valor    else "—", cor_valor=COR_NEUTRO), unsafe_allow_html=True)
+
+    # Botão exportar NFD fora do Intelipost
+    if not nfd_nao_cruzou.empty:
+        import io
+        buf = io.BytesIO()
+        nfd_nao_cruzou.to_excel(buf, index=False)
+        buf.seek(0)
+        st.download_button(
+            "⬇️ Exportar NFD fora do Intelipost",
+            data=buf,
+            file_name="nfd_fora_intelipost.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+
+    st.divider()
+
+    # ── PERÍODO (sem transportadora ainda) ──────────────
+    col_per, _ = st.columns([1, 1])
+    with col_per:
         periodo = st.selectbox("Periodo", ["30 dias", "60 dias", "90 dias"])
         dias = {"30 dias": 30, "60 dias": 60, "90 dias": 90}[periodo]
 
     data_corte = pd.Timestamp.today() - pd.Timedelta(days=dias)
-    df_periodo = df_trade[
-        (df_trade["Transportadora"] == transp_sel) &
-        (df_trade["DataFinal"] >= data_corte)
-    ].copy()
 
-    # ── VISÃO GERAL DA EMPRESA (sem filtro de transportadora) ──
+    # ── VISÃO GERAL DA EMPRESA FILTRADA (por período) ──
     df_todas = df_trade[df_trade["DataFinal"] >= data_corte].copy()
 
-    st.markdown(f"### Visao Geral da Empresa | Ultimos {dias} dias")
+    # NFD real filtrada por DataExpedicao
+    if not df_nfd_real.empty and "DataExpedicao" in df_nfd_real.columns:
+        df_nfd_periodo = df_nfd_real[
+            (df_nfd_real["TemNFD"] == True) &
+            (df_nfd_real["DataExpedicao"] >= data_corte)
+        ].copy()
+        df_nfd_fora_periodo = df_nfd_real[
+            (df_nfd_real["TemNFD"] == True) &
+            (df_nfd_real["DataExpedicao"] < data_corte)
+        ].copy()
+        nfd_periodo_val      = df_nfd_periodo["ValorNota"].sum()
+        nfd_fora_periodo_val = df_nfd_fora_periodo["ValorNota"].sum()
+    else:
+        nfd_periodo_val = nfd_fora_periodo_val = None
 
-    emp_ped    = len(df_todas)
-    emp_notas  = df_todas["ValorNota"].sum()   if "ValorNota" in df_todas.columns else None
-    emp_nfd_n  = int(df_todas["TemNFD"].sum()) if "TemNFD"    in df_todas.columns else 0
-    emp_nfd_pct= emp_nfd_n / emp_ped * 100     if emp_ped > 0 else 0
-    emp_nfd_val= (emp_notas * emp_nfd_pct / 100) if emp_notas else None
+    st.markdown(f"### Visao Geral da Empresa — Todas as Transportadoras | Ultimos {dias} dias")
 
-    e1,e2,e3,e4,e5 = st.columns(5)
-    e1.markdown(kpi_box("Total de Pedidos",    fmt_int(emp_ped)), unsafe_allow_html=True)
-    e2.markdown(kpi_box("Total de Vendas (R$)",fmt_brl(emp_notas) if emp_notas else "sem dado"), unsafe_allow_html=True)
-    e3.markdown(kpi_box("Pedidos com NFD",     fmt_int(emp_nfd_n)), unsafe_allow_html=True)
-    e4.markdown(kpi_box("Valor NFD (R$)",      fmt_brl(emp_nfd_val) if emp_nfd_val else "sem dado", cor_valor=COR_ALERTA), unsafe_allow_html=True)
-    e5.markdown(kpi_box("% NFD",               fmt_pct(emp_nfd_pct),
-        cor_valor=COR_ALERTA if emp_nfd_pct>=5 else COR_NEUTRO if emp_nfd_pct>=2 else COR_OK),
-        unsafe_allow_html=True)
+    emp_notas  = df_todas["ValorNota"].sum() if "ValorNota" in df_todas.columns else None
+    pct_nfd_p  = (nfd_periodo_val / emp_notas * 100) if (nfd_periodo_val and emp_notas) else None
+
+    p1,p2,p3,p4,p5 = st.columns(5)
+    p1.markdown(kpi_box("Total de Vendas (R$)",   fmt_brl(emp_notas)         if emp_notas         else "sem dado"), unsafe_allow_html=True)
+    p2.markdown(kpi_box("NFD TSP no Periodo (R$)",fmt_brl(nfd_periodo_val)   if nfd_periodo_val   else "sem dado", cor_valor=COR_ALERTA), unsafe_allow_html=True)
+    p3.markdown(kpi_box("% NFD / Vendas",         fmt_pct(pct_nfd_p)         if pct_nfd_p         else "sem dado",
+        cor_valor=COR_ALERTA if (pct_nfd_p or 0)>=5 else COR_NEUTRO if (pct_nfd_p or 0)>=2 else COR_OK), unsafe_allow_html=True)
+    p4.markdown(kpi_box("NFD fora do Periodo",    fmt_brl(nfd_fora_periodo_val) if nfd_fora_periodo_val else "sem dado", cor_valor=COR_NEUTRO,
+        delta=f"coletados antes de {dias} dias"), unsafe_allow_html=True)
+    p5.markdown(kpi_box("Pedidos c/ SLA",
+        fmt_int(df_todas["DentroPrazo"].sum()) if "DentroPrazo" in df_todas.columns else "—"), unsafe_allow_html=True)
 
     st.divider()
 
@@ -129,12 +201,22 @@ def render_tradeoff():
 
     st.divider()
 
+    # ── FILTRO DE TRANSPORTADORA ─────────────────────────
+    st.markdown("---")
+    transportadoras = sorted(df_trade["Transportadora"].dropna().unique())
+    transp_sel = st.selectbox("Selecione a Transportadora para analise detalhada", transportadoras)
+
+    df_periodo = df_trade[
+        (df_trade["Transportadora"] == transp_sel) &
+        (df_trade["DataFinal"] >= data_corte)
+    ].copy()
+
     # ── VISÃO GERAL DA TRANSPORTADORA SELECIONADA ─────────
     if df_periodo.empty:
         st.warning("Nenhum pedido encontrado para esse filtro.")
         return
 
-    st.markdown(f"### Visao Geral — {transp_sel} | Ultimos {dias} dias")
+    st.markdown(f"### Visao Geral — {transp_sel} (filtrado) | Ultimos {dias} dias")
 
     total_ped     = len(df_periodo)
     total_notas   = df_periodo["ValorNota"].sum()   if "ValorNota" in df_periodo.columns else None
@@ -723,22 +805,32 @@ def render_tradeoff():
         ped_sim_total = df_s["Pedidos"].sum()
         for _, sd in df_s.iterrows():
             w = sd["Pedidos"] / ped_sim_total if ped_sim_total > 0 else 0
-            notas_p = (r["ValorNotas"] or 0) * w
-            nfd_d   = (sd.get("NFD_Hist") or 0) * 100
+            notas_p   = (r["ValorNotas"] or 0) * w
+            nfd_d_val = sd["NFD_Hist"] if "NFD_Hist" in sd.index and pd.notna(sd["NFD_Hist"]) else 0
+            nfd_d     = float(nfd_d_val) * 100
             total_nfd_dest_emp += notas_p * nfd_d / 100
-            total_fh_dest_emp  += (sd.get("ProjecaoFreteHist") or 0)
-            total_fc_dest_emp  += (sd.get("ValorCotacaoDestTotal") or 0)
-            total_fc_orig_emp  += (sd.get("ValorCotacaoOrigTotal") or 0)
-            sla_dest_emp_pond  += (sd.get("SLA_Hist") or 0) * 100 * sd["Pedidos"]
 
-    sla_orig_emp_m = sla_orig_emp_pond / total_ped_emp if total_ped_emp > 0 else 0
-    sla_dest_emp_m = sla_dest_emp_pond / total_ped_emp if total_ped_emp > 0 else 0
+            fh = sd["ProjecaoFreteHist"] if "ProjecaoFreteHist" in sd.index and pd.notna(sd["ProjecaoFreteHist"]) else 0
+            total_fh_dest_emp  += float(fh)
+
+            fc_dest = sd["ValorCotacaoDestTotal"] if "ValorCotacaoDestTotal" in sd.index and pd.notna(sd["ValorCotacaoDestTotal"]) else 0
+            fc_orig = sd["ValorCotacaoOrigTotal"]  if "ValorCotacaoOrigTotal"  in sd.index and pd.notna(sd["ValorCotacaoOrigTotal"])  else 0
+            total_fc_dest_emp  += float(fc_dest)
+            total_fc_orig_emp  += float(fc_orig)
+
+            sla_d_val = sd["SLA_Hist"] if "SLA_Hist" in sd.index and pd.notna(sd["SLA_Hist"]) else 0
+            sla_dest_emp_pond  += float(sla_d_val) * 100 * sd["Pedidos"]
+            total_ped_dest_emp = total_ped_dest_emp + sd["Pedidos"] if "total_ped_dest_emp" in dir() else sd["Pedidos"]
+
+    total_ped_dest_emp = locals().get("total_ped_dest_emp", total_ped_emp)
+    sla_orig_emp_m = sla_orig_emp_pond / total_ped_emp      if total_ped_emp      > 0 else 0
+    sla_dest_emp_m = sla_dest_emp_pond / total_ped_dest_emp if total_ped_dest_emp > 0 else 0
     delta_sla_emp  = sla_dest_emp_m - sla_orig_emp_m
 
     ganho_nfd_emp  = total_nfd_emp   - total_nfd_dest_emp
-    ganho_fh_emp   = total_frete_emp - total_fh_dest_emp
-    ganho_fc_emp   = total_fc_orig_emp - total_fc_dest_emp if total_fc_orig_emp else None
-    saldo_emp      = ganho_nfd_emp + ganho_fh_emp
+    ganho_fh_emp   = (total_frete_emp - total_fh_dest_emp) if total_fh_dest_emp > 0 else None
+    ganho_fc_emp   = total_fc_orig_emp - total_fc_dest_emp if total_fc_orig_emp > 0 else None
+    saldo_emp      = (ganho_nfd_emp or 0) + (ganho_fh_emp or 0)
 
     # Projeções (base 90 dias)
     pp_nfd  = proj(ganho_nfd_emp,  90, dias_rest)
