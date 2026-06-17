@@ -57,6 +57,9 @@ def carregar_bases():
         if "DataExpedicao" in df_nfd.columns: df_nfd["DataExpedicao"] = pd.to_datetime(df_nfd["DataExpedicao"], errors="coerce")
         if "ValorNota"     in df_nfd.columns: df_nfd["ValorNota"]     = pd.to_numeric(df_nfd["ValorNota"],      errors="coerce")
         if "TemNFD"        in df_nfd.columns: df_nfd["TemNFD"]        = df_nfd["TemNFD"].fillna(False).astype(bool)
+        if "PassouRetirada" in df_nfd.columns: df_nfd["PassouRetirada"] = df_nfd["PassouRetirada"].fillna(False).astype(bool)
+        if "TspMasNaoTsp"   in df_nfd.columns: df_nfd["TspMasNaoTsp"]   = df_nfd["TspMasNaoTsp"].fillna(False).astype(bool)
+        if "StatusNaoTsp"   in df_nfd.columns: df_nfd["StatusNaoTsp"]   = df_nfd["StatusNaoTsp"].fillna("").astype(str)
 
     return df_trade, df_sim, df_nfd, df_intel
 
@@ -71,15 +74,33 @@ def render_tradeoff():
     # TOTAIS GERAIS (sem filtro — dados históricos completos)
     # ====================================================
 
-    st.markdown("### Visao Geral da Empresa — Totais Historicos")
+    st.markdown("### Visao Geral da Empresa 2026 — Sem Filtro")
 
-    # Total de vendas do Intelipost completo
-    total_vendas_geral  = df_intel["TotalVendasR$"].iloc[0]     if not df_intel.empty and "TotalVendasR$"       in df_intel.columns else None
-    total_sem_valor     = int(df_intel["PedidosSemValorNota"].iloc[0]) if not df_intel.empty and "PedidosSemValorNota" in df_intel.columns else None
+    # Total de vendas 2026 (planilhas João)
+    total_vendas_geral = df_intel["TotalVendasR$"].iloc[0] if not df_intel.empty and "TotalVendasR$" in df_intel.columns else None
 
     # NFD real do banco — cruzamento já feito no ETL
+    # Regra: "TSP mas nao e TSP" (teve NFD TSP mas passou por status de retirada)
+    # SAI dos totais de TSP. Essas notas continuam existindo na empresa,
+    # mas nao entram no que e categorizado como culpa do transporte.
+    nfd_tsp_mas_nao = pd.DataFrame()   # guardado para a secao Debug no fim
+    pedidos_sem_valor = None           # vem do resumo Intelipost
+    if "PedidosSemValorNota" in df_intel.columns and not df_intel.empty:
+        pedidos_sem_valor = df_intel["PedidosSemValorNota"].iloc[0]
+
     if not df_nfd_real.empty:
-        df_nfd_tsp = df_nfd_real[df_nfd_real["TemNFD"] == True].copy()
+        # Flag TspMasNaoTsp — se a base ainda nao tiver, assume tudo False
+        if "TspMasNaoTsp" in df_nfd_real.columns:
+            mask_tsp_mas_nao = df_nfd_real["TspMasNaoTsp"] == True
+        else:
+            mask_tsp_mas_nao = pd.Series(False, index=df_nfd_real.index)
+
+        nfd_tsp_mas_nao = df_nfd_real[mask_tsp_mas_nao].copy()
+
+        # TSP "de verdade" = teve NFD TSP E NAO e do tipo retirada
+        df_nfd_tsp   = df_nfd_real[(df_nfd_real["TemNFD"] == True) & (~mask_tsp_mas_nao)].copy()
+        # Total geral tambem desconta as "tsp mas nao e tsp"
+        df_nfd_todos = df_nfd_real[~mask_tsp_mas_nao].copy()
 
         if "CruzouIntelipost" in df_nfd_tsp.columns:
             nfd_cruzou     = df_nfd_tsp[df_nfd_tsp["CruzouIntelipost"] == True]
@@ -88,32 +109,44 @@ def render_tradeoff():
             nfd_cruzou     = df_nfd_tsp
             nfd_nao_cruzou = pd.DataFrame()
 
-        total_nfd_real     = df_nfd_tsp["ValorNota"].sum()
+        total_nfd_tsp      = df_nfd_tsp["ValorNota"].sum()
+        total_nfd_todos    = df_nfd_todos["ValorNota"].sum()
         total_nfd_cruzou   = nfd_cruzou["ValorNota"].sum()
         total_nfd_nao_cruz = nfd_nao_cruzou["ValorNota"].sum()
-        pct_nfd_real       = (total_nfd_real / total_vendas_geral * 100) if total_vendas_geral else None
+        pct_nfd_todos      = (total_nfd_todos / total_vendas_geral * 100) if total_vendas_geral else None
+        pct_nfd_tsp        = (total_nfd_tsp   / total_vendas_geral * 100) if total_vendas_geral else None
     else:
-        total_nfd_real = total_nfd_cruzou = total_nfd_nao_cruz = None
+        total_nfd_tsp = total_nfd_todos = total_nfd_cruzou = total_nfd_nao_cruz = None
         nfd_nao_cruzou = pd.DataFrame()
-        pct_nfd_real   = None
+        pct_nfd_todos = pct_nfd_tsp = None
 
-    g1,g2,g3,g4,g5,g6 = st.columns(6)
-    g1.markdown(kpi_box("Total de Vendas (R$)", fmt_brl(total_vendas_geral) if total_vendas_geral else "sem dado"), unsafe_allow_html=True)
-    g2.markdown(kpi_box("Total NFD TSP (R$)",   fmt_brl(total_nfd_real)     if total_nfd_real     else "sem dado", cor_valor=COR_ALERTA), unsafe_allow_html=True)
-    g3.markdown(kpi_box("NFD no Intelipost (R$)",fmt_brl(total_nfd_cruzou)  if total_nfd_cruzou   else "sem dado"), unsafe_allow_html=True)
-    g4.markdown(kpi_box("NFD fora Intelipost (R$)",fmt_brl(total_nfd_nao_cruz) if total_nfd_nao_cruz else "sem dado", cor_valor=COR_ALERTA), unsafe_allow_html=True)
-    g5.markdown(kpi_box("% NFD / Vendas",        fmt_pct(pct_nfd_real)      if pct_nfd_real       else "sem dado",
-        cor_valor=COR_ALERTA if (pct_nfd_real or 0)>=5 else COR_NEUTRO if (pct_nfd_real or 0)>=2 else COR_OK), unsafe_allow_html=True)
-    g6.markdown(kpi_box("NFs sem Valor",         fmt_int(total_sem_valor)   if total_sem_valor    else "—", cor_valor=COR_NEUTRO), unsafe_allow_html=True)
+    g1,g2,g3,g4,g5 = st.columns(5)
+    g1.markdown(kpi_box("Total de Vendas 2026 (R$)",
+        fmt_brl(total_vendas_geral) if total_vendas_geral else "sem dado"), unsafe_allow_html=True)
+    g2.markdown(kpi_box("Total NFD TSP (R$)",
+        fmt_brl(total_nfd_tsp) if total_nfd_tsp else "sem dado",
+        cor_valor=COR_ALERTA), unsafe_allow_html=True)
+    g3.markdown(kpi_box("NFD TSP no Intelipost (R$)",
+        fmt_brl(total_nfd_cruzou) if total_nfd_cruzou else "sem dado"), unsafe_allow_html=True)
+    g4.markdown(kpi_box("NFD TSP fora Intelipost (R$)",
+        fmt_brl(total_nfd_nao_cruz) if total_nfd_nao_cruz else "sem dado",
+        cor_valor=COR_ALERTA), unsafe_allow_html=True)
+    g5.markdown(kpi_box("% NFD TSP / Vendas",
+        fmt_pct(pct_nfd_tsp) if pct_nfd_tsp else "sem dado",
+        cor_valor=COR_ALERTA if (pct_nfd_tsp or 0)>=5 else COR_NEUTRO if (pct_nfd_tsp or 0)>=2 else COR_OK),
+        unsafe_allow_html=True)
 
-    # Botão exportar NFD fora do Intelipost
+    st.caption("Notas que tiveram NFD TSP mas passaram por status de retirada foram retiradas dos totais acima (ver Debug no fim da pagina).")
+
+    # Botão exportar — discreto, abaixo dos cards
     if not nfd_nao_cruzou.empty:
         import io
         buf = io.BytesIO()
         nfd_nao_cruzou.to_excel(buf, index=False)
         buf.seek(0)
+        st.caption("NFD TSP sem match no Intelipost:")
         st.download_button(
-            "⬇️ Exportar NFD fora do Intelipost",
+            "⬇️ Exportar lista",
             data=buf,
             file_name="nfd_fora_intelipost.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -129,38 +162,7 @@ def render_tradeoff():
 
     data_corte = pd.Timestamp.today() - pd.Timedelta(days=dias)
 
-    # ── VISÃO GERAL DA EMPRESA FILTRADA (por período) ──
     df_todas = df_trade[df_trade["DataFinal"] >= data_corte].copy()
-
-    # NFD real filtrada por DataExpedicao
-    if not df_nfd_real.empty and "DataExpedicao" in df_nfd_real.columns:
-        df_nfd_periodo = df_nfd_real[
-            (df_nfd_real["TemNFD"] == True) &
-            (df_nfd_real["DataExpedicao"] >= data_corte)
-        ].copy()
-        df_nfd_fora_periodo = df_nfd_real[
-            (df_nfd_real["TemNFD"] == True) &
-            (df_nfd_real["DataExpedicao"] < data_corte)
-        ].copy()
-        nfd_periodo_val      = df_nfd_periodo["ValorNota"].sum()
-        nfd_fora_periodo_val = df_nfd_fora_periodo["ValorNota"].sum()
-    else:
-        nfd_periodo_val = nfd_fora_periodo_val = None
-
-    st.markdown(f"### Visao Geral da Empresa — Todas as Transportadoras | Ultimos {dias} dias")
-
-    emp_notas  = df_todas["ValorNota"].sum() if "ValorNota" in df_todas.columns else None
-    pct_nfd_p  = (nfd_periodo_val / emp_notas * 100) if (nfd_periodo_val and emp_notas) else None
-
-    p1,p2,p3,p4,p5 = st.columns(5)
-    p1.markdown(kpi_box("Total de Vendas (R$)",   fmt_brl(emp_notas)         if emp_notas         else "sem dado"), unsafe_allow_html=True)
-    p2.markdown(kpi_box("NFD TSP no Periodo (R$)",fmt_brl(nfd_periodo_val)   if nfd_periodo_val   else "sem dado", cor_valor=COR_ALERTA), unsafe_allow_html=True)
-    p3.markdown(kpi_box("% NFD / Vendas",         fmt_pct(pct_nfd_p)         if pct_nfd_p         else "sem dado",
-        cor_valor=COR_ALERTA if (pct_nfd_p or 0)>=5 else COR_NEUTRO if (pct_nfd_p or 0)>=2 else COR_OK), unsafe_allow_html=True)
-    p4.markdown(kpi_box("NFD fora do Periodo",    fmt_brl(nfd_fora_periodo_val) if nfd_fora_periodo_val else "sem dado", cor_valor=COR_NEUTRO,
-        delta=f"coletados antes de {dias} dias"), unsafe_allow_html=True)
-    p5.markdown(kpi_box("Pedidos c/ SLA",
-        fmt_int(df_todas["DentroPrazo"].sum()) if "DentroPrazo" in df_todas.columns else "—"), unsafe_allow_html=True)
 
     st.divider()
 
@@ -886,3 +888,58 @@ def render_tradeoff():
         f"10 piores codigos: " +
         ", ".join(f"{r['Transportadora']}/{r['CodigoTarifario']}" for _, r in top10_emp.iterrows())
     )
+    # ====================================================
+    # SECAO DEBUG (fim da pagina)
+    # ====================================================
+    st.divider()
+    st.markdown("## 🔧 Debug")
+    st.caption("Indicadores de apoio e qualidade de dados — nao entram nas analises principais.")
+
+    # Recalcula o conjunto "TSP mas nao e TSP" (caso a base tenha a flag)
+    if not df_nfd_real.empty and "TspMasNaoTsp" in df_nfd_real.columns:
+        nfd_tsp_mas_nao = df_nfd_real[df_nfd_real["TspMasNaoTsp"] == True].copy()
+    else:
+        nfd_tsp_mas_nao = pd.DataFrame()
+
+    total_tsp_mas_nao = nfd_tsp_mas_nao["ValorNota"].sum() if not nfd_tsp_mas_nao.empty else 0
+    qtd_tsp_mas_nao   = len(nfd_tsp_mas_nao)
+
+    dbg1, dbg2 = st.columns(2)
+
+    # Card: NFs sem Valor (movido do topo)
+    dbg1.markdown(kpi_box(
+        "NFs sem Valor (Intelipost)",
+        fmt_int(pedidos_sem_valor) if pedidos_sem_valor is not None else "sem dado",
+        cor_valor=COR_NEUTRO
+    ), unsafe_allow_html=True)
+
+    # Card: Categorizado como TSP mas nao e TSP
+    dbg2.markdown(kpi_box(
+        "Categorizado como TSP mas nao e TSP (R$)",
+        fmt_brl(total_tsp_mas_nao) if total_tsp_mas_nao else "sem dado",
+        cor_valor=COR_ALERTA
+    ), unsafe_allow_html=True)
+
+    st.markdown(
+        f"<div style='font-size:12px;color:#888;margin-top:6px'>"
+        f"{qtd_tsp_mas_nao:,} notas tiveram NFD TSP mas passaram por status de retirada "
+        f"(223 / 607 / 631 / 632 / 801 / 990). Sao retiradas dos totais de TSP da Visao Geral.</div>",
+        unsafe_allow_html=True
+    )
+
+    # Botao exportar — PedidoFormatado + valor (sem danfe, conforme LGPD)
+    if not nfd_tsp_mas_nao.empty:
+        import io
+        cols_export = [c for c in ["PedidoFormatado", "ValorNota", "Transportadora",
+                                   "DataExpedicao", "MotivoDevolucao", "StatusNaoTsp", "CruzouIntelipost"]
+                       if c in nfd_tsp_mas_nao.columns]
+        df_export_debug = nfd_tsp_mas_nao[cols_export].copy()
+        buf_dbg = io.BytesIO()
+        df_export_debug.to_excel(buf_dbg, index=False)
+        buf_dbg.seek(0)
+        st.download_button(
+            "⬇️ Exportar pedidos (categorizados como TSP mas nao sao)",
+            data=buf_dbg,
+            file_name="tsp_mas_nao_e_tsp.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
