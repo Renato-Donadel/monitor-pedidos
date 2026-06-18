@@ -1,15 +1,15 @@
 Data;Regra;Descricao;NOrders;Impacto_Total
-18/06/2026;420;Peso minimo J&T origem Cotia;9;28.67
+18/06/2026;420;Peso minimo J&T origem Cotia;8;25.64
 18/06/2026;421;Peso minimo J&T origem MG;4;6.8
 18/06/2026;422;Peso minimo J&T VGP;11;122.81
 18/06/2026;423;Bloqueio J&T peso minimo Serra;0;0.0
 18/06/2026;186;Bloqueia Carriers de Serra;0;0.0
 18/06/2026;187;Bloqueia Carriers em Cotia;0;0.0
 18/06/2026;212;;0;0.0
-18/06/2026;412;Bloqueio iMile VGP;278;822.72
-18/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;140;1514.07
+18/06/2026;412;Bloqueio iMile VGP;276;823.2
+18/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;137;1562.68
 18/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;36;463.25
-18/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;68;641.8
+18/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;67;693.2
 18/06/2026;198;Bloqueia Sedex de Cuaba;0;0.0
 18/06/2026;404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;0;0.0
 18/06/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;0;0.0
@@ -35,7 +35,7 @@ Data;Regra;Descricao;NOrders;Impacto_Total
 18/06/2026;234;Bloqueio ITALA;0;0.0
 18/06/2026;243;Bloqueia Itala em tudo exceto atrus Cotia;0;0.0
 18/06/2026;244;Bloqueia Itala em tudo exceto atrus origem VGP;0;0.0
-18/06/2026;274;Bloquieo de HEIST em várias TSP;13;511.03
+18/06/2026;274;Bloquieo de HEIST em várias TSP;17;778.69
 18/06/2026;382;Bloqueio gol e sedex em MG;0;0.0
 18/06/2026;389;Bloqueio bebidas, powerbank e perfume para Gol;0;0.0
 18/06/2026;390;Bloqueio bebidas, powerbank e perfume para Gol 2;0;0.0
@@ -48,10 +48,10 @@ Data;Regra;Descricao;NOrders;Impacto_Total
 18/06/2026;406;bloqueio EBB;0;0.0
 18/06/2026;407;bloqueio ebb;0;0.0
 18/06/2026;408;Bloqueio EBB;0;0.0
-18/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;186;2681.79
+18/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;187;2626.03
 18/06/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;0;0.0
 18/06/2026;411;Atrus - Apenas HEIST;0;0.0
-18/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;14;90.37
+18/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;13;88.83
 18/06/2026;38;Bloqueia Linha branca origem Serra de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;0;0.0
 18/06/2026;39;Bloqueia Linha branca origem Cotia de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;3;112.62
 18/06/2026;40;Bloqueia Linha branca todas as origens de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;4;113.55
