@@ -5,7 +5,8 @@ import plotly.graph_objects as go
 
 from utils import PASTA_DATA
 
-ARQ_REGRAS = os.path.join(PASTA_DATA, "Regras_Resultado.xlsx")
+ARQ_REGRAS  = os.path.join(PASTA_DATA, "Regras_Resultado.xlsx")
+ARQ_IMPACTO = os.path.join(PASTA_DATA, "Impacto_Financeiro.csv")
 
 
 @st.cache_data(ttl=60)
@@ -22,6 +23,22 @@ def carregar(path):
     except Exception:
         regra26_cots = pd.DataFrame()
     return resultado, violacoes, cotacoes, skus_novos, regra26_cots
+
+
+@st.cache_data(ttl=3600)
+def carregar_impacto(path):
+    """
+    Lê o CSV de impacto financeiro histórico.
+    TTL alto pois cotações por dia são fixas — dados só mudam ao rodar o ETL.
+    """
+    if not os.path.exists(path):
+        return pd.DataFrame()
+    df = pd.read_csv(path, sep=";")
+    df["Data"]   = pd.to_datetime(df["Data"], dayfirst=True, errors="coerce")
+    df["Regra"]  = pd.to_numeric(df["Regra"], errors="coerce").astype("Int64")
+    df["NOrders"]       = pd.to_numeric(df["NOrders"],       errors="coerce").fillna(0).astype(int)
+    df["Impacto_Total"] = pd.to_numeric(df["Impacto_Total"], errors="coerce").fillna(0.0)
+    return df.dropna(subset=["Data"])
 
 
 def render_regras():
@@ -161,3 +178,162 @@ def render_regras():
         st.dataframe(df_view.head(500), use_container_width=True)
     else:
         st.info("Sem cotações disponíveis.")
+
+    # ── Impacto Financeiro por Regra ──────────────────────────
+    st.markdown("---")
+    st.markdown("#### 💰 Impacto Financeiro por Regra")
+    st.caption(
+        "Custo de compliance: quanto foi pago a mais ao seguir cada regra de bloqueio "
+        "em comparação ao que teria custado usar a transportadora bloqueada, "
+        "nos casos em que ela era mais barata."
+    )
+
+    df_imp = carregar_impacto(ARQ_IMPACTO)
+
+    if df_imp.empty:
+        st.info("Nenhum dado de impacto disponível. Rode o `Regras.py` para gerar.")
+    else:
+        datas_disp = sorted(df_imp["Data"].dt.date.unique())
+
+        # ── Seletor de período ────────────────────────────────
+        col_d1, col_d2 = st.columns(2)
+        d_ini = col_d1.date_input(
+            "De", value=datas_disp[0],
+            min_value=datas_disp[0], max_value=datas_disp[-1],
+            key="imp_d_ini",
+        )
+        d_fim = col_d2.date_input(
+            "Até", value=datas_disp[-1],
+            min_value=datas_disp[0], max_value=datas_disp[-1],
+            key="imp_d_fim",
+        )
+
+        mask       = (df_imp["Data"].dt.date >= d_ini) & (df_imp["Data"].dt.date <= d_fim)
+        df_periodo = df_imp[mask].copy()
+
+        if df_periodo.empty:
+            st.warning("Nenhum dado no período selecionado.")
+        else:
+            n_dias          = (d_fim - d_ini).days + 1
+            total_impacto   = df_periodo["Impacto_Total"].sum()
+            total_orders    = df_periodo["NOrders"].sum()
+            media_dia       = total_impacto / n_dias if n_dias > 0 else 0
+
+            def brl(v):
+                return f"R$ {v:,.2f}".replace(",","X").replace(".",",").replace("X",".")
+
+            col_a, col_b, col_c, col_d = st.columns(4)
+            col_a.metric("💸 Impacto Total",          brl(total_impacto))
+            col_b.metric("📦 Pedidos Impactados",     f"{total_orders:,}")
+            col_c.metric("📅 Dias Analisados",        n_dias)
+            col_d.metric("📊 Média por Dia",           brl(media_dia))
+
+            # ── Barras: impacto por regra ──────────────────────
+            df_por_regra = (
+                df_periodo
+                .groupby(["Regra", "Descricao"], as_index=False)
+                .agg(Impacto_Total=("Impacto_Total","sum"), NOrders=("NOrders","sum"))
+            )
+            df_por_regra = df_por_regra[df_por_regra["Impacto_Total"] > 0].sort_values(
+                "Impacto_Total", ascending=True
+            )
+
+            if not df_por_regra.empty:
+                labels = (
+                    "Regra " + df_por_regra["Regra"].astype(str)
+                    + " — " + df_por_regra["Descricao"].str[:45]
+                )
+                fig_bar = go.Figure(go.Bar(
+                    y=labels,
+                    x=df_por_regra["Impacto_Total"],
+                    orientation="h",
+                    marker_color="#e63946",
+                    text=df_por_regra["Impacto_Total"].apply(brl),
+                    textposition="outside",
+                    customdata=df_por_regra["NOrders"],
+                    hovertemplate=(
+                        "<b>%{y}</b><br>"
+                        "Impacto: %{text}<br>"
+                        "Pedidos: %{customdata}<extra></extra>"
+                    ),
+                ))
+                fig_bar.update_layout(
+                    title=f"Custo de Compliance por Regra — {d_ini.strftime('%d/%m/%Y')} a {d_fim.strftime('%d/%m/%Y')}",
+                    xaxis_title="R$", yaxis_title="",
+                    height=max(300, len(df_por_regra) * 50 + 80),
+                    margin=dict(t=50, b=30, l=10, r=120),
+                    xaxis=dict(tickformat=",.2f"),
+                )
+                st.plotly_chart(fig_bar, use_container_width=True)
+
+            # ── Linha temporal ─────────────────────────────────
+            if len(datas_disp) > 1:
+                df_por_dia = (
+                    df_periodo
+                    .groupby("Data", as_index=False)["Impacto_Total"].sum()
+                    .sort_values("Data")
+                )
+                # Opcional: quebrar por regra no gráfico de linha
+                regras_com_impacto = sorted(
+                    df_periodo[df_periodo["Impacto_Total"] > 0]["Regra"].unique()
+                )
+                st.markdown("**Evolução diária do impacto financeiro**")
+                modo_linha = st.radio(
+                    "Visualizar por:", ["Total", "Por Regra"],
+                    horizontal=True, key="imp_modo_linha",
+                )
+
+                if modo_linha == "Total":
+                    fig_line = go.Figure(go.Scatter(
+                        x=df_por_dia["Data"],
+                        y=df_por_dia["Impacto_Total"],
+                        mode="lines+markers",
+                        line=dict(color="#e63946", width=2),
+                        fill="tozeroy",
+                        fillcolor="rgba(230,57,70,0.08)",
+                        name="Total",
+                        hovertemplate="%{x|%d/%m/%Y}<br>R$ %{y:,.2f}<extra></extra>",
+                    ))
+                else:
+                    fig_line = go.Figure()
+                    palette = [
+                        "#e63946","#457b9d","#2a9d8f","#e9c46a",
+                        "#f4a261","#264653","#6d6875","#b5838d",
+                    ]
+                    for i, reg in enumerate(regras_com_impacto):
+                        df_r = df_periodo[df_periodo["Regra"] == reg].groupby("Data", as_index=False)["Impacto_Total"].sum()
+                        desc_r = df_periodo[df_periodo["Regra"] == reg]["Descricao"].iloc[0]
+                        fig_line.add_trace(go.Scatter(
+                            x=df_r["Data"], y=df_r["Impacto_Total"],
+                            mode="lines+markers",
+                            name=f"R{reg}",
+                            line=dict(color=palette[i % len(palette)], width=2),
+                            hovertemplate=f"Regra {reg} — {desc_r[:30]}<br>%{{x|%d/%m/%Y}}<br>R$ %{{y:,.2f}}<extra></extra>",
+                        ))
+
+                fig_line.update_layout(
+                    xaxis_title="Data", yaxis_title="R$",
+                    height=320,
+                    margin=dict(t=20, b=30, l=10, r=10),
+                    legend=dict(orientation="h", y=-0.3),
+                    yaxis=dict(tickformat=",.2f"),
+                )
+                st.plotly_chart(fig_line, use_container_width=True)
+
+            # ── Tabela detalhada ───────────────────────────────
+            with st.expander("📊 Detalhamento completo por regra"):
+                df_det = (
+                    df_periodo
+                    .groupby(["Regra", "Descricao"], as_index=False)
+                    .agg(
+                        Pedidos_Impactados=("NOrders",       "sum"),
+                        Impacto_Total=     ("Impacto_Total", "sum"),
+                        Dias_com_Dados=    ("Data",          "nunique"),
+                    )
+                    .sort_values("Impacto_Total", ascending=False)
+                )
+                df_det["Impacto_Médio/Dia"] = (
+                    df_det["Impacto_Total"] / df_det["Dias_com_Dados"]
+                ).round(2)
+                df_det["Impacto_Total"]     = df_det["Impacto_Total"].round(2)
+                st.dataframe(df_det, use_container_width=True, hide_index=True)

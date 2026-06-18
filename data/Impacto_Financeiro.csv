@@ -1,0 +1,16 @@
+Data;Regra;Descricao;NOrders;Impacto_Total
+18/06/2026;420;Peso minimo J&T origem Cotia;15;93.34
+18/06/2026;421;Peso minimo J&T origem MG;4;85.63
+18/06/2026;422;Peso minimo J&T VGP;11;122.81
+18/06/2026;423;Bloqueio J&T peso minimo Serra;0;0.0
+18/06/2026;186;Bloqueia Carriers de Serra;0;0.0
+18/06/2026;187;Bloqueia Carriers em Cotia;0;0.0
+18/06/2026;212;;0;0.0
+18/06/2026;398;Bloquei imile VGP inicio;301;872.42
+18/06/2026;412;Bloqueio iMile VGP;301;872.42
+18/06/2026;393;Bloquear a Jalod em pedidos ate 20kg;172;1640.01
+18/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;43;496.55
+18/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;79;607.65
+18/06/2026;198;Bloqueia Sedex de Cuaba;0;0.0
+18/06/2026;404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;0;0.0
+18/06/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;0;0.0
