@@ -1,15 +1,435 @@
 Data;Regra;Descricao;NOrders;Impacto_Total
-18/06/2026;420;Peso minimo J&T origem Cotia;8;25.64
-18/06/2026;421;Peso minimo J&T origem MG;4;6.8
-18/06/2026;422;Peso minimo J&T VGP;11;122.81
+31/05/2026;420;Peso minimo J&T origem Cotia;31;89.54
+31/05/2026;421;Peso minimo J&T origem MG;43;937.76
+31/05/2026;422;Peso minimo J&T VGP;10;27.77
+31/05/2026;423;Bloqueio J&T peso minimo Serra;0;0.0
+31/05/2026;186;Bloqueia Carriers de Serra;0;0.0
+31/05/2026;187;Bloqueia Carriers em Cotia;0;0.0
+31/05/2026;212;;0;0.0
+31/05/2026;412;Bloqueio iMile VGP;84;647.54
+31/05/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;194;3801.9
+31/05/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;115;1497.97
+31/05/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;18;2004.55
+31/05/2026;198;Bloqueia Sedex de Cuaba;0;0.0
+31/05/2026;404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;0;0.0
+31/05/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;0;0.0
+31/05/2026;153;Bloqueia Cadeiras de itau de sair para Carriers, Dialogo, J&T, Magalu, TodoBrasil;0;0.0
+31/05/2026;166;Bloqueia Todo Brasil, iMile e Pajuçara com origem Serra de levar notebook;0;0.0
+31/05/2026;167;Bloqueia Magalu, com origem Cotia de levar carrinho de compras;0;0.0
+31/05/2026;170;Bloqueia Atrus em várias campamnhas especificas;0;0.0
+31/05/2026;181;Bloqueia várias transportadoras de coletar no escritorio;0;0.0
+31/05/2026;182;Bloqueia Magalu em uma lista de Cidades que eles cortaram ;3;544.45
+31/05/2026;1;Bloqueia MARYK das pesadas com origem Cotia;0;0.0
+31/05/2026;2;Bloqueia MARYK das pesadas de todas as origens;0;0.0
+31/05/2026;161;Bloqueia HPAMZ, HPB2W e HPMLU com origem Serra de sair por Sedex;0;0.0
+31/05/2026;162;Bloqueia HPAMZ, HPB2W e HPMLU com origem Coria de sair por Sedex;0;0.0
+31/05/2026;163;Bloqueia HPAMZ, HPB2W e HPMLU com todas as origens de sair por Sedex;0;0.0
+31/05/2026;190;Bloqueia BRBAY em Carriers, Atrus, todo brasil, Sedex, Eu entrego;1;6.2
+31/05/2026;206;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem Serra;0;0.0
+31/05/2026;313;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem MG;0;0.0
+31/05/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;0;0.0
+31/05/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;0;0.0
+31/05/2026;371;Bloqueia HUB09 em R3;0;0.0
+31/05/2026;372;Bloqueia HUB09 em R3;0;0.0
+31/05/2026;288;Bloquieo de HUB10 e jadlog;0;0.0
+31/05/2026;234;Bloqueio ITALA;0;0.0
+31/05/2026;243;Bloqueia Itala em tudo exceto atrus Cotia;0;0.0
+31/05/2026;244;Bloqueia Itala em tudo exceto atrus origem VGP;0;0.0
+31/05/2026;274;Bloquieo de HEIST em várias TSP;4;2084.74
+31/05/2026;382;Bloqueio gol e sedex em MG;0;0.0
+31/05/2026;389;Bloqueio bebidas, powerbank e perfume para Gol;0;0.0
+31/05/2026;390;Bloqueio bebidas, powerbank e perfume para Gol 2;0;0.0
+31/05/2026;391;Bloqueio Gol, bebidas, perfumes e powerbank 3;0;0.0
+31/05/2026;392;Bloqueio Gol, bebidas, perfumes e powerbank 3;0;0.0
+31/05/2026;401;Bloquieo campanhas azul para gol;0;0.0
+31/05/2026;394;Bloquear ebb para mcpor;0;0.0
+31/05/2026;402;Bloqueia EBB em tudo exceto Heineken e HUb;0;0.0
+31/05/2026;405;bloqueio EBB;0;0.0
+31/05/2026;406;bloqueio EBB;0;0.0
+31/05/2026;407;bloqueio ebb;0;0.0
+31/05/2026;408;Bloqueio EBB;0;0.0
+31/05/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;109;2259.38
+31/05/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;0;0.0
+31/05/2026;411;Atrus - Apenas HEIST;0;0.0
+31/05/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;41;271.16
+31/05/2026;38;Bloqueia Linha branca origem Serra de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;0;0.0
+31/05/2026;39;Bloqueia Linha branca origem Cotia de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;0;0.0
+31/05/2026;40;Bloqueia Linha branca todas as origens de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;1;4.22
+31/05/2026;298;Bloquieo de linha branca em 42 - JADLOG  x57 - Carriers  x90 - Jamef SP  x92 - JeT EXPRESS  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x164 - IMILE Standard  x195 - Azul linhas aereas  x com origem ES;0;0.0
+31/05/2026;82;Bloqueia TV origem Serra para 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;0;0.0
+31/05/2026;83;Bloqueia TV origem Cotia 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;0;0.0
+31/05/2026;84;Bloqueia TV Todas as origens 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x139 - EU ENTREGO SISTEMAS S/A  x;0;0.0
+01/06/2026;420;Peso minimo J&T origem Cotia;32;118.21
+01/06/2026;421;Peso minimo J&T origem MG;7;239.4
+01/06/2026;422;Peso minimo J&T VGP;13;65.37
+01/06/2026;423;Bloqueio J&T peso minimo Serra;0;0.0
+01/06/2026;186;Bloqueia Carriers de Serra;0;0.0
+01/06/2026;187;Bloqueia Carriers em Cotia;0;0.0
+01/06/2026;212;;0;0.0
+01/06/2026;412;Bloqueio iMile VGP;204;2689.99
+01/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;222;15559.87
+01/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;105;1858.16
+01/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;56;12865.75
+01/06/2026;198;Bloqueia Sedex de Cuaba;1;10.43
+01/06/2026;404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;0;0.0
+01/06/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;1;167.08
+01/06/2026;153;Bloqueia Cadeiras de itau de sair para Carriers, Dialogo, J&T, Magalu, TodoBrasil;0;0.0
+01/06/2026;166;Bloqueia Todo Brasil, iMile e Pajuçara com origem Serra de levar notebook;0;0.0
+01/06/2026;167;Bloqueia Magalu, com origem Cotia de levar carrinho de compras;0;0.0
+01/06/2026;170;Bloqueia Atrus em várias campamnhas especificas;0;0.0
+01/06/2026;181;Bloqueia várias transportadoras de coletar no escritorio;0;0.0
+01/06/2026;182;Bloqueia Magalu em uma lista de Cidades que eles cortaram ;1;13.46
+01/06/2026;1;Bloqueia MARYK das pesadas com origem Cotia;0;0.0
+01/06/2026;2;Bloqueia MARYK das pesadas de todas as origens;0;0.0
+01/06/2026;161;Bloqueia HPAMZ, HPB2W e HPMLU com origem Serra de sair por Sedex;0;0.0
+01/06/2026;162;Bloqueia HPAMZ, HPB2W e HPMLU com origem Coria de sair por Sedex;0;0.0
+01/06/2026;163;Bloqueia HPAMZ, HPB2W e HPMLU com todas as origens de sair por Sedex;0;0.0
+01/06/2026;190;Bloqueia BRBAY em Carriers, Atrus, todo brasil, Sedex, Eu entrego;3;66.73
+01/06/2026;206;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem Serra;0;0.0
+01/06/2026;313;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem MG;0;0.0
+01/06/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;3;196.94
+01/06/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;3;188.69
+01/06/2026;371;Bloqueia HUB09 em R3;0;0.0
+01/06/2026;372;Bloqueia HUB09 em R3;0;0.0
+01/06/2026;288;Bloquieo de HUB10 e jadlog;0;0.0
+01/06/2026;234;Bloqueio ITALA;0;0.0
+01/06/2026;243;Bloqueia Itala em tudo exceto atrus Cotia;0;0.0
+01/06/2026;244;Bloqueia Itala em tudo exceto atrus origem VGP;0;0.0
+01/06/2026;274;Bloquieo de HEIST em várias TSP;27;18347.18
+01/06/2026;382;Bloqueio gol e sedex em MG;1;1044.8
+01/06/2026;389;Bloqueio bebidas, powerbank e perfume para Gol;0;0.0
+01/06/2026;390;Bloqueio bebidas, powerbank e perfume para Gol 2;0;0.0
+01/06/2026;391;Bloqueio Gol, bebidas, perfumes e powerbank 3;0;0.0
+01/06/2026;392;Bloqueio Gol, bebidas, perfumes e powerbank 3;0;0.0
+01/06/2026;401;Bloquieo campanhas azul para gol;0;0.0
+01/06/2026;394;Bloquear ebb para mcpor;0;0.0
+01/06/2026;402;Bloqueia EBB em tudo exceto Heineken e HUb;1;40.44
+01/06/2026;405;bloqueio EBB;0;0.0
+01/06/2026;406;bloqueio EBB;0;0.0
+01/06/2026;407;bloqueio ebb;0;0.0
+01/06/2026;408;Bloqueio EBB;0;0.0
+01/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;193;5543.98
+01/06/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;0;0.0
+01/06/2026;411;Atrus - Apenas HEIST;0;0.0
+01/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;19;209.05
+01/06/2026;38;Bloqueia Linha branca origem Serra de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;0;0.0
+01/06/2026;39;Bloqueia Linha branca origem Cotia de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;0;0.0
+01/06/2026;40;Bloqueia Linha branca todas as origens de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;0;0.0
+01/06/2026;298;Bloquieo de linha branca em 42 - JADLOG  x57 - Carriers  x90 - Jamef SP  x92 - JeT EXPRESS  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x164 - IMILE Standard  x195 - Azul linhas aereas  x com origem ES;0;0.0
+01/06/2026;82;Bloqueia TV origem Serra para 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;0;0.0
+01/06/2026;83;Bloqueia TV origem Cotia 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;0;0.0
+01/06/2026;84;Bloqueia TV Todas as origens 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x139 - EU ENTREGO SISTEMAS S/A  x;1;89.81
+12/06/2026;420;Peso minimo J&T origem Cotia;9;81.54
+12/06/2026;421;Peso minimo J&T origem MG;6;206.38
+12/06/2026;422;Peso minimo J&T VGP;6;9.44
+12/06/2026;423;Bloqueio J&T peso minimo Serra;0;0.0
+12/06/2026;186;Bloqueia Carriers de Serra;0;0.0
+12/06/2026;187;Bloqueia Carriers em Cotia;0;0.0
+12/06/2026;212;;0;0.0
+12/06/2026;412;Bloqueio iMile VGP;282;1360.92
+12/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;90;1350.11
+12/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;19;423.07
+12/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;56;832.05
+12/06/2026;198;Bloqueia Sedex de Cuaba;0;0.0
+12/06/2026;404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;0;0.0
+12/06/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;0;0.0
+12/06/2026;153;Bloqueia Cadeiras de itau de sair para Carriers, Dialogo, J&T, Magalu, TodoBrasil;0;0.0
+12/06/2026;166;Bloqueia Todo Brasil, iMile e Pajuçara com origem Serra de levar notebook;0;0.0
+12/06/2026;167;Bloqueia Magalu, com origem Cotia de levar carrinho de compras;0;0.0
+12/06/2026;170;Bloqueia Atrus em várias campamnhas especificas;0;0.0
+12/06/2026;181;Bloqueia várias transportadoras de coletar no escritorio;0;0.0
+12/06/2026;182;Bloqueia Magalu em uma lista de Cidades que eles cortaram ;4;96.55
+12/06/2026;1;Bloqueia MARYK das pesadas com origem Cotia;0;0.0
+12/06/2026;2;Bloqueia MARYK das pesadas de todas as origens;0;0.0
+12/06/2026;161;Bloqueia HPAMZ, HPB2W e HPMLU com origem Serra de sair por Sedex;0;0.0
+12/06/2026;162;Bloqueia HPAMZ, HPB2W e HPMLU com origem Coria de sair por Sedex;0;0.0
+12/06/2026;163;Bloqueia HPAMZ, HPB2W e HPMLU com todas as origens de sair por Sedex;0;0.0
+12/06/2026;190;Bloqueia BRBAY em Carriers, Atrus, todo brasil, Sedex, Eu entrego;1;6.53
+12/06/2026;206;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem Serra;0;0.0
+12/06/2026;313;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem MG;0;0.0
+12/06/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;104;1139.0
+12/06/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;51;554.09
+12/06/2026;371;Bloqueia HUB09 em R3;31;172.6
+12/06/2026;372;Bloqueia HUB09 em R3;31;172.6
+12/06/2026;288;Bloquieo de HUB10 e jadlog;1;9.59
+12/06/2026;234;Bloqueio ITALA;0;0.0
+12/06/2026;243;Bloqueia Itala em tudo exceto atrus Cotia;0;0.0
+12/06/2026;244;Bloqueia Itala em tudo exceto atrus origem VGP;0;0.0
+12/06/2026;274;Bloquieo de HEIST em várias TSP;2;66.28
+12/06/2026;382;Bloqueio gol e sedex em MG;0;0.0
+12/06/2026;389;Bloqueio bebidas, powerbank e perfume para Gol;0;0.0
+12/06/2026;390;Bloqueio bebidas, powerbank e perfume para Gol 2;0;0.0
+12/06/2026;391;Bloqueio Gol, bebidas, perfumes e powerbank 3;0;0.0
+12/06/2026;392;Bloqueio Gol, bebidas, perfumes e powerbank 3;0;0.0
+12/06/2026;401;Bloquieo campanhas azul para gol;0;0.0
+12/06/2026;394;Bloquear ebb para mcpor;0;0.0
+12/06/2026;402;Bloqueia EBB em tudo exceto Heineken e HUb;0;0.0
+12/06/2026;405;bloqueio EBB;0;0.0
+12/06/2026;406;bloqueio EBB;0;0.0
+12/06/2026;407;bloqueio ebb;0;0.0
+12/06/2026;408;Bloqueio EBB;0;0.0
+12/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;142;1913.05
+12/06/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;0;0.0
+12/06/2026;411;Atrus - Apenas HEIST;0;0.0
+12/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;8;56.62
+12/06/2026;38;Bloqueia Linha branca origem Serra de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;0;0.0
+12/06/2026;39;Bloqueia Linha branca origem Cotia de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;0;0.0
+12/06/2026;40;Bloqueia Linha branca todas as origens de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;0;0.0
+12/06/2026;298;Bloquieo de linha branca em 42 - JADLOG  x57 - Carriers  x90 - Jamef SP  x92 - JeT EXPRESS  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x164 - IMILE Standard  x195 - Azul linhas aereas  x com origem ES;0;0.0
+12/06/2026;82;Bloqueia TV origem Serra para 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;0;0.0
+12/06/2026;83;Bloqueia TV origem Cotia 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;0;0.0
+12/06/2026;84;Bloqueia TV Todas as origens 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x139 - EU ENTREGO SISTEMAS S/A  x;0;0.0
+13/06/2026;420;Peso minimo J&T origem Cotia;13;36.16
+13/06/2026;421;Peso minimo J&T origem MG;7;287.45
+13/06/2026;422;Peso minimo J&T VGP;3;22.4
+13/06/2026;423;Bloqueio J&T peso minimo Serra;0;0.0
+13/06/2026;186;Bloqueia Carriers de Serra;0;0.0
+13/06/2026;187;Bloqueia Carriers em Cotia;0;0.0
+13/06/2026;212;;0;0.0
+13/06/2026;412;Bloqueio iMile VGP;140;256.67
+13/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;71;541.25
+13/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;21;338.61
+13/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;24;80.84
+13/06/2026;198;Bloqueia Sedex de Cuaba;0;0.0
+13/06/2026;404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;0;0.0
+13/06/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;0;0.0
+13/06/2026;153;Bloqueia Cadeiras de itau de sair para Carriers, Dialogo, J&T, Magalu, TodoBrasil;0;0.0
+13/06/2026;166;Bloqueia Todo Brasil, iMile e Pajuçara com origem Serra de levar notebook;0;0.0
+13/06/2026;167;Bloqueia Magalu, com origem Cotia de levar carrinho de compras;0;0.0
+13/06/2026;170;Bloqueia Atrus em várias campamnhas especificas;0;0.0
+13/06/2026;181;Bloqueia várias transportadoras de coletar no escritorio;0;0.0
+13/06/2026;182;Bloqueia Magalu em uma lista de Cidades que eles cortaram ;0;0.0
+13/06/2026;1;Bloqueia MARYK das pesadas com origem Cotia;0;0.0
+13/06/2026;2;Bloqueia MARYK das pesadas de todas as origens;0;0.0
+13/06/2026;161;Bloqueia HPAMZ, HPB2W e HPMLU com origem Serra de sair por Sedex;0;0.0
+13/06/2026;162;Bloqueia HPAMZ, HPB2W e HPMLU com origem Coria de sair por Sedex;0;0.0
+13/06/2026;163;Bloqueia HPAMZ, HPB2W e HPMLU com todas as origens de sair por Sedex;0;0.0
+13/06/2026;190;Bloqueia BRBAY em Carriers, Atrus, todo brasil, Sedex, Eu entrego;0;0.0
+13/06/2026;206;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem Serra;0;0.0
+13/06/2026;313;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem MG;0;0.0
+13/06/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;0;0.0
+13/06/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;0;0.0
+13/06/2026;371;Bloqueia HUB09 em R3;0;0.0
+13/06/2026;372;Bloqueia HUB09 em R3;0;0.0
+13/06/2026;288;Bloquieo de HUB10 e jadlog;0;0.0
+13/06/2026;234;Bloqueio ITALA;0;0.0
+13/06/2026;243;Bloqueia Itala em tudo exceto atrus Cotia;0;0.0
+13/06/2026;244;Bloqueia Itala em tudo exceto atrus origem VGP;0;0.0
+13/06/2026;274;Bloquieo de HEIST em várias TSP;2;168.2
+13/06/2026;382;Bloqueio gol e sedex em MG;0;0.0
+13/06/2026;389;Bloqueio bebidas, powerbank e perfume para Gol;0;0.0
+13/06/2026;390;Bloqueio bebidas, powerbank e perfume para Gol 2;0;0.0
+13/06/2026;391;Bloqueio Gol, bebidas, perfumes e powerbank 3;0;0.0
+13/06/2026;392;Bloqueio Gol, bebidas, perfumes e powerbank 3;0;0.0
+13/06/2026;401;Bloquieo campanhas azul para gol;0;0.0
+13/06/2026;394;Bloquear ebb para mcpor;0;0.0
+13/06/2026;402;Bloqueia EBB em tudo exceto Heineken e HUb;0;0.0
+13/06/2026;405;bloqueio EBB;0;0.0
+13/06/2026;406;bloqueio EBB;0;0.0
+13/06/2026;407;bloqueio ebb;0;0.0
+13/06/2026;408;Bloqueio EBB;0;0.0
+13/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;100;712.37
+13/06/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;0;0.0
+13/06/2026;411;Atrus - Apenas HEIST;0;0.0
+13/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;14;92.11
+13/06/2026;38;Bloqueia Linha branca origem Serra de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;0;0.0
+13/06/2026;39;Bloqueia Linha branca origem Cotia de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;0;0.0
+13/06/2026;40;Bloqueia Linha branca todas as origens de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;0;0.0
+13/06/2026;298;Bloquieo de linha branca em 42 - JADLOG  x57 - Carriers  x90 - Jamef SP  x92 - JeT EXPRESS  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x164 - IMILE Standard  x195 - Azul linhas aereas  x com origem ES;0;0.0
+13/06/2026;82;Bloqueia TV origem Serra para 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;0;0.0
+13/06/2026;83;Bloqueia TV origem Cotia 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;0;0.0
+13/06/2026;84;Bloqueia TV Todas as origens 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x139 - EU ENTREGO SISTEMAS S/A  x;0;0.0
+14/06/2026;420;Peso minimo J&T origem Cotia;46;196.18
+14/06/2026;421;Peso minimo J&T origem MG;26;511.02
+14/06/2026;422;Peso minimo J&T VGP;6;50.45
+14/06/2026;423;Bloqueio J&T peso minimo Serra;0;0.0
+14/06/2026;186;Bloqueia Carriers de Serra;0;0.0
+14/06/2026;187;Bloqueia Carriers em Cotia;0;0.0
+14/06/2026;212;;0;0.0
+14/06/2026;412;Bloqueio iMile VGP;195;296.43
+14/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;195;1812.18
+14/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;64;1106.96
+14/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;25;131.48
+14/06/2026;198;Bloqueia Sedex de Cuaba;0;0.0
+14/06/2026;404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;0;0.0
+14/06/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;0;0.0
+14/06/2026;153;Bloqueia Cadeiras de itau de sair para Carriers, Dialogo, J&T, Magalu, TodoBrasil;0;0.0
+14/06/2026;166;Bloqueia Todo Brasil, iMile e Pajuçara com origem Serra de levar notebook;0;0.0
+14/06/2026;167;Bloqueia Magalu, com origem Cotia de levar carrinho de compras;0;0.0
+14/06/2026;170;Bloqueia Atrus em várias campamnhas especificas;0;0.0
+14/06/2026;181;Bloqueia várias transportadoras de coletar no escritorio;0;0.0
+14/06/2026;182;Bloqueia Magalu em uma lista de Cidades que eles cortaram ;0;0.0
+14/06/2026;1;Bloqueia MARYK das pesadas com origem Cotia;0;0.0
+14/06/2026;2;Bloqueia MARYK das pesadas de todas as origens;0;0.0
+14/06/2026;161;Bloqueia HPAMZ, HPB2W e HPMLU com origem Serra de sair por Sedex;0;0.0
+14/06/2026;162;Bloqueia HPAMZ, HPB2W e HPMLU com origem Coria de sair por Sedex;0;0.0
+14/06/2026;163;Bloqueia HPAMZ, HPB2W e HPMLU com todas as origens de sair por Sedex;0;0.0
+14/06/2026;190;Bloqueia BRBAY em Carriers, Atrus, todo brasil, Sedex, Eu entrego;0;0.0
+14/06/2026;206;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem Serra;0;0.0
+14/06/2026;313;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem MG;0;0.0
+14/06/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;0;0.0
+14/06/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;0;0.0
+14/06/2026;371;Bloqueia HUB09 em R3;0;0.0
+14/06/2026;372;Bloqueia HUB09 em R3;0;0.0
+14/06/2026;288;Bloquieo de HUB10 e jadlog;0;0.0
+14/06/2026;234;Bloqueio ITALA;0;0.0
+14/06/2026;243;Bloqueia Itala em tudo exceto atrus Cotia;0;0.0
+14/06/2026;244;Bloqueia Itala em tudo exceto atrus origem VGP;0;0.0
+14/06/2026;274;Bloquieo de HEIST em várias TSP;2;185.56
+14/06/2026;382;Bloqueio gol e sedex em MG;0;0.0
+14/06/2026;389;Bloqueio bebidas, powerbank e perfume para Gol;0;0.0
+14/06/2026;390;Bloqueio bebidas, powerbank e perfume para Gol 2;0;0.0
+14/06/2026;391;Bloqueio Gol, bebidas, perfumes e powerbank 3;0;0.0
+14/06/2026;392;Bloqueio Gol, bebidas, perfumes e powerbank 3;0;0.0
+14/06/2026;401;Bloquieo campanhas azul para gol;0;0.0
+14/06/2026;394;Bloquear ebb para mcpor;0;0.0
+14/06/2026;402;Bloqueia EBB em tudo exceto Heineken e HUb;0;0.0
+14/06/2026;405;bloqueio EBB;0;0.0
+14/06/2026;406;bloqueio EBB;0;0.0
+14/06/2026;407;bloqueio ebb;0;0.0
+14/06/2026;408;Bloqueio EBB;0;0.0
+14/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;168;1870.06
+14/06/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;0;0.0
+14/06/2026;411;Atrus - Apenas HEIST;0;0.0
+14/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;70;430.11
+14/06/2026;38;Bloqueia Linha branca origem Serra de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;0;0.0
+14/06/2026;39;Bloqueia Linha branca origem Cotia de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;0;0.0
+14/06/2026;40;Bloqueia Linha branca todas as origens de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;1;1.42
+14/06/2026;298;Bloquieo de linha branca em 42 - JADLOG  x57 - Carriers  x90 - Jamef SP  x92 - JeT EXPRESS  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x164 - IMILE Standard  x195 - Azul linhas aereas  x com origem ES;0;0.0
+14/06/2026;82;Bloqueia TV origem Serra para 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;0;0.0
+14/06/2026;83;Bloqueia TV origem Cotia 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;0;0.0
+14/06/2026;84;Bloqueia TV Todas as origens 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x139 - EU ENTREGO SISTEMAS S/A  x;0;0.0
+15/06/2026;420;Peso minimo J&T origem Cotia;35;264.1
+15/06/2026;421;Peso minimo J&T origem MG;15;316.42
+15/06/2026;422;Peso minimo J&T VGP;10;70.06
+15/06/2026;423;Bloqueio J&T peso minimo Serra;0;0.0
+15/06/2026;186;Bloqueia Carriers de Serra;0;0.0
+15/06/2026;187;Bloqueia Carriers em Cotia;0;0.0
+15/06/2026;212;;0;0.0
+15/06/2026;412;Bloqueio iMile VGP;434;1020.9
+15/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;215;2229.51
+15/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;92;1110.97
+15/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;52;487.77
+15/06/2026;198;Bloqueia Sedex de Cuaba;0;0.0
+15/06/2026;404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;0;0.0
+15/06/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;0;0.0
+15/06/2026;153;Bloqueia Cadeiras de itau de sair para Carriers, Dialogo, J&T, Magalu, TodoBrasil;0;0.0
+15/06/2026;166;Bloqueia Todo Brasil, iMile e Pajuçara com origem Serra de levar notebook;0;0.0
+15/06/2026;167;Bloqueia Magalu, com origem Cotia de levar carrinho de compras;0;0.0
+15/06/2026;170;Bloqueia Atrus em várias campamnhas especificas;0;0.0
+15/06/2026;181;Bloqueia várias transportadoras de coletar no escritorio;0;0.0
+15/06/2026;182;Bloqueia Magalu em uma lista de Cidades que eles cortaram ;1;6.08
+15/06/2026;1;Bloqueia MARYK das pesadas com origem Cotia;0;0.0
+15/06/2026;2;Bloqueia MARYK das pesadas de todas as origens;0;0.0
+15/06/2026;161;Bloqueia HPAMZ, HPB2W e HPMLU com origem Serra de sair por Sedex;0;0.0
+15/06/2026;162;Bloqueia HPAMZ, HPB2W e HPMLU com origem Coria de sair por Sedex;0;0.0
+15/06/2026;163;Bloqueia HPAMZ, HPB2W e HPMLU com todas as origens de sair por Sedex;0;0.0
+15/06/2026;190;Bloqueia BRBAY em Carriers, Atrus, todo brasil, Sedex, Eu entrego;1;21.38
+15/06/2026;206;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem Serra;0;0.0
+15/06/2026;313;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem MG;0;0.0
+15/06/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;3;27.48
+15/06/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;2;12.66
+15/06/2026;371;Bloqueia HUB09 em R3;0;0.0
+15/06/2026;372;Bloqueia HUB09 em R3;0;0.0
+15/06/2026;288;Bloquieo de HUB10 e jadlog;0;0.0
+15/06/2026;234;Bloqueio ITALA;0;0.0
+15/06/2026;243;Bloqueia Itala em tudo exceto atrus Cotia;0;0.0
+15/06/2026;244;Bloqueia Itala em tudo exceto atrus origem VGP;0;0.0
+15/06/2026;274;Bloquieo de HEIST em várias TSP;5;280.25
+15/06/2026;382;Bloqueio gol e sedex em MG;0;0.0
+15/06/2026;389;Bloqueio bebidas, powerbank e perfume para Gol;0;0.0
+15/06/2026;390;Bloqueio bebidas, powerbank e perfume para Gol 2;0;0.0
+15/06/2026;391;Bloqueio Gol, bebidas, perfumes e powerbank 3;0;0.0
+15/06/2026;392;Bloqueio Gol, bebidas, perfumes e powerbank 3;0;0.0
+15/06/2026;401;Bloquieo campanhas azul para gol;0;0.0
+15/06/2026;394;Bloquear ebb para mcpor;0;0.0
+15/06/2026;402;Bloqueia EBB em tudo exceto Heineken e HUb;0;0.0
+15/06/2026;405;bloqueio EBB;0;0.0
+15/06/2026;406;bloqueio EBB;0;0.0
+15/06/2026;407;bloqueio ebb;0;0.0
+15/06/2026;408;Bloqueio EBB;0;0.0
+15/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;255;3236.34
+15/06/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;0;0.0
+15/06/2026;411;Atrus - Apenas HEIST;0;0.0
+15/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;42;416.19
+15/06/2026;38;Bloqueia Linha branca origem Serra de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;0;0.0
+15/06/2026;39;Bloqueia Linha branca origem Cotia de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;0;0.0
+15/06/2026;40;Bloqueia Linha branca todas as origens de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;2;10.41
+15/06/2026;298;Bloquieo de linha branca em 42 - JADLOG  x57 - Carriers  x90 - Jamef SP  x92 - JeT EXPRESS  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x164 - IMILE Standard  x195 - Azul linhas aereas  x com origem ES;0;0.0
+15/06/2026;82;Bloqueia TV origem Serra para 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;0;0.0
+15/06/2026;83;Bloqueia TV origem Cotia 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;0;0.0
+15/06/2026;84;Bloqueia TV Todas as origens 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x139 - EU ENTREGO SISTEMAS S/A  x;0;0.0
+16/06/2026;420;Peso minimo J&T origem Cotia;52;289.89
+16/06/2026;421;Peso minimo J&T origem MG;22;329.3
+16/06/2026;422;Peso minimo J&T VGP;7;34.09
+16/06/2026;423;Bloqueio J&T peso minimo Serra;0;0.0
+16/06/2026;186;Bloqueia Carriers de Serra;0;0.0
+16/06/2026;187;Bloqueia Carriers em Cotia;0;0.0
+16/06/2026;212;;0;0.0
+16/06/2026;412;Bloqueio iMile VGP;441;2142.54
+16/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;480;4842.47
+16/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;109;1900.55
+16/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;99;1235.36
+16/06/2026;198;Bloqueia Sedex de Cuaba;2;40.94
+16/06/2026;404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;0;0.0
+16/06/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;2;148.07
+16/06/2026;153;Bloqueia Cadeiras de itau de sair para Carriers, Dialogo, J&T, Magalu, TodoBrasil;0;0.0
+16/06/2026;166;Bloqueia Todo Brasil, iMile e Pajuçara com origem Serra de levar notebook;0;0.0
+16/06/2026;167;Bloqueia Magalu, com origem Cotia de levar carrinho de compras;0;0.0
+16/06/2026;170;Bloqueia Atrus em várias campamnhas especificas;0;0.0
+16/06/2026;181;Bloqueia várias transportadoras de coletar no escritorio;0;0.0
+16/06/2026;182;Bloqueia Magalu em uma lista de Cidades que eles cortaram ;0;0.0
+16/06/2026;1;Bloqueia MARYK das pesadas com origem Cotia;0;0.0
+16/06/2026;2;Bloqueia MARYK das pesadas de todas as origens;0;0.0
+16/06/2026;161;Bloqueia HPAMZ, HPB2W e HPMLU com origem Serra de sair por Sedex;0;0.0
+16/06/2026;162;Bloqueia HPAMZ, HPB2W e HPMLU com origem Coria de sair por Sedex;0;0.0
+16/06/2026;163;Bloqueia HPAMZ, HPB2W e HPMLU com todas as origens de sair por Sedex;0;0.0
+16/06/2026;190;Bloqueia BRBAY em Carriers, Atrus, todo brasil, Sedex, Eu entrego;3;81.09
+16/06/2026;206;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem Serra;0;0.0
+16/06/2026;313;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem MG;0;0.0
+16/06/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;62;1213.53
+16/06/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;32;916.55
+16/06/2026;371;Bloqueia HUB09 em R3;15;625.03
+16/06/2026;372;Bloqueia HUB09 em R3;15;625.03
+16/06/2026;288;Bloquieo de HUB10 e jadlog;0;0.0
+16/06/2026;234;Bloqueio ITALA;0;0.0
+16/06/2026;243;Bloqueia Itala em tudo exceto atrus Cotia;0;0.0
+16/06/2026;244;Bloqueia Itala em tudo exceto atrus origem VGP;0;0.0
+16/06/2026;274;Bloquieo de HEIST em várias TSP;13;504.04
+16/06/2026;382;Bloqueio gol e sedex em MG;3;31.83
+16/06/2026;389;Bloqueio bebidas, powerbank e perfume para Gol;0;0.0
+16/06/2026;390;Bloqueio bebidas, powerbank e perfume para Gol 2;0;0.0
+16/06/2026;391;Bloqueio Gol, bebidas, perfumes e powerbank 3;0;0.0
+16/06/2026;392;Bloqueio Gol, bebidas, perfumes e powerbank 3;0;0.0
+16/06/2026;401;Bloquieo campanhas azul para gol;0;0.0
+16/06/2026;394;Bloquear ebb para mcpor;0;0.0
+16/06/2026;402;Bloqueia EBB em tudo exceto Heineken e HUb;0;0.0
+16/06/2026;405;bloqueio EBB;0;0.0
+16/06/2026;406;bloqueio EBB;0;0.0
+16/06/2026;407;bloqueio ebb;0;0.0
+16/06/2026;408;Bloqueio EBB;0;0.0
+16/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;340;6272.81
+16/06/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;0;0.0
+16/06/2026;411;Atrus - Apenas HEIST;0;0.0
+16/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;199;1007.94
+16/06/2026;38;Bloqueia Linha branca origem Serra de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;0;0.0
+16/06/2026;39;Bloqueia Linha branca origem Cotia de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;0;0.0
+16/06/2026;40;Bloqueia Linha branca todas as origens de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;1;2.92
+16/06/2026;298;Bloquieo de linha branca em 42 - JADLOG  x57 - Carriers  x90 - Jamef SP  x92 - JeT EXPRESS  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x164 - IMILE Standard  x195 - Azul linhas aereas  x com origem ES;0;0.0
+16/06/2026;82;Bloqueia TV origem Serra para 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;0;0.0
+16/06/2026;83;Bloqueia TV origem Cotia 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;0;0.0
+16/06/2026;84;Bloqueia TV Todas as origens 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x139 - EU ENTREGO SISTEMAS S/A  x;0;0.0
+18/06/2026;420;Peso minimo J&T origem Cotia;5;12.36
+18/06/2026;421;Peso minimo J&T origem MG;7;10.77
+18/06/2026;422;Peso minimo J&T VGP;1;0.4
 18/06/2026;423;Bloqueio J&T peso minimo Serra;0;0.0
 18/06/2026;186;Bloqueia Carriers de Serra;0;0.0
 18/06/2026;187;Bloqueia Carriers em Cotia;0;0.0
 18/06/2026;212;;0;0.0
-18/06/2026;412;Bloqueio iMile VGP;276;823.2
-18/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;137;1562.68
-18/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;36;463.25
-18/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;67;693.2
+18/06/2026;412;Bloqueio iMile VGP;109;171.55
+18/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;53;581.17
+18/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;7;161.5
+18/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;18;205.73
 18/06/2026;198;Bloqueia Sedex de Cuaba;0;0.0
 18/06/2026;404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;0;0.0
 18/06/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;0;0.0
@@ -24,18 +444,18 @@ Data;Regra;Descricao;NOrders;Impacto_Total
 18/06/2026;161;Bloqueia HPAMZ, HPB2W e HPMLU com origem Serra de sair por Sedex;0;0.0
 18/06/2026;162;Bloqueia HPAMZ, HPB2W e HPMLU com origem Coria de sair por Sedex;0;0.0
 18/06/2026;163;Bloqueia HPAMZ, HPB2W e HPMLU com todas as origens de sair por Sedex;0;0.0
-18/06/2026;190;Bloqueia BRBAY em Carriers, Atrus, todo brasil, Sedex, Eu entrego;1;4.6
+18/06/2026;190;Bloqueia BRBAY em Carriers, Atrus, todo brasil, Sedex, Eu entrego;1;92.34
 18/06/2026;206;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem Serra;0;0.0
 18/06/2026;313;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem MG;0;0.0
-18/06/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;28;398.46
-18/06/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;28;321.2
-18/06/2026;371;Bloqueia HUB09 em R3;17;87.21
-18/06/2026;372;Bloqueia HUB09 em R3;17;87.21
+18/06/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;0;0.0
+18/06/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;0;0.0
+18/06/2026;371;Bloqueia HUB09 em R3;0;0.0
+18/06/2026;372;Bloqueia HUB09 em R3;0;0.0
 18/06/2026;288;Bloquieo de HUB10 e jadlog;0;0.0
 18/06/2026;234;Bloqueio ITALA;0;0.0
 18/06/2026;243;Bloqueia Itala em tudo exceto atrus Cotia;0;0.0
 18/06/2026;244;Bloqueia Itala em tudo exceto atrus origem VGP;0;0.0
-18/06/2026;274;Bloquieo de HEIST em várias TSP;17;778.69
+18/06/2026;274;Bloquieo de HEIST em várias TSP;4;312.36
 18/06/2026;382;Bloqueio gol e sedex em MG;0;0.0
 18/06/2026;389;Bloqueio bebidas, powerbank e perfume para Gol;0;0.0
 18/06/2026;390;Bloqueio bebidas, powerbank e perfume para Gol 2;0;0.0
@@ -48,14 +468,74 @@ Data;Regra;Descricao;NOrders;Impacto_Total
 18/06/2026;406;bloqueio EBB;0;0.0
 18/06/2026;407;bloqueio ebb;0;0.0
 18/06/2026;408;Bloqueio EBB;0;0.0
-18/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;187;2626.03
+18/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;56;794.07
 18/06/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;0;0.0
 18/06/2026;411;Atrus - Apenas HEIST;0;0.0
-18/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;13;88.83
+18/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;15;17.62
 18/06/2026;38;Bloqueia Linha branca origem Serra de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;0;0.0
-18/06/2026;39;Bloqueia Linha branca origem Cotia de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;3;112.62
-18/06/2026;40;Bloqueia Linha branca todas as origens de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;4;113.55
+18/06/2026;39;Bloqueia Linha branca origem Cotia de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;0;0.0
+18/06/2026;40;Bloqueia Linha branca todas as origens de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;0;0.0
 18/06/2026;298;Bloquieo de linha branca em 42 - JADLOG  x57 - Carriers  x90 - Jamef SP  x92 - JeT EXPRESS  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x164 - IMILE Standard  x195 - Azul linhas aereas  x com origem ES;0;0.0
 18/06/2026;82;Bloqueia TV origem Serra para 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;0;0.0
 18/06/2026;83;Bloqueia TV origem Cotia 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;0;0.0
-18/06/2026;84;Bloqueia TV Todas as origens 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x139 - EU ENTREGO SISTEMAS S/A  x;1;192.32
+18/06/2026;84;Bloqueia TV Todas as origens 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x139 - EU ENTREGO SISTEMAS S/A  x;0;0.0
+19/06/2026;420;Peso minimo J&T origem Cotia;11;52.42
+19/06/2026;421;Peso minimo J&T origem MG;10;27.67
+19/06/2026;422;Peso minimo J&T VGP;4;8.39
+19/06/2026;423;Bloqueio J&T peso minimo Serra;0;0.0
+19/06/2026;186;Bloqueia Carriers de Serra;0;0.0
+19/06/2026;187;Bloqueia Carriers em Cotia;0;0.0
+19/06/2026;212;;0;0.0
+19/06/2026;412;Bloqueio iMile VGP;359;1537.41
+19/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;146;1682.21
+19/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;20;219.38
+19/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;71;1144.95
+19/06/2026;198;Bloqueia Sedex de Cuaba;0;0.0
+19/06/2026;404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;0;0.0
+19/06/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;0;0.0
+19/06/2026;153;Bloqueia Cadeiras de itau de sair para Carriers, Dialogo, J&T, Magalu, TodoBrasil;0;0.0
+19/06/2026;166;Bloqueia Todo Brasil, iMile e Pajuçara com origem Serra de levar notebook;0;0.0
+19/06/2026;167;Bloqueia Magalu, com origem Cotia de levar carrinho de compras;0;0.0
+19/06/2026;170;Bloqueia Atrus em várias campamnhas especificas;0;0.0
+19/06/2026;181;Bloqueia várias transportadoras de coletar no escritorio;0;0.0
+19/06/2026;182;Bloqueia Magalu em uma lista de Cidades que eles cortaram ;1;0.32
+19/06/2026;1;Bloqueia MARYK das pesadas com origem Cotia;0;0.0
+19/06/2026;2;Bloqueia MARYK das pesadas de todas as origens;0;0.0
+19/06/2026;161;Bloqueia HPAMZ, HPB2W e HPMLU com origem Serra de sair por Sedex;0;0.0
+19/06/2026;162;Bloqueia HPAMZ, HPB2W e HPMLU com origem Coria de sair por Sedex;0;0.0
+19/06/2026;163;Bloqueia HPAMZ, HPB2W e HPMLU com todas as origens de sair por Sedex;0;0.0
+19/06/2026;190;Bloqueia BRBAY em Carriers, Atrus, todo brasil, Sedex, Eu entrego;1;92.34
+19/06/2026;206;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem Serra;0;0.0
+19/06/2026;313;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem MG;0;0.0
+19/06/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;81;1118.33
+19/06/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;44;681.69
+19/06/2026;371;Bloqueia HUB09 em R3;21;295.12
+19/06/2026;372;Bloqueia HUB09 em R3;21;295.12
+19/06/2026;288;Bloquieo de HUB10 e jadlog;1;49.62
+19/06/2026;234;Bloqueio ITALA;0;0.0
+19/06/2026;243;Bloqueia Itala em tudo exceto atrus Cotia;0;0.0
+19/06/2026;244;Bloqueia Itala em tudo exceto atrus origem VGP;0;0.0
+19/06/2026;274;Bloquieo de HEIST em várias TSP;7;396.01
+19/06/2026;382;Bloqueio gol e sedex em MG;0;0.0
+19/06/2026;389;Bloqueio bebidas, powerbank e perfume para Gol;0;0.0
+19/06/2026;390;Bloqueio bebidas, powerbank e perfume para Gol 2;0;0.0
+19/06/2026;391;Bloqueio Gol, bebidas, perfumes e powerbank 3;0;0.0
+19/06/2026;392;Bloqueio Gol, bebidas, perfumes e powerbank 3;0;0.0
+19/06/2026;401;Bloquieo campanhas azul para gol;0;0.0
+19/06/2026;394;Bloquear ebb para mcpor;0;0.0
+19/06/2026;402;Bloqueia EBB em tudo exceto Heineken e HUb;0;0.0
+19/06/2026;405;bloqueio EBB;0;0.0
+19/06/2026;406;bloqueio EBB;0;0.0
+19/06/2026;407;bloqueio ebb;0;0.0
+19/06/2026;408;Bloqueio EBB;0;0.0
+19/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;213;2951.76
+19/06/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;0;0.0
+19/06/2026;411;Atrus - Apenas HEIST;0;0.0
+19/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;25;48.26
+19/06/2026;38;Bloqueia Linha branca origem Serra de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;0;0.0
+19/06/2026;39;Bloqueia Linha branca origem Cotia de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;1;3.57
+19/06/2026;40;Bloqueia Linha branca todas as origens de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;1;3.57
+19/06/2026;298;Bloquieo de linha branca em 42 - JADLOG  x57 - Carriers  x90 - Jamef SP  x92 - JeT EXPRESS  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x164 - IMILE Standard  x195 - Azul linhas aereas  x com origem ES;0;0.0
+19/06/2026;82;Bloqueia TV origem Serra para 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;0;0.0
+19/06/2026;83;Bloqueia TV origem Cotia 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;0;0.0
+19/06/2026;84;Bloqueia TV Todas as origens 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x139 - EU ENTREGO SISTEMAS S/A  x;0;0.0
