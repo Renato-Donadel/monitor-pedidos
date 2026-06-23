@@ -372,7 +372,8 @@ def render_tradeoff():
     # ── CARDS POR CODIGO ─────────────────────────────────
     st.markdown("### Detalhe por Codigo Tarifario")
 
-    resumo_codigos = []
+    resumo_codigos  = []
+    ganhos_positivos = []   # acumula códigos com ganho líquido positivo
 
     for codigo in codigos_sel:
         with st.expander(f"{transp_sel} / {codigo}", expanded=True):
@@ -471,6 +472,23 @@ def render_tradeoff():
 
             grp_dest = pd.DataFrame(rows_dest).sort_values("PedidosSimulados", ascending=False)
 
+            # ── Ganho líquido por código tarifário ───────────────
+            # GanhoLiquido = SUM(DeltaFreteCot) - SUM(NFDValorDest) + nfd_orig_valor
+            delta_frete_total = grp_dest["DeltaFreteCot"].sum()   if "DeltaFreteCot"  in grp_dest.columns else None
+            nfd_dest_total    = grp_dest["NFDValorDest"].sum()     if "NFDValorDest"   in grp_dest.columns else None
+            if delta_frete_total is not None and nfd_dest_total is not None and nfd_orig_valor is not None:
+                ganho_liquido = delta_frete_total - nfd_dest_total + nfd_orig_valor
+                if ganho_liquido > 0:
+                    ganhos_positivos.append({
+                        "Transportadora":     transp_sel,
+                        "CodigoTarifario":    codigo,
+                        "Pedidos":            pedidos_orig,
+                        "NFD_Atual_R$":       nfd_orig_valor,
+                        "DeltaFrete_Cot_R$":  delta_frete_total,
+                        "NFD_Destinos_R$":    nfd_dest_total,
+                        "GanhoLiquido_R$":    ganho_liquido,
+                    })
+
             st.markdown(f"**Para onde iriam os {total_redistribuido:,} pedidos (base cotacao)**")
             st.caption("Destino = mais barato no leilao excluindo a transportadora atual | Historico = dados reais de entrega")
 
@@ -533,6 +551,24 @@ def render_tradeoff():
                 "valor_notas":valor_notas, "nfd_orig_valor":nfd_orig_valor,
                 "destinos":grp_dest.to_dict("records")
             })
+
+    # ── EXPORTAR CÓDIGOS COM GANHO LÍQUIDO POSITIVO ──────
+    st.divider()
+    if ganhos_positivos:
+        df_ganhos = pd.DataFrame(ganhos_positivos).sort_values("GanhoLiquido_R$", ascending=False)
+        import io
+        buf = io.BytesIO()
+        df_ganhos.to_excel(buf, index=False)
+        buf.seek(0)
+        st.markdown(f"**✅ {len(df_ganhos)} código(s) com ganho líquido positivo no período ({periodo})**")
+        st.download_button(
+            "⬇️ Exportar códigos com ganho líquido",
+            data=buf,
+            file_name=f"ganho_liquido_{transp_sel}_{periodo.replace(' ','')}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+    else:
+        st.info("Nenhum código tarifário com ganho líquido positivo no período selecionado.")
 
     # ── RESUMO CONSOLIDADO ───────────────────────────────
     if not resumo_codigos:
