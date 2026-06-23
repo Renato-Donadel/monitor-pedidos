@@ -976,6 +976,87 @@ def render_tradeoff():
         ", ".join(f"{r['Transportadora']}/{r['CodigoTarifario']}" for _, r in top10_emp.iterrows())
     )
     # ====================================================
+    # SECAO GANHO LIQUIDO GLOBAL (todos os códigos)
+    # ====================================================
+    st.divider()
+    st.markdown("## 💰 Exportar Ganho Líquido — Todos os Códigos Tarifários")
+    st.caption(f"Calcula para todos os códigos da {transp_sel} no período de {periodo}. "
+               f"Exporta apenas os que têm ganho líquido positivo (Delta Frete - NFD Destinos + NFD Atual > 0).")
+
+    if st.button("🔍 Calcular ganho líquido para todos os códigos"):
+        todos_codigos = sorted(df_periodo["CodigoTarifario"].dropna().unique())
+        ganhos_todos  = []
+
+        prog = st.progress(0, text="Calculando...")
+        for i, cod in enumerate(todos_codigos):
+            prog.progress((i + 1) / len(todos_codigos), text=f"Processando {cod}...")
+
+            df_c = df_periodo[df_periodo["CodigoTarifario"] == cod]
+            pedidos_c   = len(df_c)
+            nfd_pct_c   = df_c["TemNFD"].mean() * 100       if pedidos_c > 0 else 0
+            valor_notas_c = df_c["ValorNota"].sum() if "ValorNota" in df_c.columns and df_c["ValorNota"].notna().any() else None
+            nfd_orig_c  = (valor_notas_c * nfd_pct_c / 100) if valor_notas_c else None
+
+            df_sim_c = df_sim[
+                (df_sim["TransportadoraOrigem"] == transp_sel) &
+                (df_sim["CodigoOrigem"] == cod)
+            ]
+            if df_sim_c.empty or nfd_orig_c is None:
+                continue
+
+            rows_c = []
+            for tsp_dest, grp in df_sim_c.groupby("TransportadoraDestino"):
+                ped_sim      = int(grp["Pedidos"].sum())
+                if ped_sim == 0: continue
+                w            = grp["Pedidos"]
+                nfd_d        = (grp["NFD_Hist"].fillna(0) * w).sum() / w.sum() * 100 if "NFD_Hist" in grp.columns else None
+                cot_dest     = grp["ValorCotacaoDestTotal"].sum() if "ValorCotacaoDestTotal" in grp.columns else None
+                cot_orig     = grp["ValorCotacaoOrigTotal"].sum()  if "ValorCotacaoOrigTotal" in grp.columns else None
+                delta_frete  = (cot_dest - cot_orig) if (cot_dest is not None and cot_orig is not None) else None
+                pct_dist     = ped_sim / df_sim_c["Pedidos"].sum() * 100
+                notas_dest   = (valor_notas_c * pct_dist / 100) if valor_notas_c else None
+                nfd_val_dest = (notas_dest * nfd_d / 100) if (notas_dest and nfd_d is not None) else None
+                if delta_frete is not None and nfd_val_dest is not None:
+                    rows_c.append({"DeltaFreteCot": delta_frete, "NFDValorDest": nfd_val_dest})
+
+            if not rows_c:
+                continue
+
+            df_rc          = pd.DataFrame(rows_c)
+            delta_frete_t  = df_rc["DeltaFreteCot"].sum()
+            nfd_dest_t     = df_rc["NFDValorDest"].sum()
+            ganho          = delta_frete_t - nfd_dest_t + nfd_orig_c
+
+            if ganho > 0:
+                ganhos_todos.append({
+                    "Transportadora":    transp_sel,
+                    "CodigoTarifario":   cod,
+                    "Pedidos":           pedidos_c,
+                    "NFD_Atual_R$":      nfd_orig_c,
+                    "DeltaFrete_Cot_R$": delta_frete_t,
+                    "NFD_Destinos_R$":   nfd_dest_t,
+                    "GanhoLiquido_R$":   ganho,
+                })
+
+        prog.empty()
+
+        if ganhos_todos:
+            df_ganhos_todos = pd.DataFrame(ganhos_todos).sort_values("GanhoLiquido_R$", ascending=False)
+            import io
+            buf_todos = io.BytesIO()
+            df_ganhos_todos.to_excel(buf_todos, index=False)
+            buf_todos.seek(0)
+            st.success(f"{len(df_ganhos_todos)} código(s) com ganho líquido positivo de {len(todos_codigos)} analisados.")
+            st.download_button(
+                "⬇️ Exportar todos os ganhos positivos",
+                data=buf_todos,
+                file_name=f"ganho_liquido_todos_{transp_sel}_{periodo.replace(' ','')}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+        else:
+            st.warning("Nenhum código tarifário com ganho líquido positivo no período selecionado.")
+
+    # ====================================================
     # SECAO DEBUG (fim da pagina)
     # ====================================================
     st.divider()
