@@ -1090,8 +1090,8 @@ def render_tradeoff():
 
     # Card: NFD sem transportadora (nem Intelipost nem PRW identificou)
     nfd_sem_tsp_total = 0
-    if not df_intel.empty and "NFDSemTransportadora" in df_intel.columns:
-        nfd_sem_tsp_total = int(df_intel["NFDSemTransportadora"].iloc[0])
+    if not df_intel.empty and "NFDSemTransportadoraTSP" in df_intel.columns:
+        nfd_sem_tsp_total = int(df_intel["NFDSemTransportadoraTSP"].iloc[0])
     nfd_prw_fallback = int(df_intel["NFDTranspPRWFallback"].iloc[0]) if not df_intel.empty and "NFDTranspPRWFallback" in df_intel.columns else 0
     dbg3.markdown(kpi_box(
         "NFD sem Transportadora",
