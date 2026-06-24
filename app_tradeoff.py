@@ -486,7 +486,7 @@ def render_tradeoff():
                         "CodigoTarifario":    codigo,
                         "Pedidos":            pedidos_orig,
                         "NFD_Atual_R$":       nfd_orig_valor,
-                        "DeltaFrete_Cot_R$":  delta_frete_total,
+                        "DeltaFrete_Cot_R$":  cot_dest_total_gl - cot_orig_total_gl,
                         "NFD_Destinos_R$":    nfd_dest_total,
                         "GanhoLiquido_R$":    ganho_liquido,
                     })
