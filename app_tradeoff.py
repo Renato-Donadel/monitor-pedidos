@@ -109,16 +109,21 @@ def render_tradeoff():
         # TSP "de verdade" = motivo TSP E NAO passou por status que descaracteriza
         df_nfd_tsp   = df_nfd_real[(df_nfd_real["TemNFD"] == True) & (~mask_tsp_mas_nao)].copy()
 
-        if "CruzouIntelipost" in df_nfd_tsp.columns:
+        if "CruzouIntelipost" in df_nfd_tsp.columns and "Transportadora" in df_nfd_tsp.columns:
             nfd_cruzou     = df_nfd_tsp[df_nfd_tsp["CruzouIntelipost"] == True]
-            nfd_nao_cruzou = df_nfd_tsp[df_nfd_tsp["CruzouIntelipost"] == False]
+            nfd_prw        = df_nfd_tsp[(df_nfd_tsp["CruzouIntelipost"] == False) & (df_nfd_tsp["Transportadora"].fillna("").str.strip() != "")]
+            nfd_sem_transp = df_nfd_tsp[(df_nfd_tsp["CruzouIntelipost"] == False) & (df_nfd_tsp["Transportadora"].fillna("").str.strip() == "")]
         else:
             nfd_cruzou     = df_nfd_tsp
-            nfd_nao_cruzou = pd.DataFrame()
+            nfd_prw        = pd.DataFrame()
+            nfd_sem_transp = pd.DataFrame()
+        nfd_nao_cruzou = pd.concat([nfd_prw, nfd_sem_transp])
 
         total_nfd_tsp      = df_nfd_tsp["ValorNota"].sum()
         total_nfd_cruzou   = nfd_cruzou["ValorNota"].sum()
-        total_nfd_nao_cruz = nfd_nao_cruzou["ValorNota"].sum()
+        total_nfd_prw      = nfd_prw["ValorNota"].sum()      if not nfd_prw.empty      else 0
+        total_nfd_sem      = nfd_sem_transp["ValorNota"].sum() if not nfd_sem_transp.empty else 0
+        total_nfd_nao_cruz = total_nfd_prw + total_nfd_sem
         pct_nfd_tsp        = (total_nfd_tsp / total_vendas_bruto * 100) if total_vendas_bruto else None
 
         # NFD outros setores = total bruto - TSP - "tsp mas nao e tsp"
@@ -149,27 +154,43 @@ def render_tradeoff():
         cor_valor=COR_ALERTA if (pct_nfd_tsp or 0)>=5 else COR_NEUTRO if (pct_nfd_tsp or 0)>=2 else COR_OK),
         unsafe_allow_html=True)
 
-    # ── LINHA 2: Detalhe TSP (Intelipost) ────────────────────
-    h1,h2 = st.columns(2)
-    h1.markdown(kpi_box("NFD TSP no Intelipost (R$)",
+    # ── LINHA 2: Detalhe TSP por fonte ───────────────────────
+    h1, h2, h3 = st.columns(3)
+    h1.markdown(kpi_box("NFD TSP Intelipost (R$)",
         fmt_brl(total_nfd_cruzou) if total_nfd_cruzou else "sem dado"), unsafe_allow_html=True)
-    h2.markdown(kpi_box("NFD TSP fora Intelipost (R$)",
-        fmt_brl(total_nfd_nao_cruz) if total_nfd_nao_cruz else "sem dado",
+    h2.markdown(kpi_box("NFD TSP PRW Fallback (R$)",
+        fmt_brl(total_nfd_prw) if total_nfd_prw else "R$ 0,00",
+        cor_valor=COR_NEUTRO), unsafe_allow_html=True)
+    h3.markdown(kpi_box("NFD TSP Sem Transportadora (R$)",
+        fmt_brl(total_nfd_sem) if total_nfd_sem else "R$ 0,00",
         cor_valor=COR_ALERTA), unsafe_allow_html=True)
 
     st.caption("Notas com NFD TSP que passaram por status de retirada/endereco/ausente foram retiradas dos totais TSP (ver Debug no fim da pagina).")
 
-    # Botao exportar NFD fora Intelipost
-    if not nfd_nao_cruzou.empty:
-        import io
-        buf = io.BytesIO()
-        nfd_nao_cruzou.to_excel(buf, index=False)
-        buf.seek(0)
-        st.caption("NFD TSP sem match no Intelipost:")
-        st.download_button(
-            "⬇️ Exportar lista",
-            data=buf,
-            file_name="nfd_fora_intelipost.xlsx",
+    import io as _io
+    col_exp1, col_exp2 = st.columns(2)
+
+    if not nfd_prw.empty:
+        cols_prw = [c for c in ["PedidoFormatado"] if c in nfd_prw.columns]
+        buf_prw = _io.BytesIO()
+        nfd_prw[cols_prw].to_excel(buf_prw, index=False)
+        buf_prw.seek(0)
+        col_exp1.download_button(
+            "⬇️ Exportar NFD TSP PRW Fallback",
+            data=buf_prw,
+            file_name="nfd_tsp_prw_fallback.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+
+    if not nfd_sem_transp.empty:
+        cols_sem = [c for c in ["PedidoFormatado"] if c in nfd_sem_transp.columns]
+        buf_sem = _io.BytesIO()
+        nfd_sem_transp[cols_sem].to_excel(buf_sem, index=False)
+        buf_sem.seek(0)
+        col_exp2.download_button(
+            "⬇️ Exportar NFD TSP Sem Transportadora",
+            data=buf_sem,
+            file_name="nfd_tsp_sem_transportadora.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
 
@@ -1090,8 +1111,8 @@ def render_tradeoff():
 
     # Card: NFD sem transportadora (nem Intelipost nem PRW identificou)
     nfd_sem_tsp_total = 0
-    if not df_intel.empty and "NFDSemTransportadoraTSP" in df_intel.columns:
-        nfd_sem_tsp_total = int(df_intel["NFDSemTransportadoraTSP"].iloc[0])
+    if not df_intel.empty and "NFDSemTransportadora" in df_intel.columns:
+        nfd_sem_tsp_total = int(df_intel["NFDSemTransportadora"].iloc[0])
     nfd_prw_fallback = int(df_intel["NFDTranspPRWFallback"].iloc[0]) if not df_intel.empty and "NFDTranspPRWFallback" in df_intel.columns else 0
     dbg3.markdown(kpi_box(
         "NFD sem Transportadora",
