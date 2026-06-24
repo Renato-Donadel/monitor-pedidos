@@ -1025,10 +1025,9 @@ def render_tradeoff():
                 continue
 
             df_rc         = pd.DataFrame(rows_c)
-            cot_orig_t    = df_rc["CotOrig"].sum()   if "CotOrig" in df_rc.columns else None
-            cot_dest_t    = df_rc["CotDest"].sum()   if "CotDest" in df_rc.columns else None
-            nfd_dest_t    = df_rc["NFDValorDest"].sum()
-            if cot_orig_t is None or cot_dest_t is None: continue
+            cot_orig_t    = float(df_rc["CotOrig"].sum())
+            cot_dest_t    = float(df_rc["CotDest"].sum())
+            nfd_dest_t    = float(df_rc["NFDValorDest"].sum())
             ganho         = (nfd_orig_c - nfd_dest_t) + (cot_orig_t - cot_dest_t)
 
             if ganho > 0:
