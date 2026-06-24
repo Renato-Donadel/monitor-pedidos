@@ -207,7 +207,7 @@ def render_tradeoff():
         mask_periodo = df_nfd_real["DataDespacho"] >= data_corte
         mask_tsp     = df_nfd_real["TemNFD"] == True
         mask_real    = df_nfd_real.get("TspMasNaoTsp", pd.Series(False, index=df_nfd_real.index)) != True
-        mask_intel   = df_nfd_real.get("CruzouIntelipost", pd.Series(True, index=df_nfd_real.index)) == True
+        mask_intel   = df_nfd_real["Transportadora"].fillna("").str.strip() != "" if "Transportadora" in df_nfd_real.columns else df_nfd_real.get("CruzouIntelipost", pd.Series(True, index=df_nfd_real.index)) == True
 
         # NFD TSP real COM transportadora no periodo
         nfd_com_tsp = df_nfd_real[mask_periodo & mask_tsp & mask_real & mask_intel]
@@ -251,7 +251,7 @@ def render_tradeoff():
     )
 
     if nfd_sem_tsp_periodo > 0:
-        st.caption(f"⚠️ {nfd_sem_tsp_periodo:,} notas NFD TSP no periodo nao cruzaram com o Intelipost (sem transportadora atribuida).")
+        st.caption(f"⚠️ {nfd_sem_tsp_periodo:,} notas NFD TSP no periodo sem transportadora identificada (nem Intelipost nem PRW).")
 
     st.divider()
 
@@ -373,7 +373,7 @@ def render_tradeoff():
     st.markdown("### Detalhe por Codigo Tarifario")
 
     resumo_codigos  = []
-    ganhos_positivos = []   # acumula códigos com ganho líquido positivo
+    ganhos_positivos = []
 
     for codigo in codigos_sel:
         with st.expander(f"{transp_sel} / {codigo}", expanded=True):
@@ -981,7 +981,7 @@ def render_tradeoff():
     st.divider()
     st.markdown("## 💰 Exportar Ganho Líquido — Todos os Códigos Tarifários")
     st.caption(f"Calcula para todos os códigos da {transp_sel} no período de {periodo}. "
-               f"Exporta apenas os que têm ganho líquido positivo (Delta Frete - NFD Destinos + NFD Atual > 0).")
+               f"Exporta apenas os que têm ganho líquido positivo.")
 
     if st.button("🔍 Calcular ganho líquido para todos os códigos"):
         todos_codigos = sorted(df_periodo["CodigoTarifario"].dropna().unique())
@@ -992,10 +992,10 @@ def render_tradeoff():
             prog.progress((i + 1) / len(todos_codigos), text=f"Processando {cod}...")
 
             df_c = df_periodo[df_periodo["CodigoTarifario"] == cod]
-            pedidos_c   = len(df_c)
-            nfd_pct_c   = df_c["TemNFD"].mean() * 100       if pedidos_c > 0 else 0
+            pedidos_c     = len(df_c)
+            nfd_pct_c     = df_c["TemNFD"].mean() * 100 if pedidos_c > 0 else 0
             valor_notas_c = df_c["ValorNota"].sum() if "ValorNota" in df_c.columns and df_c["ValorNota"].notna().any() else None
-            nfd_orig_c  = (valor_notas_c * nfd_pct_c / 100) if valor_notas_c else None
+            nfd_orig_c    = (valor_notas_c * nfd_pct_c / 100) if valor_notas_c else None
 
             df_sim_c = df_sim[
                 (df_sim["TransportadoraOrigem"] == transp_sel) &
@@ -1022,10 +1022,10 @@ def render_tradeoff():
             if not rows_c:
                 continue
 
-            df_rc          = pd.DataFrame(rows_c)
-            delta_frete_t  = df_rc["DeltaFreteCot"].sum()
-            nfd_dest_t     = df_rc["NFDValorDest"].sum()
-            ganho          = delta_frete_t - nfd_dest_t + nfd_orig_c
+            df_rc         = pd.DataFrame(rows_c)
+            delta_frete_t = df_rc["DeltaFreteCot"].sum()
+            nfd_dest_t    = df_rc["NFDValorDest"].sum()
+            ganho         = delta_frete_t - nfd_dest_t + nfd_orig_c
 
             if ganho > 0:
                 ganhos_todos.append({
@@ -1088,15 +1088,18 @@ def render_tradeoff():
         cor_valor=COR_ALERTA
     ), unsafe_allow_html=True)
 
-    # Card: NFD sem transportadora (nao cruzaram com Intelipost)
+    # Card: NFD sem transportadora (nem Intelipost nem PRW identificou)
     nfd_sem_tsp_total = 0
     if not df_intel.empty and "NFDSemTransportadora" in df_intel.columns:
         nfd_sem_tsp_total = int(df_intel["NFDSemTransportadora"].iloc[0])
+    nfd_prw_fallback = int(df_intel["NFDTranspPRWFallback"].iloc[0]) if not df_intel.empty and "NFDTranspPRWFallback" in df_intel.columns else 0
     dbg3.markdown(kpi_box(
         "NFD sem Transportadora",
         fmt_int(nfd_sem_tsp_total) if nfd_sem_tsp_total else "0",
         cor_valor=COR_NEUTRO
     ), unsafe_allow_html=True)
+    if nfd_prw_fallback > 0:
+        st.caption(f"ℹ️ {nfd_prw_fallback:,} NFDs tiveram transportadora identificada via PRW (fallback).")
 
     st.markdown(
         f"<div style='font-size:12px;color:#888;margin-top:6px'>"
