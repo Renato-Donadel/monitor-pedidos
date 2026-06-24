@@ -41,7 +41,7 @@ def carregar_bases():
 
     df_trade = pd.read_excel(arq_pedidos) if os.path.exists(arq_pedidos) else pd.DataFrame()
     df_sim   = pd.read_excel(arq_sim)     if os.path.exists(arq_sim)     else pd.DataFrame()
-    df_nfd   = pd.read_excel(arq_nfd, sheet_name="NFD_Real") if os.path.exists(arq_nfd) else pd.DataFrame()
+    df_nfd   = pd.read_excel(arq_nfd)     if os.path.exists(arq_nfd)     else pd.DataFrame()
     df_intel = pd.read_excel(arq_intel)   if os.path.exists(arq_intel)   else pd.DataFrame()
 
     if not df_trade.empty:
@@ -109,21 +109,16 @@ def render_tradeoff():
         # TSP "de verdade" = motivo TSP E NAO passou por status que descaracteriza
         df_nfd_tsp   = df_nfd_real[(df_nfd_real["TemNFD"] == True) & (~mask_tsp_mas_nao)].copy()
 
-        if "CruzouIntelipost" in df_nfd_tsp.columns and "Transportadora" in df_nfd_tsp.columns:
+        if "CruzouIntelipost" in df_nfd_tsp.columns:
             nfd_cruzou     = df_nfd_tsp[df_nfd_tsp["CruzouIntelipost"] == True]
-            nfd_prw        = df_nfd_tsp[(df_nfd_tsp["CruzouIntelipost"] == False) & (df_nfd_tsp["Transportadora"].fillna("").str.strip() != "")]
-            nfd_sem_transp = df_nfd_tsp[(df_nfd_tsp["CruzouIntelipost"] == False) & (df_nfd_tsp["Transportadora"].fillna("").str.strip() == "")]
+            nfd_nao_cruzou = df_nfd_tsp[df_nfd_tsp["CruzouIntelipost"] == False]
         else:
             nfd_cruzou     = df_nfd_tsp
-            nfd_prw        = pd.DataFrame()
-            nfd_sem_transp = pd.DataFrame()
-        nfd_nao_cruzou = pd.concat([nfd_prw, nfd_sem_transp])
+            nfd_nao_cruzou = pd.DataFrame()
 
         total_nfd_tsp      = df_nfd_tsp["ValorNota"].sum()
         total_nfd_cruzou   = nfd_cruzou["ValorNota"].sum()
-        total_nfd_prw      = nfd_prw["ValorNota"].sum()      if not nfd_prw.empty      else 0
-        total_nfd_sem      = nfd_sem_transp["ValorNota"].sum() if not nfd_sem_transp.empty else 0
-        total_nfd_nao_cruz = total_nfd_prw + total_nfd_sem
+        total_nfd_nao_cruz = nfd_nao_cruzou["ValorNota"].sum()
         pct_nfd_tsp        = (total_nfd_tsp / total_vendas_bruto * 100) if total_vendas_bruto else None
 
         # NFD outros setores = total bruto - TSP - "tsp mas nao e tsp"
@@ -154,43 +149,27 @@ def render_tradeoff():
         cor_valor=COR_ALERTA if (pct_nfd_tsp or 0)>=5 else COR_NEUTRO if (pct_nfd_tsp or 0)>=2 else COR_OK),
         unsafe_allow_html=True)
 
-    # ── LINHA 2: Detalhe TSP por fonte ───────────────────────
-    h1, h2, h3 = st.columns(3)
-    h1.markdown(kpi_box("NFD TSP Intelipost (R$)",
+    # ── LINHA 2: Detalhe TSP (Intelipost) ────────────────────
+    h1,h2 = st.columns(2)
+    h1.markdown(kpi_box("NFD TSP no Intelipost (R$)",
         fmt_brl(total_nfd_cruzou) if total_nfd_cruzou else "sem dado"), unsafe_allow_html=True)
-    h2.markdown(kpi_box("NFD TSP PRW Fallback (R$)",
-        fmt_brl(total_nfd_prw) if total_nfd_prw else "R$ 0,00",
-        cor_valor=COR_NEUTRO), unsafe_allow_html=True)
-    h3.markdown(kpi_box("NFD TSP Sem Transportadora (R$)",
-        fmt_brl(total_nfd_sem) if total_nfd_sem else "R$ 0,00",
+    h2.markdown(kpi_box("NFD TSP fora Intelipost (R$)",
+        fmt_brl(total_nfd_nao_cruz) if total_nfd_nao_cruz else "sem dado",
         cor_valor=COR_ALERTA), unsafe_allow_html=True)
 
     st.caption("Notas com NFD TSP que passaram por status de retirada/endereco/ausente foram retiradas dos totais TSP (ver Debug no fim da pagina).")
 
-    import io as _io
-    col_exp1, col_exp2 = st.columns(2)
-
-    if not nfd_prw.empty:
-        cols_prw = [c for c in ["PedidoFormatado"] if c in nfd_prw.columns]
-        buf_prw = _io.BytesIO()
-        nfd_prw[cols_prw].to_excel(buf_prw, index=False)
-        buf_prw.seek(0)
-        col_exp1.download_button(
-            "⬇️ Exportar NFD TSP PRW Fallback",
-            data=buf_prw,
-            file_name="nfd_tsp_prw_fallback.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
-
-    if not nfd_sem_transp.empty:
-        cols_sem = [c for c in ["PedidoFormatado"] if c in nfd_sem_transp.columns]
-        buf_sem = _io.BytesIO()
-        nfd_sem_transp[cols_sem].to_excel(buf_sem, index=False)
-        buf_sem.seek(0)
-        col_exp2.download_button(
-            "⬇️ Exportar NFD TSP Sem Transportadora",
-            data=buf_sem,
-            file_name="nfd_tsp_sem_transportadora.xlsx",
+    # Botao exportar NFD fora Intelipost
+    if not nfd_nao_cruzou.empty:
+        import io
+        buf = io.BytesIO()
+        nfd_nao_cruzou.to_excel(buf, index=False)
+        buf.seek(0)
+        st.caption("NFD TSP sem match no Intelipost:")
+        st.download_button(
+            "⬇️ Exportar lista",
+            data=buf,
+            file_name="nfd_fora_intelipost.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
 
@@ -483,6 +462,7 @@ def render_tradeoff():
                     "TM_Cotacao":        tm_cot,
                     "FreteHistProj":     frete_hist_proj,
                     "FreteCotDest":      cot_dest_total,
+                    "FreteCotOrig":      cot_orig_total,
                     "FreteOrigProp":     frete_orig_prop,
                     "DeltaFreteHist":    delta_frete_hist,
                     "DeltaFreteCot":     delta_frete_cot,
@@ -495,10 +475,11 @@ def render_tradeoff():
 
             # ── Ganho líquido por código tarifário ───────────────
             # GanhoLiquido = SUM(DeltaFreteCot) - SUM(NFDValorDest) + nfd_orig_valor
-            delta_frete_total = grp_dest["DeltaFreteCot"].sum()   if "DeltaFreteCot"  in grp_dest.columns else None
-            nfd_dest_total    = grp_dest["NFDValorDest"].sum()     if "NFDValorDest"   in grp_dest.columns else None
-            if delta_frete_total is not None and nfd_dest_total is not None and nfd_orig_valor is not None:
-                ganho_liquido = (nfd_orig_valor - nfd_dest_total) - delta_frete_total
+            cot_orig_total_gl = grp_dest["FreteCotOrig"].sum() if "FreteCotOrig" in grp_dest.columns else None
+            cot_dest_total_gl = grp_dest["FreteCotDest"].sum() if "FreteCotDest" in grp_dest.columns else None
+            nfd_dest_total    = grp_dest["NFDValorDest"].sum()  if "NFDValorDest" in grp_dest.columns else None
+            if cot_orig_total_gl is not None and cot_dest_total_gl is not None and nfd_dest_total is not None and nfd_orig_valor is not None:
+                ganho_liquido = (nfd_orig_valor - nfd_dest_total) + (cot_orig_total_gl - cot_dest_total_gl)
                 if ganho_liquido > 0:
                     ganhos_positivos.append({
                         "Transportadora":     transp_sel,
@@ -1037,16 +1018,18 @@ def render_tradeoff():
                 pct_dist     = ped_sim / df_sim_c["Pedidos"].sum() * 100
                 notas_dest   = (valor_notas_c * pct_dist / 100) if valor_notas_c else None
                 nfd_val_dest = (notas_dest * nfd_d / 100) if (notas_dest and nfd_d is not None) else None
-                if delta_frete is not None and nfd_val_dest is not None:
-                    rows_c.append({"DeltaFreteCot": delta_frete, "NFDValorDest": nfd_val_dest})
+                if cot_dest is not None and cot_orig is not None and nfd_val_dest is not None:
+                    rows_c.append({"CotOrig": cot_orig, "CotDest": cot_dest, "NFDValorDest": nfd_val_dest})
 
             if not rows_c:
                 continue
 
             df_rc         = pd.DataFrame(rows_c)
-            delta_frete_t = df_rc["DeltaFreteCot"].sum()
+            cot_orig_t    = df_rc["CotOrig"].sum()   if "CotOrig" in df_rc.columns else None
+            cot_dest_t    = df_rc["CotDest"].sum()   if "CotDest" in df_rc.columns else None
             nfd_dest_t    = df_rc["NFDValorDest"].sum()
-            ganho         = delta_frete_t - nfd_dest_t + nfd_orig_c
+            if cot_orig_t is None or cot_dest_t is None: continue
+            ganho         = (nfd_orig_c - nfd_dest_t) + (cot_orig_t - cot_dest_t)
 
             if ganho > 0:
                 ganhos_todos.append({
