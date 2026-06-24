@@ -41,7 +41,7 @@ def carregar_bases():
 
     df_trade = pd.read_excel(arq_pedidos) if os.path.exists(arq_pedidos) else pd.DataFrame()
     df_sim   = pd.read_excel(arq_sim)     if os.path.exists(arq_sim)     else pd.DataFrame()
-    df_nfd   = pd.read_excel(arq_nfd)     if os.path.exists(arq_nfd)     else pd.DataFrame()
+    df_nfd   = pd.read_excel(arq_nfd, sheet_name="NFD_Real") if os.path.exists(arq_nfd) else pd.DataFrame()
     df_intel = pd.read_excel(arq_intel)   if os.path.exists(arq_intel)   else pd.DataFrame()
 
     if not df_trade.empty:
