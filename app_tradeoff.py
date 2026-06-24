@@ -498,7 +498,7 @@ def render_tradeoff():
             delta_frete_total = grp_dest["DeltaFreteCot"].sum()   if "DeltaFreteCot"  in grp_dest.columns else None
             nfd_dest_total    = grp_dest["NFDValorDest"].sum()     if "NFDValorDest"   in grp_dest.columns else None
             if delta_frete_total is not None and nfd_dest_total is not None and nfd_orig_valor is not None:
-                ganho_liquido = delta_frete_total - nfd_dest_total + nfd_orig_valor
+                ganho_liquido = (nfd_orig_valor - nfd_dest_total) - delta_frete_total
                 if ganho_liquido > 0:
                     ganhos_positivos.append({
                         "Transportadora":     transp_sel,
