@@ -38,6 +38,9 @@ def carregar_impacto(path):
     df["Regra"]  = pd.to_numeric(df["Regra"], errors="coerce").astype("Int64")
     df["NOrders"]       = pd.to_numeric(df["NOrders"],       errors="coerce").fillna(0).astype(int)
     df["Impacto_Total"] = pd.to_numeric(df["Impacto_Total"], errors="coerce").fillna(0.0)
+    if "Categoria" not in df.columns:
+        df["Categoria"] = "Não classificado"
+    df["Categoria"] = df["Categoria"].fillna("Sem Categoria").str.strip()
     return df.dropna(subset=["Data"])
 
 
@@ -228,10 +231,124 @@ def render_regras():
             col_c.metric("📅 Dias Analisados",        n_dias)
             col_d.metric("📊 Média por Dia",           brl(media_dia))
 
+            # ── Visão por Categoria ───────────────────────────
+            ORDEM_CAT = [
+                "Imediato",
+                "Oportunidade",
+                "Ações já feitas - Capturação futura",
+                "Histórico",
+                "Sem Categoria",
+            ]
+            CORES_CAT = {
+                "Imediato":                              "#e63946",
+                "Oportunidade":                          "#f4a261",
+                "Ações já feitas - Capturação futura":   "#2a9d8f",
+                "Histórico":                             "#457b9d",
+                "Sem Categoria":                         "#adb5bd",
+            }
+
+            df_cat = (
+                df_periodo
+                .groupby("Categoria", as_index=False)["Impacto_Total"].sum()
+            )
+            df_cat["_ord"] = df_cat["Categoria"].apply(
+                lambda x: ORDEM_CAT.index(x) if x in ORDEM_CAT else 99
+            )
+            df_cat = df_cat.sort_values("_ord")
+
+            if not df_cat.empty:
+                col_pie, col_cat = st.columns([1, 1])
+
+                with col_pie:
+                    fig_pie = go.Figure(go.Pie(
+                        labels=df_cat["Categoria"],
+                        values=df_cat["Impacto_Total"],
+                        marker_colors=[CORES_CAT.get(c, "#adb5bd") for c in df_cat["Categoria"]],
+                        hole=0.45,
+                        textinfo="percent+label",
+                        hovertemplate="%{label}<br>R$ %{value:,.2f}<extra></extra>",
+                    ))
+                    fig_pie.update_layout(
+                        title="Distribuição por Categoria",
+                        height=320,
+                        margin=dict(t=50, b=10, l=10, r=10),
+                        showlegend=False,
+                    )
+                    st.plotly_chart(fig_pie, use_container_width=True)
+
+                with col_cat:
+                    st.markdown("**Impacto por Categoria**")
+                    for _, crow in df_cat.iterrows():
+                        cor  = CORES_CAT.get(crow["Categoria"], "#adb5bd")
+                        pct  = crow["Impacto_Total"] / total_impacto * 100 if total_impacto > 0 else 0
+                        st.markdown(
+                            f"<div style='margin-bottom:10px;'>"
+                            f"<span style='font-size:12px;color:var(--color-text-secondary)'>{crow['Categoria']}</span><br>"
+                            f"<span style='font-size:18px;font-weight:500;color:{cor}'>{brl(crow['Impacto_Total'])}</span>"
+                            f"<span style='font-size:11px;color:var(--color-text-secondary)'> &nbsp;{pct:.1f}%</span>"
+                            f"</div>",
+                            unsafe_allow_html=True,
+                        )
+
+            st.markdown("---")
+
+            # ── Donut + barra: impacto por categoria ─────────
+            df_cat = (
+                df_periodo[df_periodo["Impacto_Total"] > 0]
+                .groupby("Categoria", as_index=False)["Impacto_Total"].sum()
+                .sort_values("Impacto_Total", ascending=False)
+            )
+            if not df_cat.empty:
+                CORES_CAT = {
+                    "Ganho Imediato":              "#e63946",
+                    "Ganho Imediato - Já realizado": "#f4a261",
+                    "Oportunidade":                "#2a9d8f",
+                    "Regra operacional":           "#457b9d",
+                    "Express":                     "#e9c46a",
+                    "Default":                     "#6d6875",
+                    "Não classificado":            "#adb5bd",
+                }
+                cores = [CORES_CAT.get(c, "#adb5bd") for c in df_cat["Categoria"]]
+                col_donut, col_cat_bar = st.columns([1, 1])
+                with col_donut:
+                    fig_donut = go.Figure(go.Pie(
+                        labels=df_cat["Categoria"],
+                        values=df_cat["Impacto_Total"],
+                        hole=0.55,
+                        marker_colors=cores,
+                        textinfo="label+percent",
+                        hovertemplate="%{label}<br>R$ %{value:,.2f}<extra></extra>",
+                    ))
+                    fig_donut.update_layout(
+                        title="Distribuição por Categoria",
+                        height=320,
+                        margin=dict(t=50, b=10, l=10, r=10),
+                        showlegend=False,
+                    )
+                    st.plotly_chart(fig_donut, use_container_width=True)
+                with col_cat_bar:
+                    fig_cat = go.Figure(go.Bar(
+                        x=df_cat["Impacto_Total"],
+                        y=df_cat["Categoria"],
+                        orientation="h",
+                        marker_color=cores,
+                        text=df_cat["Impacto_Total"].apply(brl),
+                        textposition="outside",
+                        hovertemplate="%{y}<br>%{text}<extra></extra>",
+                    ))
+                    fig_cat.update_layout(
+                        title="Impacto por Categoria (R$)",
+                        height=320,
+                        margin=dict(t=50, b=10, l=10, r=80),
+                        xaxis=dict(tickformat=",.2f"),
+                        yaxis=dict(autorange="reversed"),
+                    )
+                    st.plotly_chart(fig_cat, use_container_width=True)
+
             # ── Barras: impacto por regra ──────────────────────
             df_por_regra = (
                 df_periodo
-                .groupby(["Regra", "Descricao"], as_index=False)
+                .groupby(["Categoria", "Regra", "Descricao"], as_index=False)
                 .agg(Impacto_Total=("Impacto_Total","sum"), NOrders=("NOrders","sum"))
             )
             df_por_regra = df_por_regra[df_por_regra["Impacto_Total"] > 0].sort_values(
