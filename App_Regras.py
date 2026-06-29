@@ -6,7 +6,8 @@ import plotly.graph_objects as go
 from utils import PASTA_DATA
 
 ARQ_REGRAS  = os.path.join(PASTA_DATA, "Regras_Resultado.xlsx")
-ARQ_IMPACTO = os.path.join(PASTA_DATA, "Impacto_Financeiro.csv")
+ARQ_IMPACTO     = os.path.join(PASTA_DATA, "Impacto_Financeiro.csv")
+ARQ_CATEGORIAS  = os.path.join(PASTA_DATA, "Regras_Categorias.csv")
 
 
 @st.cache_data(ttl=60)
@@ -41,7 +42,17 @@ def carregar_impacto(path):
     if "Categoria" not in df.columns:
         df["Categoria"] = "Não classificado"
     df["Categoria"] = df["Categoria"].fillna("Sem Categoria").str.strip()
-    return df.dropna(subset=["Data"])
+    df_base = df.dropna(subset=["Data"])
+    # Aplica categorias atuais do CSV de mapeamento (substitui o que está salvo no histórico)
+    try:
+        if os.path.exists(ARQ_CATEGORIAS):
+            df_cat_map = pd.read_csv(ARQ_CATEGORIAS, sep=";")
+            df_cat_map["Regra"] = pd.to_numeric(df_cat_map["Regra"], errors="coerce")
+            cat_dict = dict(zip(df_cat_map["Regra"], df_cat_map["Categoria"].fillna("Não classificado")))
+            df_base["Categoria"] = df_base["Regra"].map(cat_dict).fillna("Não classificado")
+    except Exception:
+        pass
+    return df_base
 
 
 def render_regras():
@@ -343,15 +354,18 @@ def render_regras():
                         orientation="h",
                         marker_color=cores,
                         text=df_cat["Impacto_Total"].apply(brl),
-                        textposition="outside",
+                        textposition="inside",
+                        insidetextanchor="start",
+                        textfont=dict(color="white", size=12),
                         hovertemplate="%{y}<br>%{text}<extra></extra>",
                     ))
                     fig_cat.update_layout(
                         title="Impacto por Categoria (R$)",
-                        height=320,
-                        margin=dict(t=50, b=10, l=10, r=20),
+                        height=max(280, len(df_cat) * 60 + 80),
+                        margin=dict(t=50, b=10, l=10, r=10),
                         xaxis=dict(tickformat=",.2f", rangemode="tozero"),
                         yaxis=dict(autorange="reversed"),
+                        uniformtext=dict(minsize=10, mode="hide"),
                     )
                     st.plotly_chart(fig_cat, use_container_width=True)
 

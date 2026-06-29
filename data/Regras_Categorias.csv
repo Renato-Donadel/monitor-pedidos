@@ -1,0 +1,115 @@
+Regra;Descricao;Categoria
+1;Bloqueia MARYK das pesadas com origem Cotia;Oportunidade
+2;Bloqueia MARYK das pesadas de todas as origens;Oportunidade
+10;Envia BRBAY com destino MS e origem Cotia para Carvalima;Oportunidade
+26;Leilão Default - 0% e 0%;Default
+38;Bloqueia Linha branca origem Serra de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;Regra operacional
+39;Bloqueia Linha branca origem Cotia de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;Regra operacional
+40;Bloqueia Linha branca todas as origens de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;Regra operacional
+82;Bloqueia TV origem Serra para 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;Regra operacional
+83;Bloqueia TV origem Cotia 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;Regra operacional
+84;Bloqueia TV Todas as origens 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x139 - EU ENTREGO SISTEMAS S/A  x;Regra operacional
+93;Sugere Carvalima com origem Cotia para MT e MS;Oportunidade
+153;Bloqueia Cadeiras de itau de sair para Carriers, Dialogo, J&T, Magalu, TodoBrasil;Regra operacional
+161;Bloqueia HPAMZ, HPB2W e HPMLU com origem Serra de sair por Sedex;Oportunidade
+162;Bloqueia HPAMZ, HPB2W e HPMLU com origem Coria de sair por Sedex;Oportunidade
+163;Bloqueia HPAMZ, HPB2W e HPMLU com todas as origens de sair por Sedex;Oportunidade
+166;Bloqueia Todo Brasil, iMile e Pajuçara com origem Serra de levar notebook;Regra operacional
+167;Bloqueia Magalu, com origem Cotia de levar carrinho de compras;Regra operacional
+170;Bloqueia Atrus em várias campamnhas especificas;Oportunidade
+181;Bloqueia várias transportadoras de coletar no escritorio;Regra operacional
+182;Bloqueia Magalu em uma lista de Cidades que eles cortaram ;Regra operacional
+184;Bloqueia Dialogo, J&T e Magalu nas cadeiras de itau origem Serra;Regra operacional
+186;Bloqueia Carriers de Serra;Regra operacional
+187;Bloqueia Carriers em Cotia;Regra operacional
+190;Bloqueia BRBAY em Carriers, Atrus, todo brasil, Sedex, Eu entrego;Oportunidade
+198;Bloqueia Sedex de Cuaba;Regra operacional
+202;Bloqueia todas as transportadoras em hub09 e hub10 , exceto aquelas com SLA acima de 97%  em VGP;Oportunidade
+206;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem Serra;Regra operacional
+207;Bloqueia Magalu e Dialogo de alguns SKU's;Regra operacional
+208;Bloqueia Jamef de dois SKUs;Regra operacional
+211;Bloqueia Jamef de dois SKUs;Regra operacional
+213;Bloqueia HUB09 de JeT e TodoBrasil;Regra operacional
+216;Bloqueiro de Lauto;Oportunidade
+217;Bloqueiro de Lauto;Oportunidade
+218;Bloqueiro de Lauto;Oportunidade
+219;Bloqueiro de Lauto;Oportunidade
+220;Bloqueiro de Lauto;Oportunidade
+221;Bloqueiro de Lauto;Oportunidade
+222;Bloqueiro de Lauto;Oportunidade
+223;Bloqueiro de Lauto;Oportunidade
+234;Bloqueio ITALA;Regra operacional
+243;Bloqueia Itala em tudo exceto atrus Cotia;Regra operacional
+244;Bloqueia Itala em tudo exceto atrus origem VGP;Regra operacional
+250;Bloqeuio de imile na origem VGP algumas cidades especificas ;Oportunidade
+251;Bloqeuio de imile na origem Serra algumas cidades especificas;Oportunidade
+264;Bloquieo de JET no SKU SI5435;Oportunidade
+268;Bloquieo de bebidas em 35 - Pacifico  x56 - Pajucara  x90 - Jamef SP  x92 - JeT EXPRESS  x120 - TODOBRASIL  x127 - Correios SEDEX - 34028316000103  x140 - LAUTO CARGO  x164 - IMILE Standard  x;Regra operacional
+269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;Oportunidade
+274;Bloquieo de HEIST em várias TSP;Regra operacional
+275;Bloquieo de Pajuçara em MG em SKUs que não fazem;Regra operacional
+276;Bloquieo de Pajuçara em ES em SKUs que não fazem;Regra operacional
+277;Bloquieo de Pajuçara em Cotia em SKUs que não fazem;Regra operacional
+278;Bloquieo de Pajuçara em VGP em SKUs que não fazem;Regra operacional
+288;Bloquieo de HUB10 e jadlog;Oportunidade
+298;Bloquieo de linha branca em 42 - JADLOG  x57 - Carriers  x90 - Jamef SP  x92 - JeT EXPRESS  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x164 - IMILE Standard  x195 - Azul linhas aereas  x com origem ES;Regra operacional
+301;Regra de caixa postal;Regra operacional
+302;Regra de caixa postal;Regra operacional
+303;Regra de caixa postal;Regra operacional
+304;Regra de caixa postal;Regra operacional
+305;Regra de caixa postal;Regra operacional
+306;Bloqueio de unlst em Sedex;Oportunidade
+313;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem MG;Regra operacional
+318;Entrega Express BRBAY;Express
+319;Entrega Express BRBAY;Express
+320;Entrega Express BRBAY;Express
+321;Entrega Express BRBAY;Express
+324;Bloqueio de TSPs em ITIP ;Oportunidade
+325;Bloqueio de TSPs em ITIP ;Oportunidade
+326;Bloqueio de TSPs em ITIP ;Oportunidade
+327;Bloqueio de TSPs em ITIP ;Oportunidade
+329;Recomanda MCPOR em Atrus;Regra operacional
+330;Bloqueias as transportadoras no escritorio;Regra operacional
+343;Cx postal;Regra operacional
+344;Cx postal;Regra operacional
+345;Cx postal;Regra operacional
+346;Cx postal;Regra operacional
+347;Bloqueio de notebook em Favorita e Pajucara;Regra operacional
+355;Bloqueia jad e jamef em SKUs de ON;Oportunidade
+363;Recomenda Heist em Atrus;Regra operacional
+368;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima para BRBAY Origem Cotia;Sem Categoria
+369;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima para BRBAY Origem VGP;Sem Categoria
+371;Bloqueia HUB09 em R3;Regra operacional
+372;Bloqueia HUB09 em R3;Regra operacional
+373;Bloqueio Jamef Trator;Regra operacional
+382;Bloqueio gol e sedex em MG;Oportunidade
+389;Bloqueio bebidas, powerbank e perfume para Gol;Regra operacional
+390;Bloqueio bebidas, powerbank e perfume para Gol 2;Regra operacional
+391;Bloqueio Gol, bebidas, perfumes e powerbank 3;Regra operacional
+392;Bloqueio Gol, bebidas, perfumes e powerbank 3;Regra operacional
+393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado
+394;Bloquear ebb para mcpor;Regra operacional
+395;Liberar a transportadora stone para campanha STOLJ, ela atenderá pedidos com o peso inferior a 30kg;Oportunidade
+396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;Oportunidade
+397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade
+398;Bloquei imile VGP inicio - Inativo;Ganho Imediato - Já realizado
+400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;Regra operacional
+401;Bloquieo campanhas azul para gol;Regra operacional
+402;Bloqueia EBB em tudo exceto Heineken e HUb;Regra operacional
+404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;Regra operacional
+405;bloqueio EBB;Regra operacional
+406;bloqueio EBB;Regra operacional
+407;bloqueio ebb;Regra operacional
+408;Bloqueio EBB;Regra operacional
+409;Bloqueio campanhas prioritarias em correios ;Oportunidade
+410;Bloqueio campanhas prioritarias em correios ;Oportunidade
+411;Atrus - Apenas HEIST;Regra operacional
+412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado
+416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado
+417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado
+419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado
+420;Peso minimo J&T origem Cotia;Ganho Imediato
+421;Peso minimo J&T origem MG;Ganho Imediato
+422;Peso minimo J&T VGP;Ganho Imediato
+423;Bloqueio J&T peso minimo Serra;Ganho Imediato
+424;Bloquieo de HUB09 em Pacifico, Dominalog, Jadlog, Gol e J&T em HUB09 origem VGP;Oportunidade
