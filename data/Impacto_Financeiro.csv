@@ -539,7 +539,7 @@ Data;Regra;Descricao;NOrders;Impacto_Total;Categoria
 19/06/2026;82;Bloqueia TV origem Serra para 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;0;0.0;
 19/06/2026;83;Bloqueia TV origem Cotia 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;0;0.0;
 19/06/2026;84;Bloqueia TV Todas as origens 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x139 - EU ENTREGO SISTEMAS S/A  x;0;0.0;
-28/06/2026;420;Peso minimo J&T origem Cotia;139;507.93;Sem Categoria
+28/06/2026;420;Peso minimo J&T origem Cotia;138;506.89;Sem Categoria
 28/06/2026;421;Peso minimo J&T origem MG;30;49.95;Sem Categoria
 28/06/2026;422;Peso minimo J&T VGP;2;31.96;Sem Categoria
 28/06/2026;423;Bloqueio J&T peso minimo Serra;0;0.0;
@@ -547,9 +547,9 @@ Data;Regra;Descricao;NOrders;Impacto_Total;Categoria
 28/06/2026;187;Bloqueia Carriers em Cotia;0;0.0;
 28/06/2026;212;;0;0.0;
 28/06/2026;412;Bloqueio iMile VGP - Inativo;8;81.96;Sem Categoria
-28/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;133;401.16;Sem Categoria
+28/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;129;370.9;Sem Categoria
 28/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;30;89.29;Sem Categoria
-28/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;17;163.26;Sem Categoria
+28/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;15;133.17;Sem Categoria
 28/06/2026;198;Bloqueia Sedex de Cuaba;0;0.0;Sem Categoria
 28/06/2026;404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;0;0.0;
 28/06/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;0;0.0;
@@ -588,7 +588,7 @@ Data;Regra;Descricao;NOrders;Impacto_Total;Categoria
 28/06/2026;406;bloqueio EBB;0;0.0;
 28/06/2026;407;bloqueio ebb;0;0.0;
 28/06/2026;408;Bloqueio EBB;0;0.0;
-28/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;111;849.9;Sem Categoria
+28/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;107;808.04;Sem Categoria
 28/06/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;0;0.0;
 28/06/2026;411;Atrus - Apenas HEIST;0;0.0;
 28/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;49;51.04;Sem Categoria
@@ -600,29 +600,41 @@ Data;Regra;Descricao;NOrders;Impacto_Total;Categoria
 28/06/2026;83;Bloqueia TV origem Cotia 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;0;0.0;
 28/06/2026;84;Bloqueia TV Todas as origens 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x139 - EU ENTREGO SISTEMAS S/A  x;0;0.0;
 28/06/2026;184;Bloqueia Dialogo, J&T e Magalu nas cadeiras de itau origem Serra;0;0.0;
-28/06/2026;202;Bloqueia todas as transportadoras em hub09 e hub10 , exceto aquelas com SLA acima de 97%  em VGP;0;0.0;
+28/06/2026;202;Bloqueia todas as transportadoras em hub09 e hub10 , exceto aquelas com SLA acima de 97%  origem VGP;0;0.0;
 28/06/2026;207;Bloqueia Magalu e Dialogo de alguns SKU's;0;0.0;
 28/06/2026;208;Bloqueia Jamef de dois SKUs;0;0.0;
 28/06/2026;211;Bloqueia Jamef de dois SKUs;0;0.0;
 28/06/2026;250;Bloqeuio de imile na origem VGP algumas cidades especificas ;4;8.02;Sem Categoria
 28/06/2026;251;Bloqeuio de imile na origem Serra algumas cidades especificas;0;0.0;
 28/06/2026;264;Bloquieo de JET no SKU SI5435;0;0.0;
-28/06/2026;268;Bloquieo de bebidas em 35 - Pacifico  x56 - Pajucara  x90 - Jamef SP  x92 - JeT EXPRESS  x120 - TODOBRASIL  x127 - Correios SEDEX - 34028316000103  x140 - LAUTO CARGO  x164 - IMILE Standard  x;0;0.0;
+28/06/2026;268;Bloquieo de bebidas em 35 - Pacifico  x56 - Pajucara  x90 - Jamef SP  x92 - JeT EXPRESS  x120 - TODOBRASIL  x127 - Correios SEDEX - 34028316000103  x140 - LAUTO CARGO  x164 - IMILE Standard  x;2;320.1;Sem Categoria
 28/06/2026;275;Bloquieo de Pajuçara em MG em SKUs que não fazem;0;0.0;
 28/06/2026;276;Bloquieo de Pajuçara em ES em SKUs que não fazem;0;0.0;
 28/06/2026;277;Bloquieo de Pajuçara em Cotia em SKUs que não fazem;0;0.0;
 28/06/2026;278;Bloquieo de Pajuçara em VGP em SKUs que não fazem;0;0.0;
-29/06/2026;420;Peso minimo J&T origem Cotia;140;508.4;Sem Categoria
+28/06/2026;336;;0;0.0;Sem Categoria
+28/06/2026;368;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem Cotia;0;0.0;
+28/06/2026;369;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem VGP;1;6.8;Sem Categoria
+28/06/2026;409;Bloqueio campanhas prioritarias em correios ;1;0.78;Sem Categoria
+28/06/2026;410;Bloqueio campanhas prioritarias em correios ;1;0.78;Sem Categoria
+28/06/2026;424;Bloquieo de HUB09 em Pacifico, Dominalog, Jadlog, Gol e J&T em HUB09 origem VGP;0;0.0;
+28/06/2026;301;Regra de caixa postal;0;0.0;
+28/06/2026;302;Regra de caixa postal;0;0.0;
+28/06/2026;303;Regra de caixa postal;0;0.0;
+28/06/2026;304;Regra de caixa postal;0;0.0;
+28/06/2026;305;Regra de caixa postal;0;0.0;
+28/06/2026;355;Bloqueia jad e jamef em SKUs de ON;0;0.0;
+29/06/2026;420;Peso minimo J&T origem Cotia;141;530.41;Sem Categoria
 29/06/2026;421;Peso minimo J&T origem MG;30;49.95;Sem Categoria
 29/06/2026;422;Peso minimo J&T VGP;2;31.96;Sem Categoria
 29/06/2026;423;Bloqueio J&T peso minimo Serra;0;0.0;
 29/06/2026;186;Bloqueia Carriers de Serra;0;0.0;
 29/06/2026;187;Bloqueia Carriers em Cotia;0;0.0;
 29/06/2026;212;;0;0.0;
-29/06/2026;412;Bloqueio iMile VGP - Inativo;9;82.55;Sem Categoria
-29/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;138;406.27;Sem Categoria
-29/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;32;92.19;Sem Categoria
-29/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;18;164.04;Sem Categoria
+29/06/2026;412;Bloqueio iMile VGP - Inativo;10;136.38;Sem Categoria
+29/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;137;462.68;Sem Categoria
+29/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;34;162.22;Sem Categoria
+29/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;17;150.59;Sem Categoria
 29/06/2026;198;Bloqueia Sedex de Cuaba;0;0.0;Sem Categoria
 29/06/2026;404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;0;0.0;
 29/06/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;0;0.0;
@@ -661,7 +673,7 @@ Data;Regra;Descricao;NOrders;Impacto_Total;Categoria
 29/06/2026;406;bloqueio EBB;0;0.0;
 29/06/2026;407;bloqueio ebb;0;0.0;
 29/06/2026;408;Bloqueio EBB;0;0.0;
-29/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;120;978.42;Sem Categoria
+29/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;124;1154.12;Sem Categoria
 29/06/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;0;0.0;
 29/06/2026;411;Atrus - Apenas HEIST;0;0.0;
 29/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;49;51.04;Sem Categoria
@@ -673,15 +685,27 @@ Data;Regra;Descricao;NOrders;Impacto_Total;Categoria
 29/06/2026;83;Bloqueia TV origem Cotia 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;0;0.0;
 29/06/2026;84;Bloqueia TV Todas as origens 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x139 - EU ENTREGO SISTEMAS S/A  x;0;0.0;
 29/06/2026;184;Bloqueia Dialogo, J&T e Magalu nas cadeiras de itau origem Serra;0;0.0;
-29/06/2026;202;Bloqueia todas as transportadoras em hub09 e hub10 , exceto aquelas com SLA acima de 97%  em VGP;0;0.0;
+29/06/2026;202;Bloqueia todas as transportadoras em hub09 e hub10 , exceto aquelas com SLA acima de 97%  origem VGP;0;0.0;
 29/06/2026;207;Bloqueia Magalu e Dialogo de alguns SKU's;0;0.0;
 29/06/2026;208;Bloqueia Jamef de dois SKUs;0;0.0;
 29/06/2026;211;Bloqueia Jamef de dois SKUs;0;0.0;
 29/06/2026;250;Bloqeuio de imile na origem VGP algumas cidades especificas ;5;8.61;Sem Categoria
 29/06/2026;251;Bloqeuio de imile na origem Serra algumas cidades especificas;0;0.0;
 29/06/2026;264;Bloquieo de JET no SKU SI5435;0;0.0;
-29/06/2026;268;Bloquieo de bebidas em 35 - Pacifico  x56 - Pajucara  x90 - Jamef SP  x92 - JeT EXPRESS  x120 - TODOBRASIL  x127 - Correios SEDEX - 34028316000103  x140 - LAUTO CARGO  x164 - IMILE Standard  x;0;0.0;
+29/06/2026;268;Bloquieo de bebidas em 35 - Pacifico  x56 - Pajucara  x90 - Jamef SP  x92 - JeT EXPRESS  x120 - TODOBRASIL  x127 - Correios SEDEX - 34028316000103  x140 - LAUTO CARGO  x164 - IMILE Standard  x;2;320.1;Sem Categoria
 29/06/2026;275;Bloquieo de Pajuçara em MG em SKUs que não fazem;0;0.0;
 29/06/2026;276;Bloquieo de Pajuçara em ES em SKUs que não fazem;0;0.0;
 29/06/2026;277;Bloquieo de Pajuçara em Cotia em SKUs que não fazem;0;0.0;
 29/06/2026;278;Bloquieo de Pajuçara em VGP em SKUs que não fazem;0;0.0;
+29/06/2026;336;;0;0.0;Sem Categoria
+29/06/2026;368;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem Cotia;0;0.0;
+29/06/2026;369;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem VGP;1;6.8;Sem Categoria
+29/06/2026;409;Bloqueio campanhas prioritarias em correios ;1;0.78;Sem Categoria
+29/06/2026;410;Bloqueio campanhas prioritarias em correios ;1;0.78;Sem Categoria
+29/06/2026;424;Bloquieo de HUB09 em Pacifico, Dominalog, Jadlog, Gol e J&T em HUB09 origem VGP;0;0.0;
+29/06/2026;301;Regra de caixa postal;0;0.0;
+29/06/2026;302;Regra de caixa postal;0;0.0;
+29/06/2026;303;Regra de caixa postal;0;0.0;
+29/06/2026;304;Regra de caixa postal;0;0.0;
+29/06/2026;305;Regra de caixa postal;0;0.0;
+29/06/2026;355;Bloqueia jad e jamef em SKUs de ON;0;0.0;

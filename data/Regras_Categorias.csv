@@ -24,7 +24,7 @@ Regra;Descricao;Categoria
 187;Bloqueia Carriers em Cotia;Regra operacional
 190;Bloqueia BRBAY em Carriers, Atrus, todo brasil, Sedex, Eu entrego;Oportunidade
 198;Bloqueia Sedex de Cuaba;Regra operacional
-202;Bloqueia todas as transportadoras em hub09 e hub10 , exceto aquelas com SLA acima de 97%  em VGP;Oportunidade
+202;Bloqueia todas as transportadoras em hub09 e hub10 , exceto aquelas com SLA acima de 97%  origem VGP;Oportunidade
 206;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem Serra;Regra operacional
 207;Bloqueia Magalu e Dialogo de alguns SKU's;Regra operacional
 208;Bloqueia Jamef de dois SKUs;Regra operacional
@@ -77,8 +77,8 @@ Regra;Descricao;Categoria
 347;Bloqueio de notebook em Favorita e Pajucara;Regra operacional
 355;Bloqueia jad e jamef em SKUs de ON;Oportunidade
 363;Recomenda Heist em Atrus;Regra operacional
-368;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima para BRBAY Origem Cotia;Sem Categoria
-369;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima para BRBAY Origem VGP;Sem Categoria
+368;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem Cotia;Oportunidade
+369;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem VGP;Oportunidade
 371;Bloqueia HUB09 em R3;Regra operacional
 372;Bloqueia HUB09 em R3;Regra operacional
 373;Bloqueio Jamef Trator;Regra operacional
