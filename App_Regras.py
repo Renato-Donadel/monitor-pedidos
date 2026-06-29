@@ -294,7 +294,10 @@ def render_regras():
 
             # ── Donut + barra: impacto por categoria ─────────
             df_cat = (
-                df_periodo[df_periodo["Impacto_Total"] > 0]
+                df_periodo[
+                    (df_periodo["Impacto_Total"] > 0) &
+                    (~df_periodo["Categoria"].isin(["Sem Categoria", "Não classificado", "Nao classificado"]))
+                ]
                 .groupby("Categoria", as_index=False)["Impacto_Total"].sum()
                 .sort_values("Impacto_Total", ascending=False)
             )
