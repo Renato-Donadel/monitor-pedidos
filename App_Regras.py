@@ -225,11 +225,18 @@ def render_regras():
             def brl(v):
                 return f"R$ {v:,.2f}".replace(",","X").replace(".",",").replace("X",".")
 
-            col_a, col_b, col_c, col_d = st.columns(4)
-            col_a.metric("💸 Impacto Total",          brl(total_impacto))
-            col_b.metric("📦 Pedidos Impactados",     f"{total_orders:,}")
-            col_c.metric("📅 Dias Analisados",        n_dias)
-            col_d.metric("📊 Média por Dia",           brl(media_dia))
+            total_categorizado = df_periodo[
+                ~df_periodo["Categoria"].isin(["Sem Categoria","Não classificado","Nao classificado"])
+            ]["Impacto_Total"].sum()
+            pct_cat = round(total_categorizado / total_impacto * 100, 1) if total_impacto > 0 else 0
+
+            col_a, col_b, col_c, col_d, col_e = st.columns(5)
+            col_a.metric("💸 Impacto Total",      brl(total_impacto))
+            col_b.metric("📦 Pedidos Impactados", f"{total_orders:,}")
+            col_c.metric("📅 Dias Analisados",    n_dias)
+            col_d.metric("📊 Média por Dia",       brl(media_dia))
+            col_e.metric("🏷️ % Categorizado",      f"{pct_cat}%",
+                         help="Percentual do impacto total que já tem categoria definida na planilha de regras")
 
             # ── Visão por Categoria ───────────────────────────
             ORDEM_CAT = [
@@ -342,8 +349,8 @@ def render_regras():
                     fig_cat.update_layout(
                         title="Impacto por Categoria (R$)",
                         height=320,
-                        margin=dict(t=50, b=10, l=10, r=80),
-                        xaxis=dict(tickformat=",.2f"),
+                        margin=dict(t=50, b=10, l=10, r=20),
+                        xaxis=dict(tickformat=",.2f", rangemode="tozero"),
                         yaxis=dict(autorange="reversed"),
                     )
                     st.plotly_chart(fig_cat, use_container_width=True)
@@ -363,13 +370,20 @@ def render_regras():
                     "Regra " + df_por_regra["Regra"].astype(str)
                     + " — " + df_por_regra["Descricao"].str[:45]
                 )
+                # Capa o eixo no P85 para não deixar outliers esmagar as outras barras
+                vals = df_por_regra["Impacto_Total"]
+                x_cap = float(vals.quantile(0.85)) * 1.4 if len(vals) > 3 else float(vals.max()) * 1.2
+                x_cap = max(x_cap, float(vals.max()) * 0.15)  # garante visibilidade mínima
+
                 fig_bar = go.Figure(go.Bar(
                     y=labels,
                     x=df_por_regra["Impacto_Total"],
                     orientation="h",
                     marker_color="#e63946",
                     text=df_por_regra["Impacto_Total"].apply(brl),
-                    textposition="outside",
+                    textposition="auto",
+                    insidetextanchor="start",
+                    cliponaxis=False,
                     customdata=df_por_regra["NOrders"],
                     hovertemplate=(
                         "<b>%{y}</b><br>"
@@ -381,8 +395,8 @@ def render_regras():
                     title=f"Custo de Compliance por Regra — {d_ini.strftime('%d/%m/%Y')} a {d_fim.strftime('%d/%m/%Y')}",
                     xaxis_title="R$", yaxis_title="",
                     height=max(300, len(df_por_regra) * 50 + 80),
-                    margin=dict(t=50, b=30, l=10, r=120),
-                    xaxis=dict(tickformat=",.2f"),
+                    margin=dict(t=50, b=30, l=10, r=20),
+                    xaxis=dict(tickformat=",.2f", range=[0, x_cap]),
                 )
                 st.plotly_chart(fig_bar, use_container_width=True)
 
