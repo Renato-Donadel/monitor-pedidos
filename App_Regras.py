@@ -28,17 +28,21 @@ def carregar_cat_map(path):
 @st.cache_data(ttl=3600)
 def carregar_detalhe(path):
     """
-    Lê o CSV de impacto por EMBARQUE (fonte da verdade dos totais).
-    1 linha por embarque/dia: Impacto = pago − mais barata global,
-    Regras = regras alocadas separadas por '|' (pode ser vazio).
+    Detalhe por EVENTO de cotação (v3). Colunas: Data;DataHora;PedidoID;
+    ShipmentID;NF;CotacaoID;N_Tsp;Valor_Escolhida;Menor_Valor;Impacto;Regras
     """
     if not os.path.exists(path):
         return pd.DataFrame()
     df = pd.read_csv(path, sep=";", dtype={"Regras": str})
-    df["Data"]    = pd.to_datetime(df["Data"], dayfirst=True, errors="coerce")
-    df["Impacto"] = pd.to_numeric(df["Impacto"], errors="coerce").fillna(0.0)
+    if "N_Tsp" not in df.columns:      # formato antigo → força fallback
+        return pd.DataFrame()
+    df["Data"]     = pd.to_datetime(df["Data"], dayfirst=True, errors="coerce")
+    df["DataHora"] = pd.to_datetime(df["DataHora"], errors="coerce")
+    for c in ["Impacto", "Valor_Escolhida", "Menor_Valor", "N_Tsp"]:
+        df[c] = pd.to_numeric(df[c], errors="coerce")
+    df["Impacto"] = df["Impacto"].fillna(0.0)
     df["Regras"]  = df["Regras"].fillna("")
-    return df.dropna(subset=["Data"])
+    return df.dropna(subset=["Data", "DataHora"])
 
 
 @st.cache_data(ttl=60)
@@ -288,14 +292,41 @@ def render_regras():
                 return frozenset(cats) if cats else frozenset({"Sem Categoria"})
 
             if not df_det_p.empty:
-                # ── Fonte da verdade: detalhe por embarque ────────
-                df_det_p["Cats"] = df_det_p["Regras"].apply(_cats)
-                total_impacto = df_det_p["Impacto"].sum()
-                total_orders  = df_det_p["ShipmentID"].nunique()
-                total_categorizado = df_det_p[
-                    df_det_p["Cats"] != frozenset({"Sem Categoria"})
+                # ═════ REGRAS DO PERÍODO (v3) ═════════════════════
+                # Só eventos DENTRO do período contam; cotações da
+                # mesma NF antes/depois são irrelevantes.
+                ev = df_det_p.sort_values("DataHora")
+
+                # último evento (qualquer) de cada NF no período
+                ult = ev.drop_duplicates(subset=["ShipmentID"], keep="last")[
+                    ["ShipmentID", "N_Tsp"]].rename(columns={"N_Tsp": "N_Ult"})
+
+                # leilões válidos: 2+ transportadoras e a escolhida cotou
+                mult = ev[(ev["N_Tsp"] >= 2) & ev["Valor_Escolhida"].notna()]
+                # o leilão que VALE: último do período por NF
+                principal = mult.drop_duplicates(subset=["ShipmentID"], keep="last")
+                # leilões anteriores da mesma NF no período (excedentes)
+                extras = mult.loc[~mult.index.isin(principal.index)]
+                extras_pos = extras[extras["Impacto"] > 0]
+
+                principal = principal.merge(ult, on="ShipmentID", how="left")
+                tampada = principal["N_Ult"] == 1   # re-cotação só com a escolhida por cima
+
+                df_main = principal[(~tampada) & (principal["Impacto"] > 0)].copy()
+                df_b1   = principal[(tampada)  & (principal["Impacto"] > 0)].copy()
+
+                # ═════ KPIs (card principal) ══════════════════════
+                df_main["Cats"] = df_main["Regras"].apply(_cats)
+                total_impacto = df_main["Impacto"].sum()
+                total_orders  = (df_main["PedidoID"].nunique()
+                                 if df_main["PedidoID"].notna().any()
+                                 else df_main["ShipmentID"].nunique())
+                total_categorizado = df_main[
+                    df_main["Cats"] != frozenset({"Sem Categoria"})
                 ]["Impacto"].sum()
             else:
+                df_main = pd.DataFrame()
+                df_b1 = pd.DataFrame(); extras_pos = pd.DataFrame()
                 # Fallback (CSV antigo, com dupla contagem entre regras)
                 total_impacto = df_periodo["Impacto_Total"].sum()
                 total_orders  = df_periodo["NOrders"].sum()
@@ -308,13 +339,34 @@ def render_regras():
 
             col_a, col_b, col_c, col_d, col_e = st.columns(5)
             col_a.metric("💸 Impacto Total",      brl(total_impacto),
-                         help="Σ (frete contratado − cotação mais barata) por embarque. "
-                              "Cada embarque conta uma única vez, independente de quantas regras o atingem.")
+                         help="Para cada NF: preço da escolhida no ÚLTIMO leilão do período "
+                              "(cotação com 2+ transportadoras) menos a mais barata do mesmo leilão. "
+                              "Cada NF conta uma única vez. Cotações fora do período são ignoradas.")
             col_b.metric("📦 Pedidos Impactados", f"{total_orders:,}")
             col_c.metric("📅 Dias Analisados",    n_dias)
             col_d.metric("📊 Média por Dia",       brl(media_dia))
             col_e.metric("🏷️ % Categorizado",      f"{pct_cat}%",
                          help="Percentual do impacto total que já tem categoria definida na planilha de regras")
+
+            # ═════ Cards informativos (fora do Impacto Total) ═════
+            if not df_det_p.empty:
+                n_b1, v_b1 = len(df_b1), df_b1["Impacto"].sum()
+                n_ex = extras_pos["ShipmentID"].nunique() if not extras_pos.empty else 0
+                v_ex = extras_pos["Impacto"].sum() if not extras_pos.empty else 0.0
+
+                col_i1, col_i2 = st.columns(2)
+                col_i1.metric("🔁 Re-cotação com transportadora única",
+                              f"{n_b1:,} NFs  ·  {brl(v_b1)}",
+                              help="NFs cuja cotação mais recente do período tem SÓ a transportadora "
+                                   "escolhida (re-cotação tampando o leilão). O valor é o impacto do "
+                                   "último leilão com concorrência do período. NÃO entra no Impacto Total.")
+                col_i2.metric("📑 2+ cotações no mesmo período",
+                              f"{n_ex:,} NFs  ·  {brl(v_ex)}",
+                              help="NFs com mais de um leilão dentro do período: só a diferença do "
+                                   "último entra no Impacto Total; este card soma a dos leilões "
+                                   "anteriores, apenas informativo.")
+                st.caption("Os dois cards acima são informativos e **não** somam no Impacto Total — "
+                           "evitam contar a mesma NF duas vezes.")
 
             # ── Visão por Categoria (com sobreposição explícita) ──
             CORES_CAT = {
@@ -331,13 +383,13 @@ def render_regras():
                               "Oportunidade", "Regra operacional", "Express",
                               "Default", "Sem Categoria"]
 
-            if not df_det_p.empty:
+            if not df_main.empty:
                 # Por categoria: Total (pedidos que tocam a categoria),
                 # Exclusivo (pedidos SÓ dessa categoria) e Sobreposto
-                todas_cats = sorted({c for s in df_det_p["Cats"] for c in s})
+                todas_cats = sorted({c for s in df_main["Cats"] for c in s})
                 linhas_cat = []
                 for c in todas_cats:
-                    toca      = df_det_p[df_det_p["Cats"].apply(lambda s: c in s)]
+                    toca      = df_main[df_main["Cats"].apply(lambda s: c in s)]
                     exclusivo = toca[toca["Cats"].apply(lambda s: len(s) == 1)]["Impacto"].sum()
                     total_c   = toca["Impacto"].sum()
                     linhas_cat.append({
@@ -358,8 +410,8 @@ def render_regras():
                         if c in cats:
                             return c
                     return sorted(cats)[0]
-                df_det_p["Cat_Primaria"] = df_det_p["Cats"].apply(_cat_primaria)
-                df_donut = (df_det_p.groupby("Cat_Primaria", as_index=False)["Impacto"].sum()
+                df_main["Cat_Primaria"] = df_main["Cats"].apply(_cat_primaria)
+                df_donut = (df_main.groupby("Cat_Primaria", as_index=False)["Impacto"].sum()
                             .rename(columns={"Cat_Primaria": "Categoria", "Impacto": "Impacto_Total"})
                             .sort_values("Impacto_Total", ascending=False))
 
@@ -400,6 +452,7 @@ def render_regras():
                         textposition="inside",
                         insidetextanchor="start",
                         textfont=dict(color="white", size=12),
+                        textangle=0,
                         constraintext="none",
                         cliponaxis=False,
                         customdata=list(zip(df_cp["Exclusivo"].apply(brl),
@@ -448,6 +501,7 @@ def render_regras():
                             marker_color=cores, text=df_cat["Impacto_Total"].apply(brl),
                             textposition="inside", insidetextanchor="start",
                             textfont=dict(color="white", size=12),
+                        textangle=0,
                             constraintext="none", cliponaxis=False,
                             hovertemplate="%{y}<br>%{text}<extra></extra>",
                         ))
@@ -489,6 +543,7 @@ def render_regras():
                     textposition="inside",
                     insidetextanchor="start",
                     textfont=dict(color="white", size=12),
+                        textangle=0,
                     constraintext="none",
                     cliponaxis=False,
                     customdata=df_por_regra["NOrders"],
@@ -511,9 +566,9 @@ def render_regras():
 
             # ── Linha temporal ─────────────────────────────────
             if len(datas_disp) > 1:
-                if not df_det_p.empty:
+                if not df_main.empty:
                     df_por_dia = (
-                        df_det_p
+                        df_main
                         .groupby("Data", as_index=False)["Impacto"].sum()
                         .rename(columns={"Impacto": "Impacto_Total"})
                         .sort_values("Data")
