@@ -384,53 +384,44 @@ def render_regras():
                                "(a de maior prioridade), por isso soma 100% do impacto total.")
 
                 with col_cat_bar:
-                    fig_cat = go.Figure()
-                    fig_cat.add_trace(go.Bar(
-                        y=df_cat_plot["Categoria"],
-                        x=df_cat_plot["Exclusivo"],
+                    df_cp = df_cat_plot.copy()
+                    df_cp["Pct_Sobre"] = (df_cp["Sobreposto"] / df_cp["Total"] * 100).fillna(0)
+                    df_cp["Rotulo"] = df_cp.apply(
+                        lambda r: f"{brl(r['Total'])}  ·  {r['Pct_Sobre']:.0f}% sobreposto"
+                                  if r["Sobreposto"] > 0 else brl(r["Total"]),
+                        axis=1,
+                    )
+                    fig_cat = go.Figure(go.Bar(
+                        y=df_cp["Categoria"],
+                        x=df_cp["Total"],
                         orientation="h",
-                        name="Exclusivo",
-                        marker=dict(color=[CORES_CAT.get(c, "#adb5bd") for c in df_cat_plot["Categoria"]]),
-                        text=df_cat_plot["Exclusivo"].apply(brl),
+                        marker=dict(color=[CORES_CAT.get(c, "#adb5bd") for c in df_cp["Categoria"]]),
+                        text=df_cp["Rotulo"],
                         textposition="inside",
                         insidetextanchor="start",
                         textfont=dict(color="white", size=12),
                         constraintext="none",
                         cliponaxis=False,
-                        customdata=df_cat_plot["Total"].apply(brl),
-                        hovertemplate="%{y}<br>Exclusivo: %{text}<br>Total da categoria: %{customdata}<extra></extra>",
-                    ))
-                    fig_cat.add_trace(go.Bar(
-                        y=df_cat_plot["Categoria"],
-                        x=df_cat_plot["Sobreposto"],
-                        orientation="h",
-                        name="Sobreposto (2+ categorias)",
-                        marker=dict(
-                            color=[CORES_CAT.get(c, "#adb5bd") for c in df_cat_plot["Categoria"]],
-                            pattern=dict(shape="|", fgcolor="white", solidity=0.35),
-                            line=dict(color="white", width=1.5),
-                        ),
-                        text=df_cat_plot["Sobreposto"].apply(lambda v: brl(v) if v > 0 else ""),
-                        textposition="inside",
-                        textfont=dict(color="white", size=11),
-                        constraintext="none",
-                        cliponaxis=False,
-                        customdata=df_cat_plot["Total"].apply(brl),
-                        hovertemplate="%{y}<br>Sobreposto com outra categoria: %{text}"
-                                      "<br>Total da categoria: %{customdata}<extra></extra>",
+                        customdata=list(zip(df_cp["Exclusivo"].apply(brl),
+                                            df_cp["Sobreposto"].apply(brl),
+                                            df_cp["Pct_Sobre"].round(1))),
+                        hovertemplate="<b>%{y}</b><br>"
+                                      "Total: %{x:,.2f}<br>"
+                                      "Exclusivo da categoria: %{customdata[0]}<br>"
+                                      "Sobreposto (2+ categorias): %{customdata[1]} (%{customdata[2]}%)"
+                                      "<extra></extra>",
                     ))
                     fig_cat.update_layout(
                         title="Impacto por Categoria (R$)",
-                        barmode="stack",
-                        height=max(300, len(df_cat_plot) * 60 + 100),
+                        height=max(300, len(df_cp) * 60 + 100),
                         margin=dict(t=50, b=10, l=10, r=10),
                         xaxis=dict(tickformat=",.2f", rangemode="tozero"),
                         yaxis=dict(autorange="reversed"),
-                        legend=dict(orientation="h", y=-0.18),
+                        showlegend=False,
                     )
                     st.plotly_chart(fig_cat, use_container_width=True)
-                    st.caption("A parte listrada é o valor que também pertence a outra categoria "
-                               "(pedido atingido por regras de categorias diferentes). "
+                    st.caption("O % sobreposto é a fatia do valor da categoria que também pertence a "
+                               "outra categoria (pedido atingido por regras de categorias diferentes). "
                                "Por isso a soma das barras pode exceder o Impacto Total.")
             else:
                 # Fallback sem detalhe: visão antiga por categoria (agregado)

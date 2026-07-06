@@ -6,10 +6,10 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 30/05/2026;186;Bloqueia Carriers de Serra;Regra operacional;0;0.0
 30/05/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 30/05/2026;212;;Sem Categoria;0;0.0
-30/05/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;89;214.97
-30/05/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;59;550.34
+30/05/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;91;985.62
+30/05/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;65;3243.63
 30/05/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;34;212.29
-30/05/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;11;87.91
+30/05/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;17;2781.2
 30/05/2026;198;Bloqueia Sedex de Cuaba;Regra operacional;0;0.0
 30/05/2026;404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;Regra operacional;0;0.0
 30/05/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;Oportunidade;0;0.0
@@ -35,7 +35,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 30/05/2026;234;Bloqueio ITALA;Regra operacional;0;0.0
 30/05/2026;243;Bloqueia Itala em tudo exceto atrus Cotia;Regra operacional;0;0.0
 30/05/2026;244;Bloqueia Itala em tudo exceto atrus origem VGP;Regra operacional;0;0.0
-30/05/2026;274;Bloquieo de HEIST em várias TSP;Regra operacional;0;0.0
+30/05/2026;274;Bloquieo de HEIST em várias TSP;Regra operacional;6;2693.29
 30/05/2026;382;Bloqueio gol e sedex em MG;Oportunidade;0;0.0
 30/05/2026;389;Bloqueio bebidas, powerbank e perfume para Gol;Regra operacional;0;0.0
 30/05/2026;390;Bloqueio bebidas, powerbank e perfume para Gol 2;Regra operacional;0;0.0
@@ -48,7 +48,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 30/05/2026;406;bloqueio EBB;Regra operacional;0;0.0
 30/05/2026;407;bloqueio ebb;Regra operacional;0;0.0
 30/05/2026;408;Bloqueio EBB;Regra operacional;0;0.0
-30/05/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;78;734.38
+30/05/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;80;1505.03
 30/05/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;Regra operacional;0;0.0
 30/05/2026;411;Atrus - Apenas HEIST;Regra operacional;0;0.0
 30/05/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;9;134.89
@@ -91,10 +91,10 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 31/05/2026;186;Bloqueia Carriers de Serra;Regra operacional;0;0.0
 31/05/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 31/05/2026;212;;Sem Categoria;0;0.0
-31/05/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;123;233.25
-31/05/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;264;3328.19
+31/05/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;124;725.42
+31/05/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;269;5929.63
 31/05/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;161;2341.47
-31/05/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;18;161.73
+31/05/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;23;2763.17
 31/05/2026;198;Bloqueia Sedex de Cuaba;Regra operacional;0;0.0
 31/05/2026;404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;Regra operacional;0;0.0
 31/05/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;Oportunidade;0;0.0
@@ -103,7 +103,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 31/05/2026;167;Bloqueia Magalu, com origem Cotia de levar carrinho de compras;Regra operacional;0;0.0
 31/05/2026;170;Bloqueia Atrus em várias campamnhas especificas;Oportunidade;0;0.0
 31/05/2026;181;Bloqueia várias transportadoras de coletar no escritorio;Regra operacional;0;0.0
-31/05/2026;182;Bloqueia Magalu em uma lista de Cidades que eles cortaram ;Regra operacional;2;56.9
+31/05/2026;182;Bloqueia Magalu em uma lista de Cidades que eles cortaram ;Regra operacional;3;549.07
 31/05/2026;1;Bloqueia MARYK das pesadas com origem Cotia;Oportunidade;0;0.0
 31/05/2026;2;Bloqueia MARYK das pesadas de todas as origens;Oportunidade;0;0.0
 31/05/2026;161;Bloqueia HPAMZ, HPB2W e HPMLU com origem Serra de sair por Sedex;Oportunidade;0;0.0
@@ -120,7 +120,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 31/05/2026;234;Bloqueio ITALA;Regra operacional;0;0.0
 31/05/2026;243;Bloqueia Itala em tudo exceto atrus Cotia;Regra operacional;0;0.0
 31/05/2026;244;Bloqueia Itala em tudo exceto atrus origem VGP;Regra operacional;0;0.0
-31/05/2026;274;Bloquieo de HEIST em várias TSP;Regra operacional;0;0.0
+31/05/2026;274;Bloquieo de HEIST em várias TSP;Regra operacional;5;2601.44
 31/05/2026;382;Bloqueio gol e sedex em MG;Oportunidade;0;0.0
 31/05/2026;389;Bloqueio bebidas, powerbank e perfume para Gol;Regra operacional;0;0.0
 31/05/2026;390;Bloqueio bebidas, powerbank e perfume para Gol 2;Regra operacional;0;0.0
@@ -133,7 +133,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 31/05/2026;406;bloqueio EBB;Regra operacional;0;0.0
 31/05/2026;407;bloqueio ebb;Regra operacional;0;0.0
 31/05/2026;408;Bloqueio EBB;Regra operacional;0;0.0
-31/05/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;162;3310.19
+31/05/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;163;3802.36
 31/05/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;Regra operacional;0;0.0
 31/05/2026;411;Atrus - Apenas HEIST;Regra operacional;0;0.0
 31/05/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;61;785.14
@@ -169,17 +169,17 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 31/05/2026;304;Regra de caixa postal;Regra operacional;0;0.0
 31/05/2026;305;Regra de caixa postal;Regra operacional;0;0.0
 31/05/2026;355;Bloqueia jad e jamef em SKUs de ON;Oportunidade;0;0.0
-01/06/2026;420;Peso minimo J&T origem Cotia;Ganho Imediato;32;112.86
+01/06/2026;420;Peso minimo J&T origem Cotia;Ganho Imediato;32;113.38
 01/06/2026;421;Peso minimo J&T origem MG;Ganho Imediato;7;240.19
 01/06/2026;422;Peso minimo J&T VGP;Ganho Imediato;12;63.48
 01/06/2026;423;Bloqueio J&T peso minimo Serra;Ganho Imediato;0;0.0
 01/06/2026;186;Bloqueia Carriers de Serra;Regra operacional;0;0.0
 01/06/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 01/06/2026;212;;Sem Categoria;0;0.0
-01/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;198;904.98
-01/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;179;3437.6
-01/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;96;1744.54
-01/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;29;413.25
+01/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;201;1237.43
+01/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;219;18201.57
+01/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;102;2053.47
+01/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;53;14630.81
 01/06/2026;198;Bloqueia Sedex de Cuaba;Regra operacional;0;0.0
 01/06/2026;404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;Regra operacional;0;0.0
 01/06/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;Oportunidade;1;170.13
@@ -197,15 +197,15 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 01/06/2026;190;Bloqueia BRBAY em Carriers, Atrus, todo brasil, Sedex, Eu entrego;Oportunidade;1;31.9
 01/06/2026;206;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem Serra;Regra operacional;0;0.0
 01/06/2026;313;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem MG;Regra operacional;0;0.0
-01/06/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;Regra operacional;1;60.3
-01/06/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;Oportunidade;1;60.3
+01/06/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;Regra operacional;3;196.94
+01/06/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;Oportunidade;3;196.94
 01/06/2026;371;Bloqueia HUB09 em R3;Regra operacional;0;0.0
 01/06/2026;372;Bloqueia HUB09 em R3;Regra operacional;0;0.0
 01/06/2026;288;Bloquieo de HUB10 e jadlog;Oportunidade;0;0.0
 01/06/2026;234;Bloqueio ITALA;Regra operacional;0;0.0
 01/06/2026;243;Bloqueia Itala em tudo exceto atrus Cotia;Regra operacional;0;0.0
 01/06/2026;244;Bloqueia Itala em tudo exceto atrus origem VGP;Regra operacional;0;0.0
-01/06/2026;274;Bloquieo de HEIST em várias TSP;Regra operacional;0;0.0
+01/06/2026;274;Bloquieo de HEIST em várias TSP;Regra operacional;25;16750.21
 01/06/2026;382;Bloqueio gol e sedex em MG;Oportunidade;0;0.0
 01/06/2026;389;Bloqueio bebidas, powerbank e perfume para Gol;Regra operacional;0;0.0
 01/06/2026;390;Bloqueio bebidas, powerbank e perfume para Gol 2;Regra operacional;0;0.0
@@ -218,10 +218,10 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 01/06/2026;406;bloqueio EBB;Regra operacional;0;0.0
 01/06/2026;407;bloqueio ebb;Regra operacional;0;0.0
 01/06/2026;408;Bloqueio EBB;Regra operacional;0;0.0
-01/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;174;4331.39
+01/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;189;5760.41
 01/06/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;Regra operacional;0;0.0
 01/06/2026;411;Atrus - Apenas HEIST;Regra operacional;0;0.0
-01/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;22;795.36
+01/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;23;795.56
 01/06/2026;38;Bloqueia Linha branca origem Serra de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;Regra operacional;0;0.0
 01/06/2026;39;Bloqueia Linha branca origem Cotia de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;Regra operacional;0;0.0
 01/06/2026;40;Bloqueia Linha branca todas as origens de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;Regra operacional;0;0.0
@@ -230,7 +230,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 01/06/2026;83;Bloqueia TV origem Cotia 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;Regra operacional;0;0.0
 01/06/2026;84;Bloqueia TV Todas as origens 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x139 - EU ENTREGO SISTEMAS S/A  x;Regra operacional;0;0.0
 01/06/2026;184;Bloqueia Dialogo, J&T e Magalu nas cadeiras de itau origem Serra;Regra operacional;0;0.0
-01/06/2026;202;Bloqueia todas as transportadoras em hub09 e hub10 , exceto aquelas com SLA acima de 97%  origem VGP;Oportunidade;1;60.3
+01/06/2026;202;Bloqueia todas as transportadoras em hub09 e hub10 , exceto aquelas com SLA acima de 97%  origem VGP;Oportunidade;3;196.94
 01/06/2026;207;Bloqueia Magalu e Dialogo de alguns SKU's;Regra operacional;0;0.0
 01/06/2026;208;Bloqueia Jamef de dois SKUs;Regra operacional;0;0.0
 01/06/2026;211;Bloqueia Jamef de dois SKUs;Regra operacional;0;0.0
@@ -245,26 +245,26 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 01/06/2026;336;;Sem Categoria;0;0.0
 01/06/2026;368;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem Cotia;Oportunidade;5;103.93
 01/06/2026;369;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem VGP;Oportunidade;5;53.93
-01/06/2026;409;Bloqueio campanhas prioritarias em correios ;Oportunidade;2;84.14
-01/06/2026;410;Bloqueio campanhas prioritarias em correios ;Oportunidade;2;84.14
-01/06/2026;424;Bloquieo de HUB09 em Pacifico, Dominalog, Jadlog, Gol e J&T em HUB09 origem VGP;Oportunidade;1;60.3
+01/06/2026;409;Bloqueio campanhas prioritarias em correios ;Oportunidade;4;220.78
+01/06/2026;410;Bloqueio campanhas prioritarias em correios ;Oportunidade;4;220.78
+01/06/2026;424;Bloquieo de HUB09 em Pacifico, Dominalog, Jadlog, Gol e J&T em HUB09 origem VGP;Oportunidade;3;196.94
 01/06/2026;301;Regra de caixa postal;Regra operacional;0;0.0
 01/06/2026;302;Regra de caixa postal;Regra operacional;0;0.0
 01/06/2026;303;Regra de caixa postal;Regra operacional;0;0.0
 01/06/2026;304;Regra de caixa postal;Regra operacional;0;0.0
 01/06/2026;305;Regra de caixa postal;Regra operacional;0;0.0
 01/06/2026;355;Bloqueia jad e jamef em SKUs de ON;Oportunidade;0;0.0
-02/06/2026;420;Peso minimo J&T origem Cotia;Ganho Imediato;27;318.27
+02/06/2026;420;Peso minimo J&T origem Cotia;Ganho Imediato;28;319.95
 02/06/2026;421;Peso minimo J&T origem MG;Ganho Imediato;13;107.88
 02/06/2026;422;Peso minimo J&T VGP;Ganho Imediato;6;15.74
 02/06/2026;423;Bloqueio J&T peso minimo Serra;Ganho Imediato;0;0.0
 02/06/2026;186;Bloqueia Carriers de Serra;Regra operacional;0;0.0
 02/06/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 02/06/2026;212;;Sem Categoria;0;0.0
-02/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;381;1886.76
-02/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;261;3241.77
+02/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;390;2105.5
+02/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;277;11137.6
 02/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;80;701.05
-02/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;60;1131.88
+02/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;76;9027.71
 02/06/2026;198;Bloqueia Sedex de Cuaba;Regra operacional;0;0.0
 02/06/2026;404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;Regra operacional;0;0.0
 02/06/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;Oportunidade;1;47.45
@@ -282,15 +282,15 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 02/06/2026;190;Bloqueia BRBAY em Carriers, Atrus, todo brasil, Sedex, Eu entrego;Oportunidade;0;0.0
 02/06/2026;206;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem Serra;Regra operacional;0;0.0
 02/06/2026;313;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem MG;Regra operacional;0;0.0
-02/06/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;Regra operacional;122;766.69
-02/06/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;Oportunidade;35;463.45
+02/06/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;Regra operacional;128;917.01
+02/06/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;Oportunidade;40;612.1
 02/06/2026;371;Bloqueia HUB09 em R3;Regra operacional;29;313.88
 02/06/2026;372;Bloqueia HUB09 em R3;Regra operacional;29;313.88
 02/06/2026;288;Bloquieo de HUB10 e jadlog;Oportunidade;0;0.0
 02/06/2026;234;Bloqueio ITALA;Regra operacional;0;0.0
 02/06/2026;243;Bloqueia Itala em tudo exceto atrus Cotia;Regra operacional;0;0.0
 02/06/2026;244;Bloqueia Itala em tudo exceto atrus origem VGP;Regra operacional;0;0.0
-02/06/2026;274;Bloquieo de HEIST em várias TSP;Regra operacional;0;0.0
+02/06/2026;274;Bloquieo de HEIST em várias TSP;Regra operacional;19;9716.17
 02/06/2026;382;Bloqueio gol e sedex em MG;Oportunidade;0;0.0
 02/06/2026;389;Bloqueio bebidas, powerbank e perfume para Gol;Regra operacional;0;0.0
 02/06/2026;390;Bloqueio bebidas, powerbank e perfume para Gol 2;Regra operacional;0;0.0
@@ -303,7 +303,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 02/06/2026;406;bloqueio EBB;Regra operacional;0;0.0
 02/06/2026;407;bloqueio ebb;Regra operacional;0;0.0
 02/06/2026;408;Bloqueio EBB;Regra operacional;0;0.0
-02/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;372;6853.86
+02/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;379;7110.91
 02/06/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;Regra operacional;0;0.0
 02/06/2026;411;Atrus - Apenas HEIST;Regra operacional;0;0.0
 02/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;36;596.66
@@ -315,11 +315,11 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 02/06/2026;83;Bloqueia TV origem Cotia 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;Regra operacional;0;0.0
 02/06/2026;84;Bloqueia TV Todas as origens 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x139 - EU ENTREGO SISTEMAS S/A  x;Regra operacional;0;0.0
 02/06/2026;184;Bloqueia Dialogo, J&T e Magalu nas cadeiras de itau origem Serra;Regra operacional;0;0.0
-02/06/2026;202;Bloqueia todas as transportadoras em hub09 e hub10 , exceto aquelas com SLA acima de 97%  origem VGP;Oportunidade;111;503.46
+02/06/2026;202;Bloqueia todas as transportadoras em hub09 e hub10 , exceto aquelas com SLA acima de 97%  origem VGP;Oportunidade;117;653.78
 02/06/2026;207;Bloqueia Magalu e Dialogo de alguns SKU's;Regra operacional;0;0.0
 02/06/2026;208;Bloqueia Jamef de dois SKUs;Regra operacional;0;0.0
 02/06/2026;211;Bloqueia Jamef de dois SKUs;Regra operacional;0;0.0
-02/06/2026;250;Bloqeuio de imile na origem VGP algumas cidades especificas ;Oportunidade;9;87.55
+02/06/2026;250;Bloqeuio de imile na origem VGP algumas cidades especificas ;Oportunidade;10;98.08
 02/06/2026;251;Bloqeuio de imile na origem Serra algumas cidades especificas;Oportunidade;0;0.0
 02/06/2026;264;Bloquieo de JET no SKU SI5435;Oportunidade;0;0.0
 02/06/2026;268;Bloquieo de bebidas em 35 - Pacifico  x56 - Pajucara  x90 - Jamef SP  x92 - JeT EXPRESS  x120 - TODOBRASIL  x127 - Correios SEDEX - 34028316000103  x140 - LAUTO CARGO  x164 - IMILE Standard  x;Regra operacional;0;0.0
@@ -330,9 +330,9 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 02/06/2026;336;;Sem Categoria;0;0.0
 02/06/2026;368;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem Cotia;Oportunidade;2;47.1
 02/06/2026;369;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem VGP;Oportunidade;0;0.0
-02/06/2026;409;Bloqueio campanhas prioritarias em correios ;Oportunidade;112;526.74
-02/06/2026;410;Bloqueio campanhas prioritarias em correios ;Oportunidade;112;526.74
-02/06/2026;424;Bloquieo de HUB09 em Pacifico, Dominalog, Jadlog, Gol e J&T em HUB09 origem VGP;Oportunidade;112;635.52
+02/06/2026;409;Bloqueio campanhas prioritarias em correios ;Oportunidade;118;677.06
+02/06/2026;410;Bloqueio campanhas prioritarias em correios ;Oportunidade;118;677.06
+02/06/2026;424;Bloquieo de HUB09 em Pacifico, Dominalog, Jadlog, Gol e J&T em HUB09 origem VGP;Oportunidade;118;785.84
 02/06/2026;301;Regra de caixa postal;Regra operacional;0;0.0
 02/06/2026;302;Regra de caixa postal;Regra operacional;0;0.0
 02/06/2026;303;Regra de caixa postal;Regra operacional;0;0.0
@@ -346,10 +346,10 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 03/06/2026;186;Bloqueia Carriers de Serra;Regra operacional;0;0.0
 03/06/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 03/06/2026;212;;Sem Categoria;0;0.0
-03/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;303;1436.28
-03/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;149;1677.04
-03/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;64;404.1
-03/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;58;886.06
+03/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;319;1809.54
+03/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;163;2357.65
+03/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;65;446.83
+03/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;70;1489.13
 03/06/2026;198;Bloqueia Sedex de Cuaba;Regra operacional;0;0.0
 03/06/2026;404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;Regra operacional;0;0.0
 03/06/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;Oportunidade;1;46.51
@@ -367,15 +367,15 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 03/06/2026;190;Bloqueia BRBAY em Carriers, Atrus, todo brasil, Sedex, Eu entrego;Oportunidade;0;0.0
 03/06/2026;206;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem Serra;Regra operacional;0;0.0
 03/06/2026;313;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem MG;Regra operacional;0;0.0
-03/06/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;Regra operacional;122;1027.16
-03/06/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;Oportunidade;48;823.29
+03/06/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;Regra operacional;125;1106.31
+03/06/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;Oportunidade;51;902.44
 03/06/2026;371;Bloqueia HUB09 em R3;Regra operacional;31;423.31
 03/06/2026;372;Bloqueia HUB09 em R3;Regra operacional;31;423.31
 03/06/2026;288;Bloquieo de HUB10 e jadlog;Oportunidade;0;0.0
 03/06/2026;234;Bloqueio ITALA;Regra operacional;0;0.0
 03/06/2026;243;Bloqueia Itala em tudo exceto atrus Cotia;Regra operacional;0;0.0
 03/06/2026;244;Bloqueia Itala em tudo exceto atrus origem VGP;Regra operacional;0;0.0
-03/06/2026;274;Bloquieo de HEIST em várias TSP;Regra operacional;0;0.0
+03/06/2026;274;Bloquieo de HEIST em várias TSP;Regra operacional;14;730.25
 03/06/2026;382;Bloqueio gol e sedex em MG;Oportunidade;1;41.49
 03/06/2026;389;Bloqueio bebidas, powerbank e perfume para Gol;Regra operacional;0;0.0
 03/06/2026;390;Bloqueio bebidas, powerbank e perfume para Gol 2;Regra operacional;0;0.0
@@ -383,12 +383,12 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 03/06/2026;392;Bloqueio Gol, bebidas, perfumes e powerbank 3;Regra operacional;0;0.0
 03/06/2026;401;Bloquieo campanhas azul para gol;Regra operacional;0;0.0
 03/06/2026;394;Bloquear ebb para mcpor;Regra operacional;0;0.0
-03/06/2026;402;Bloqueia EBB em tudo exceto Heineken e HUb;Regra operacional;0;0.0
+03/06/2026;402;Bloqueia EBB em tudo exceto Heineken e HUb;Regra operacional;2;921.37
 03/06/2026;405;bloqueio EBB;Regra operacional;0;0.0
 03/06/2026;406;bloqueio EBB;Regra operacional;0;0.0
 03/06/2026;407;bloqueio ebb;Regra operacional;0;0.0
 03/06/2026;408;Bloqueio EBB;Regra operacional;0;0.0
-03/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;180;2096.69
+03/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;191;2529.39
 03/06/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;Regra operacional;0;0.0
 03/06/2026;411;Atrus - Apenas HEIST;Regra operacional;0;0.0
 03/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;12;180.5
@@ -400,7 +400,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 03/06/2026;83;Bloqueia TV origem Cotia 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;Regra operacional;0;0.0
 03/06/2026;84;Bloqueia TV Todas as origens 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x139 - EU ENTREGO SISTEMAS S/A  x;Regra operacional;0;0.0
 03/06/2026;184;Bloqueia Dialogo, J&T e Magalu nas cadeiras de itau origem Serra;Regra operacional;0;0.0
-03/06/2026;202;Bloqueia todas as transportadoras em hub09 e hub10 , exceto aquelas com SLA acima de 97%  origem VGP;Oportunidade;109;984.93
+03/06/2026;202;Bloqueia todas as transportadoras em hub09 e hub10 , exceto aquelas com SLA acima de 97%  origem VGP;Oportunidade;112;1064.08
 03/06/2026;207;Bloqueia Magalu e Dialogo de alguns SKU's;Regra operacional;0;0.0
 03/06/2026;208;Bloqueia Jamef de dois SKUs;Regra operacional;0;0.0
 03/06/2026;211;Bloqueia Jamef de dois SKUs;Regra operacional;0;0.0
@@ -415,9 +415,9 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 03/06/2026;336;;Sem Categoria;0;0.0
 03/06/2026;368;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem Cotia;Oportunidade;0;0.0
 03/06/2026;369;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem VGP;Oportunidade;0;0.0
-03/06/2026;409;Bloqueio campanhas prioritarias em correios ;Oportunidade;109;984.93
-03/06/2026;410;Bloqueio campanhas prioritarias em correios ;Oportunidade;109;984.93
-03/06/2026;424;Bloquieo de HUB09 em Pacifico, Dominalog, Jadlog, Gol e J&T em HUB09 origem VGP;Oportunidade;108;975.35
+03/06/2026;409;Bloqueio campanhas prioritarias em correios ;Oportunidade;112;1064.08
+03/06/2026;410;Bloqueio campanhas prioritarias em correios ;Oportunidade;112;1064.08
+03/06/2026;424;Bloquieo de HUB09 em Pacifico, Dominalog, Jadlog, Gol e J&T em HUB09 origem VGP;Oportunidade;111;1054.5
 03/06/2026;301;Regra de caixa postal;Regra operacional;0;0.0
 03/06/2026;302;Regra de caixa postal;Regra operacional;0;0.0
 03/06/2026;303;Regra de caixa postal;Regra operacional;0;0.0
@@ -431,10 +431,10 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 04/06/2026;186;Bloqueia Carriers de Serra;Regra operacional;0;0.0
 04/06/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 04/06/2026;212;;Sem Categoria;0;0.0
-04/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;121;351.61
-04/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;114;1116.24
+04/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;124;426.08
+04/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;118;1379.39
 04/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;68;661.95
-04/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;17;226.94
+04/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;21;490.09
 04/06/2026;198;Bloqueia Sedex de Cuaba;Regra operacional;0;0.0
 04/06/2026;404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;Regra operacional;0;0.0
 04/06/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;Oportunidade;0;0.0
@@ -460,7 +460,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 04/06/2026;234;Bloqueio ITALA;Regra operacional;0;0.0
 04/06/2026;243;Bloqueia Itala em tudo exceto atrus Cotia;Regra operacional;0;0.0
 04/06/2026;244;Bloqueia Itala em tudo exceto atrus origem VGP;Regra operacional;0;0.0
-04/06/2026;274;Bloquieo de HEIST em várias TSP;Regra operacional;0;0.0
+04/06/2026;274;Bloquieo de HEIST em várias TSP;Regra operacional;5;313.06
 04/06/2026;382;Bloqueio gol e sedex em MG;Oportunidade;0;0.0
 04/06/2026;389;Bloqueio bebidas, powerbank e perfume para Gol;Regra operacional;0;0.0
 04/06/2026;390;Bloqueio bebidas, powerbank e perfume para Gol 2;Regra operacional;0;0.0
@@ -473,7 +473,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 04/06/2026;406;bloqueio EBB;Regra operacional;0;0.0
 04/06/2026;407;bloqueio ebb;Regra operacional;0;0.0
 04/06/2026;408;Bloqueio EBB;Regra operacional;0;0.0
-04/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;114;1023.65
+04/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;116;1116.39
 04/06/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;Regra operacional;0;0.0
 04/06/2026;411;Atrus - Apenas HEIST;Regra operacional;0;0.0
 04/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;18;181.28
@@ -516,10 +516,10 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 05/06/2026;186;Bloqueia Carriers de Serra;Regra operacional;0;0.0
 05/06/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 05/06/2026;212;;Sem Categoria;0;0.0
-05/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;211;528.03
-05/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;160;1799.02
+05/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;216;549.52
+05/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;164;2095.27
 05/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;64;833.65
-05/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;25;183.95
+05/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;27;408.62
 05/06/2026;198;Bloqueia Sedex de Cuaba;Regra operacional;0;0.0
 05/06/2026;404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;Regra operacional;0;0.0
 05/06/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;Oportunidade;0;0.0
@@ -537,7 +537,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 05/06/2026;190;Bloqueia BRBAY em Carriers, Atrus, todo brasil, Sedex, Eu entrego;Oportunidade;0;0.0
 05/06/2026;206;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem Serra;Regra operacional;0;0.0
 05/06/2026;313;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem MG;Regra operacional;0;0.0
-05/06/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;Regra operacional;7;72.35
+05/06/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;Regra operacional;8;77.41
 05/06/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;Oportunidade;6;63.41
 05/06/2026;371;Bloqueia HUB09 em R3;Regra operacional;4;33.92
 05/06/2026;372;Bloqueia HUB09 em R3;Regra operacional;4;33.92
@@ -545,7 +545,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 05/06/2026;234;Bloqueio ITALA;Regra operacional;0;0.0
 05/06/2026;243;Bloqueia Itala em tudo exceto atrus Cotia;Regra operacional;0;0.0
 05/06/2026;244;Bloqueia Itala em tudo exceto atrus origem VGP;Regra operacional;0;0.0
-05/06/2026;274;Bloquieo de HEIST em várias TSP;Regra operacional;0;0.0
+05/06/2026;274;Bloquieo de HEIST em várias TSP;Regra operacional;3;227.32
 05/06/2026;382;Bloqueio gol e sedex em MG;Oportunidade;0;0.0
 05/06/2026;389;Bloqueio bebidas, powerbank e perfume para Gol;Regra operacional;0;0.0
 05/06/2026;390;Bloqueio bebidas, powerbank e perfume para Gol 2;Regra operacional;0;0.0
@@ -558,7 +558,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 05/06/2026;406;bloqueio EBB;Regra operacional;0;0.0
 05/06/2026;407;bloqueio ebb;Regra operacional;0;0.0
 05/06/2026;408;Bloqueio EBB;Regra operacional;0;0.0
-05/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;211;2577.45
+05/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;212;2582.51
 05/06/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;Regra operacional;0;0.0
 05/06/2026;411;Atrus - Apenas HEIST;Regra operacional;0;0.0
 05/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;15;142.51
@@ -570,7 +570,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 05/06/2026;83;Bloqueia TV origem Cotia 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;Regra operacional;0;0.0
 05/06/2026;84;Bloqueia TV Todas as origens 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x139 - EU ENTREGO SISTEMAS S/A  x;Regra operacional;0;0.0
 05/06/2026;184;Bloqueia Dialogo, J&T e Magalu nas cadeiras de itau origem Serra;Regra operacional;0;0.0
-05/06/2026;202;Bloqueia todas as transportadoras em hub09 e hub10 , exceto aquelas com SLA acima de 97%  origem VGP;Oportunidade;7;72.35
+05/06/2026;202;Bloqueia todas as transportadoras em hub09 e hub10 , exceto aquelas com SLA acima de 97%  origem VGP;Oportunidade;8;77.41
 05/06/2026;207;Bloqueia Magalu e Dialogo de alguns SKU's;Regra operacional;0;0.0
 05/06/2026;208;Bloqueia Jamef de dois SKUs;Regra operacional;0;0.0
 05/06/2026;211;Bloqueia Jamef de dois SKUs;Regra operacional;0;0.0
@@ -584,10 +584,10 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 05/06/2026;278;Bloquieo de Pajuçara em VGP em SKUs que não fazem;Regra operacional;0;0.0
 05/06/2026;336;;Sem Categoria;0;0.0
 05/06/2026;368;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem Cotia;Oportunidade;0;0.0
-05/06/2026;369;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem VGP;Oportunidade;6;78.12
-05/06/2026;409;Bloqueio campanhas prioritarias em correios ;Oportunidade;8;72.48
-05/06/2026;410;Bloqueio campanhas prioritarias em correios ;Oportunidade;8;72.48
-05/06/2026;424;Bloquieo de HUB09 em Pacifico, Dominalog, Jadlog, Gol e J&T em HUB09 origem VGP;Oportunidade;7;72.35
+05/06/2026;369;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem VGP;Oportunidade;7;78.3
+05/06/2026;409;Bloqueio campanhas prioritarias em correios ;Oportunidade;9;77.54
+05/06/2026;410;Bloqueio campanhas prioritarias em correios ;Oportunidade;9;77.54
+05/06/2026;424;Bloquieo de HUB09 em Pacifico, Dominalog, Jadlog, Gol e J&T em HUB09 origem VGP;Oportunidade;8;77.41
 05/06/2026;301;Regra de caixa postal;Regra operacional;0;0.0
 05/06/2026;302;Regra de caixa postal;Regra operacional;0;0.0
 05/06/2026;303;Regra de caixa postal;Regra operacional;0;0.0
@@ -601,10 +601,10 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 06/06/2026;186;Bloqueia Carriers de Serra;Regra operacional;0;0.0
 06/06/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 06/06/2026;212;;Sem Categoria;0;0.0
-06/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;92;207.58
-06/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;128;1018.7
-06/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;54;479.85
-06/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;14;112.98
+06/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;95;300.92
+06/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;130;1128.03
+06/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;55;521.11
+06/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;15;181.05
 06/06/2026;198;Bloqueia Sedex de Cuaba;Regra operacional;0;0.0
 06/06/2026;404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;Regra operacional;0;0.0
 06/06/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;Oportunidade;0;0.0
@@ -630,7 +630,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 06/06/2026;234;Bloqueio ITALA;Regra operacional;0;0.0
 06/06/2026;243;Bloqueia Itala em tudo exceto atrus Cotia;Regra operacional;0;0.0
 06/06/2026;244;Bloqueia Itala em tudo exceto atrus origem VGP;Regra operacional;0;0.0
-06/06/2026;274;Bloquieo de HEIST em várias TSP;Regra operacional;0;0.0
+06/06/2026;274;Bloquieo de HEIST em várias TSP;Regra operacional;1;68.07
 06/06/2026;382;Bloqueio gol e sedex em MG;Oportunidade;0;0.0
 06/06/2026;389;Bloqueio bebidas, powerbank e perfume para Gol;Regra operacional;0;0.0
 06/06/2026;390;Bloqueio bebidas, powerbank e perfume para Gol 2;Regra operacional;0;0.0
@@ -643,7 +643,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 06/06/2026;406;bloqueio EBB;Regra operacional;0;0.0
 06/06/2026;407;bloqueio ebb;Regra operacional;0;0.0
 06/06/2026;408;Bloqueio EBB;Regra operacional;0;0.0
-06/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;114;1213.31
+06/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;116;1276.34
 06/06/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;Regra operacional;0;0.0
 06/06/2026;411;Atrus - Apenas HEIST;Regra operacional;0;0.0
 06/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;19;311.36
@@ -686,10 +686,10 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 07/06/2026;186;Bloqueia Carriers de Serra;Regra operacional;0;0.0
 07/06/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 07/06/2026;212;;Sem Categoria;0;0.0
-07/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;87;237.83
-07/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;229;2002.21
-07/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;105;979.22
-07/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;19;170.65
+07/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;89;358.42
+07/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;234;2310.82
+07/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;108;1120.0
+07/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;21;338.48
 07/06/2026;198;Bloqueia Sedex de Cuaba;Regra operacional;0;0.0
 07/06/2026;404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;Regra operacional;0;0.0
 07/06/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;Oportunidade;1;59.34
@@ -715,7 +715,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 07/06/2026;234;Bloqueio ITALA;Regra operacional;0;0.0
 07/06/2026;243;Bloqueia Itala em tudo exceto atrus Cotia;Regra operacional;0;0.0
 07/06/2026;244;Bloqueia Itala em tudo exceto atrus origem VGP;Regra operacional;0;0.0
-07/06/2026;274;Bloquieo de HEIST em várias TSP;Regra operacional;0;0.0
+07/06/2026;274;Bloquieo de HEIST em várias TSP;Regra operacional;2;167.83
 07/06/2026;382;Bloqueio gol e sedex em MG;Oportunidade;0;0.0
 07/06/2026;389;Bloqueio bebidas, powerbank e perfume para Gol;Regra operacional;0;0.0
 07/06/2026;390;Bloqueio bebidas, powerbank e perfume para Gol 2;Regra operacional;0;0.0
@@ -728,7 +728,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 07/06/2026;406;bloqueio EBB;Regra operacional;0;0.0
 07/06/2026;407;bloqueio ebb;Regra operacional;0;0.0
 07/06/2026;408;Bloqueio EBB;Regra operacional;0;0.0
-07/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;188;2142.76
+07/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;193;2404.13
 07/06/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;Regra operacional;0;0.0
 07/06/2026;411;Atrus - Apenas HEIST;Regra operacional;0;0.0
 07/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;32;549.81
@@ -771,13 +771,13 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 08/06/2026;186;Bloqueia Carriers de Serra;Regra operacional;0;0.0
 08/06/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 08/06/2026;212;;Sem Categoria;0;0.0
-08/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;258;971.08
-08/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;327;4568.08
-08/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;151;1404.23
-08/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;55;863.28
+08/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;261;985.83
+08/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;337;5037.45
+08/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;153;1489.9
+08/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;58;1005.89
 08/06/2026;198;Bloqueia Sedex de Cuaba;Regra operacional;0;0.0
 08/06/2026;404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;Regra operacional;0;0.0
-08/06/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;Oportunidade;0;0.0
+08/06/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;Oportunidade;1;57.88
 08/06/2026;153;Bloqueia Cadeiras de itau de sair para Carriers, Dialogo, J&T, Magalu, TodoBrasil;Regra operacional;0;0.0
 08/06/2026;166;Bloqueia Todo Brasil, iMile e Pajuçara com origem Serra de levar notebook;Regra operacional;0;0.0
 08/06/2026;167;Bloqueia Magalu, com origem Cotia de levar carrinho de compras;Regra operacional;0;0.0
@@ -800,7 +800,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 08/06/2026;234;Bloqueio ITALA;Regra operacional;0;0.0
 08/06/2026;243;Bloqueia Itala em tudo exceto atrus Cotia;Regra operacional;0;0.0
 08/06/2026;244;Bloqueia Itala em tudo exceto atrus origem VGP;Regra operacional;0;0.0
-08/06/2026;274;Bloquieo de HEIST em várias TSP;Regra operacional;0;0.0
+08/06/2026;274;Bloquieo de HEIST em várias TSP;Regra operacional;7;196.35
 08/06/2026;382;Bloqueio gol e sedex em MG;Oportunidade;0;0.0
 08/06/2026;389;Bloqueio bebidas, powerbank e perfume para Gol;Regra operacional;0;0.0
 08/06/2026;390;Bloqueio bebidas, powerbank e perfume para Gol 2;Regra operacional;0;0.0
@@ -813,7 +813,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 08/06/2026;406;bloqueio EBB;Regra operacional;0;0.0
 08/06/2026;407;bloqueio ebb;Regra operacional;0;0.0
 08/06/2026;408;Bloqueio EBB;Regra operacional;0;0.0
-08/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;290;8600.33
+08/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;298;9006.3
 08/06/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;Regra operacional;0;0.0
 08/06/2026;411;Atrus - Apenas HEIST;Regra operacional;0;0.0
 08/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;50;727.71
@@ -856,10 +856,10 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 09/06/2026;186;Bloqueia Carriers de Serra;Regra operacional;0;0.0
 09/06/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 09/06/2026;212;;Sem Categoria;0;0.0
-09/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;261;1134.27
-09/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;310;4530.52
-09/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;126;1179.25
-09/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;73;1546.11
+09/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;296;2523.96
+09/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;338;6994.02
+09/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;129;1224.97
+09/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;97;3963.73
 09/06/2026;198;Bloqueia Sedex de Cuaba;Regra operacional;0;0.0
 09/06/2026;404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;Regra operacional;0;0.0
 09/06/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;Oportunidade;2;78.38
@@ -877,15 +877,15 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 09/06/2026;190;Bloqueia BRBAY em Carriers, Atrus, todo brasil, Sedex, Eu entrego;Oportunidade;3;154.37
 09/06/2026;206;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem Serra;Regra operacional;0;0.0
 09/06/2026;313;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem MG;Regra operacional;0;0.0
-09/06/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;Regra operacional;51;413.32
-09/06/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;Oportunidade;48;407.72
+09/06/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;Regra operacional;57;507.25
+09/06/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;Oportunidade;52;490.29
 09/06/2026;371;Bloqueia HUB09 em R3;Regra operacional;34;275.21
 09/06/2026;372;Bloqueia HUB09 em R3;Regra operacional;34;275.21
 09/06/2026;288;Bloquieo de HUB10 e jadlog;Oportunidade;0;0.0
 09/06/2026;234;Bloqueio ITALA;Regra operacional;0;0.0
 09/06/2026;243;Bloqueia Itala em tudo exceto atrus Cotia;Regra operacional;0;0.0
 09/06/2026;244;Bloqueia Itala em tudo exceto atrus origem VGP;Regra operacional;0;0.0
-09/06/2026;274;Bloquieo de HEIST em várias TSP;Regra operacional;11;413.11
+09/06/2026;274;Bloquieo de HEIST em várias TSP;Regra operacional;42;3432.64
 09/06/2026;382;Bloqueio gol e sedex em MG;Oportunidade;0;0.0
 09/06/2026;389;Bloqueio bebidas, powerbank e perfume para Gol;Regra operacional;0;0.0
 09/06/2026;390;Bloqueio bebidas, powerbank e perfume para Gol 2;Regra operacional;0;0.0
@@ -898,10 +898,10 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 09/06/2026;406;bloqueio EBB;Regra operacional;0;0.0
 09/06/2026;407;bloqueio ebb;Regra operacional;0;0.0
 09/06/2026;408;Bloqueio EBB;Regra operacional;0;0.0
-09/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;292;5540.64
+09/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;317;7037.29
 09/06/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;Regra operacional;0;0.0
 09/06/2026;411;Atrus - Apenas HEIST;Regra operacional;0;0.0
-09/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;57;692.6
+09/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;58;692.76
 09/06/2026;38;Bloqueia Linha branca origem Serra de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;Regra operacional;0;0.0
 09/06/2026;39;Bloqueia Linha branca origem Cotia de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;Regra operacional;0;0.0
 09/06/2026;40;Bloqueia Linha branca todas as origens de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;Regra operacional;0;0.0
@@ -910,11 +910,11 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 09/06/2026;83;Bloqueia TV origem Cotia 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;Regra operacional;0;0.0
 09/06/2026;84;Bloqueia TV Todas as origens 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x139 - EU ENTREGO SISTEMAS S/A  x;Regra operacional;0;0.0
 09/06/2026;184;Bloqueia Dialogo, J&T e Magalu nas cadeiras de itau origem Serra;Regra operacional;0;0.0
-09/06/2026;202;Bloqueia todas as transportadoras em hub09 e hub10 , exceto aquelas com SLA acima de 97%  origem VGP;Oportunidade;54;446.76
+09/06/2026;202;Bloqueia todas as transportadoras em hub09 e hub10 , exceto aquelas com SLA acima de 97%  origem VGP;Oportunidade;59;475.16
 09/06/2026;207;Bloqueia Magalu e Dialogo de alguns SKU's;Regra operacional;0;0.0
 09/06/2026;208;Bloqueia Jamef de dois SKUs;Regra operacional;0;0.0
 09/06/2026;211;Bloqueia Jamef de dois SKUs;Regra operacional;0;0.0
-09/06/2026;250;Bloqeuio de imile na origem VGP algumas cidades especificas ;Oportunidade;11;37.24
+09/06/2026;250;Bloqeuio de imile na origem VGP algumas cidades especificas ;Oportunidade;12;58.3
 09/06/2026;251;Bloqeuio de imile na origem Serra algumas cidades especificas;Oportunidade;0;0.0
 09/06/2026;264;Bloquieo de JET no SKU SI5435;Oportunidade;0;0.0
 09/06/2026;268;Bloquieo de bebidas em 35 - Pacifico  x56 - Pajucara  x90 - Jamef SP  x92 - JeT EXPRESS  x120 - TODOBRASIL  x127 - Correios SEDEX - 34028316000103  x140 - LAUTO CARGO  x164 - IMILE Standard  x;Regra operacional;0;0.0
@@ -924,10 +924,10 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 09/06/2026;278;Bloquieo de Pajuçara em VGP em SKUs que não fazem;Regra operacional;0;0.0
 09/06/2026;336;;Sem Categoria;0;0.0
 09/06/2026;368;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem Cotia;Oportunidade;15;14116.63
-09/06/2026;369;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem VGP;Oportunidade;2;5.76
-09/06/2026;409;Bloqueio campanhas prioritarias em correios ;Oportunidade;55;448.36
-09/06/2026;410;Bloqueio campanhas prioritarias em correios ;Oportunidade;55;448.36
-09/06/2026;424;Bloquieo de HUB09 em Pacifico, Dominalog, Jadlog, Gol e J&T em HUB09 origem VGP;Oportunidade;53;435.81
+09/06/2026;369;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem VGP;Oportunidade;3;28.39
+09/06/2026;409;Bloqueio campanhas prioritarias em correios ;Oportunidade;60;476.76
+09/06/2026;410;Bloqueio campanhas prioritarias em correios ;Oportunidade;60;476.76
+09/06/2026;424;Bloquieo de HUB09 em Pacifico, Dominalog, Jadlog, Gol e J&T em HUB09 origem VGP;Oportunidade;59;529.74
 09/06/2026;301;Regra de caixa postal;Regra operacional;0;0.0
 09/06/2026;302;Regra de caixa postal;Regra operacional;0;0.0
 09/06/2026;303;Regra de caixa postal;Regra operacional;0;0.0
@@ -941,10 +941,10 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 10/06/2026;186;Bloqueia Carriers de Serra;Regra operacional;0;0.0
 10/06/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 10/06/2026;212;;Sem Categoria;0;0.0
-10/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;293;1456.72
-10/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;434;7792.56
-10/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;246;3020.87
-10/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;81;1584.81
+10/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;298;1616.89
+10/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;438;7972.27
+10/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;247;3057.11
+10/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;84;1727.83
 10/06/2026;198;Bloqueia Sedex de Cuaba;Regra operacional;0;0.0
 10/06/2026;404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;Regra operacional;0;0.0
 10/06/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;Oportunidade;4;182.82
@@ -962,10 +962,10 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 10/06/2026;190;Bloqueia BRBAY em Carriers, Atrus, todo brasil, Sedex, Eu entrego;Oportunidade;1;40.46
 10/06/2026;206;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem Serra;Regra operacional;0;0.0
 10/06/2026;313;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem MG;Regra operacional;0;0.0
-10/06/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;Regra operacional;140;1071.39
-10/06/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;Oportunidade;38;768.43
-10/06/2026;371;Bloqueia HUB09 em R3;Regra operacional;22;407.75
-10/06/2026;372;Bloqueia HUB09 em R3;Regra operacional;22;407.75
+10/06/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;Regra operacional;143;1211.52
+10/06/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;Oportunidade;41;908.56
+10/06/2026;371;Bloqueia HUB09 em R3;Regra operacional;23;443.54
+10/06/2026;372;Bloqueia HUB09 em R3;Regra operacional;23;443.54
 10/06/2026;288;Bloquieo de HUB10 e jadlog;Oportunidade;0;0.0
 10/06/2026;234;Bloqueio ITALA;Regra operacional;0;0.0
 10/06/2026;243;Bloqueia Itala em tudo exceto atrus Cotia;Regra operacional;0;0.0
@@ -983,10 +983,10 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 10/06/2026;406;bloqueio EBB;Regra operacional;0;0.0
 10/06/2026;407;bloqueio ebb;Regra operacional;0;0.0
 10/06/2026;408;Bloqueio EBB;Regra operacional;0;0.0
-10/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;461;9385.29
+10/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;473;9772.76
 10/06/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;Regra operacional;0;0.0
 10/06/2026;411;Atrus - Apenas HEIST;Regra operacional;0;0.0
-10/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;39;1300.89
+10/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;39;1301.34
 10/06/2026;38;Bloqueia Linha branca origem Serra de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;Regra operacional;0;0.0
 10/06/2026;39;Bloqueia Linha branca origem Cotia de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;Regra operacional;0;0.0
 10/06/2026;40;Bloqueia Linha branca todas as origens de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;Regra operacional;0;0.0
@@ -995,7 +995,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 10/06/2026;83;Bloqueia TV origem Cotia 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;Regra operacional;0;0.0
 10/06/2026;84;Bloqueia TV Todas as origens 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x139 - EU ENTREGO SISTEMAS S/A  x;Regra operacional;0;0.0
 10/06/2026;184;Bloqueia Dialogo, J&T e Magalu nas cadeiras de itau origem Serra;Regra operacional;0;0.0
-10/06/2026;202;Bloqueia todas as transportadoras em hub09 e hub10 , exceto aquelas com SLA acima de 97%  origem VGP;Oportunidade;146;1166.32
+10/06/2026;202;Bloqueia todas as transportadoras em hub09 e hub10 , exceto aquelas com SLA acima de 97%  origem VGP;Oportunidade;149;1306.45
 10/06/2026;207;Bloqueia Magalu e Dialogo de alguns SKU's;Regra operacional;0;0.0
 10/06/2026;208;Bloqueia Jamef de dois SKUs;Regra operacional;0;0.0
 10/06/2026;211;Bloqueia Jamef de dois SKUs;Regra operacional;0;0.0
@@ -1010,9 +1010,9 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 10/06/2026;336;;Sem Categoria;0;0.0
 10/06/2026;368;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem Cotia;Oportunidade;2;70.84
 10/06/2026;369;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem VGP;Oportunidade;1;33.69
-10/06/2026;409;Bloqueio campanhas prioritarias em correios ;Oportunidade;147;1206.24
-10/06/2026;410;Bloqueio campanhas prioritarias em correios ;Oportunidade;147;1206.24
-10/06/2026;424;Bloquieo de HUB09 em Pacifico, Dominalog, Jadlog, Gol e J&T em HUB09 origem VGP;Oportunidade;146;1166.32
+10/06/2026;409;Bloqueio campanhas prioritarias em correios ;Oportunidade;150;1346.37
+10/06/2026;410;Bloqueio campanhas prioritarias em correios ;Oportunidade;150;1346.37
+10/06/2026;424;Bloquieo de HUB09 em Pacifico, Dominalog, Jadlog, Gol e J&T em HUB09 origem VGP;Oportunidade;149;1306.45
 10/06/2026;301;Regra de caixa postal;Regra operacional;0;0.0
 10/06/2026;302;Regra de caixa postal;Regra operacional;0;0.0
 10/06/2026;303;Regra de caixa postal;Regra operacional;0;0.0
@@ -1026,10 +1026,10 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 11/06/2026;186;Bloqueia Carriers de Serra;Regra operacional;0;0.0
 11/06/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 11/06/2026;212;;Sem Categoria;0;0.0
-11/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;259;1056.89
-11/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;207;3769.35
+11/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;264;1159.55
+11/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;209;3871.94
 11/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;80;973.52
-11/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;52;973.09
+11/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;54;1075.68
 11/06/2026;198;Bloqueia Sedex de Cuaba;Regra operacional;0;0.0
 11/06/2026;404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;Regra operacional;0;0.0
 11/06/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;Oportunidade;2;27.08
@@ -1047,10 +1047,10 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 11/06/2026;190;Bloqueia BRBAY em Carriers, Atrus, todo brasil, Sedex, Eu entrego;Oportunidade;1;26.29
 11/06/2026;206;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem Serra;Regra operacional;0;0.0
 11/06/2026;313;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem MG;Regra operacional;0;0.0
-11/06/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;Regra operacional;13;167.28
-11/06/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;Oportunidade;12;161.42
-11/06/2026;371;Bloqueia HUB09 em R3;Regra operacional;8;73.54
-11/06/2026;372;Bloqueia HUB09 em R3;Regra operacional;8;73.54
+11/06/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;Regra operacional;16;274.93
+11/06/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;Oportunidade;15;269.07
+11/06/2026;371;Bloqueia HUB09 em R3;Regra operacional;9;109.95
+11/06/2026;372;Bloqueia HUB09 em R3;Regra operacional;9;109.95
 11/06/2026;288;Bloquieo de HUB10 e jadlog;Oportunidade;1;51.46
 11/06/2026;234;Bloqueio ITALA;Regra operacional;0;0.0
 11/06/2026;243;Bloqueia Itala em tudo exceto atrus Cotia;Regra operacional;0;0.0
@@ -1068,7 +1068,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 11/06/2026;406;bloqueio EBB;Regra operacional;0;0.0
 11/06/2026;407;bloqueio ebb;Regra operacional;0;0.0
 11/06/2026;408;Bloqueio EBB;Regra operacional;0;0.0
-11/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;228;5874.22
+11/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;234;6053.57
 11/06/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;Regra operacional;0;0.0
 11/06/2026;411;Atrus - Apenas HEIST;Regra operacional;0;0.0
 11/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;38;644.81
@@ -1080,7 +1080,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 11/06/2026;83;Bloqueia TV origem Cotia 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;Regra operacional;0;0.0
 11/06/2026;84;Bloqueia TV Todas as origens 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x139 - EU ENTREGO SISTEMAS S/A  x;Regra operacional;0;0.0
 11/06/2026;184;Bloqueia Dialogo, J&T e Magalu nas cadeiras de itau origem Serra;Regra operacional;0;0.0
-11/06/2026;202;Bloqueia todas as transportadoras em hub09 e hub10 , exceto aquelas com SLA acima de 97%  origem VGP;Oportunidade;15;233.89
+11/06/2026;202;Bloqueia todas as transportadoras em hub09 e hub10 , exceto aquelas com SLA acima de 97%  origem VGP;Oportunidade;18;341.54
 11/06/2026;207;Bloqueia Magalu e Dialogo de alguns SKU's;Regra operacional;0;0.0
 11/06/2026;208;Bloqueia Jamef de dois SKUs;Regra operacional;0;0.0
 11/06/2026;211;Bloqueia Jamef de dois SKUs;Regra operacional;0;0.0
@@ -1095,9 +1095,9 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 11/06/2026;336;;Sem Categoria;0;0.0
 11/06/2026;368;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem Cotia;Oportunidade;15;262.92
 11/06/2026;369;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem VGP;Oportunidade;7;81.32
-11/06/2026;409;Bloqueio campanhas prioritarias em correios ;Oportunidade;17;296.98
-11/06/2026;410;Bloqueio campanhas prioritarias em correios ;Oportunidade;17;296.98
-11/06/2026;424;Bloquieo de HUB09 em Pacifico, Dominalog, Jadlog, Gol e J&T em HUB09 origem VGP;Oportunidade;14;182.43
+11/06/2026;409;Bloqueio campanhas prioritarias em correios ;Oportunidade;20;404.63
+11/06/2026;410;Bloqueio campanhas prioritarias em correios ;Oportunidade;20;404.63
+11/06/2026;424;Bloquieo de HUB09 em Pacifico, Dominalog, Jadlog, Gol e J&T em HUB09 origem VGP;Oportunidade;17;290.08
 11/06/2026;301;Regra de caixa postal;Regra operacional;0;0.0
 11/06/2026;302;Regra de caixa postal;Regra operacional;0;0.0
 11/06/2026;303;Regra de caixa postal;Regra operacional;0;0.0
@@ -1111,10 +1111,10 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 12/06/2026;186;Bloqueia Carriers de Serra;Regra operacional;0;0.0
 12/06/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 12/06/2026;212;;Sem Categoria;0;0.0
-12/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;366;1462.56
-12/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;176;3785.86
+12/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;371;1574.22
+12/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;178;3853.87
 12/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;51;1286.26
-12/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;60;1219.76
+12/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;62;1287.77
 12/06/2026;198;Bloqueia Sedex de Cuaba;Regra operacional;0;0.0
 12/06/2026;404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;Regra operacional;0;0.0
 12/06/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;Oportunidade;0;0.0
@@ -1132,8 +1132,8 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 12/06/2026;190;Bloqueia BRBAY em Carriers, Atrus, todo brasil, Sedex, Eu entrego;Oportunidade;0;0.0
 12/06/2026;206;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem Serra;Regra operacional;0;0.0
 12/06/2026;313;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem MG;Regra operacional;0;0.0
-12/06/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;Regra operacional;99;1059.95
-12/06/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;Oportunidade;47;732.71
+12/06/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;Regra operacional;102;1163.27
+12/06/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;Oportunidade;50;836.03
 12/06/2026;371;Bloqueia HUB09 em R3;Regra operacional;31;317.86
 12/06/2026;372;Bloqueia HUB09 em R3;Regra operacional;31;317.86
 12/06/2026;288;Bloquieo de HUB10 e jadlog;Oportunidade;1;13.34
@@ -1153,7 +1153,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 12/06/2026;406;bloqueio EBB;Regra operacional;0;0.0
 12/06/2026;407;bloqueio ebb;Regra operacional;0;0.0
 12/06/2026;408;Bloqueio EBB;Regra operacional;0;0.0
-12/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;255;7982.11
+12/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;260;8173.35
 12/06/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;Regra operacional;0;0.0
 12/06/2026;411;Atrus - Apenas HEIST;Regra operacional;0;0.0
 12/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;39;486.31
@@ -1165,7 +1165,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 12/06/2026;83;Bloqueia TV origem Cotia 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;Regra operacional;0;0.0
 12/06/2026;84;Bloqueia TV Todas as origens 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x139 - EU ENTREGO SISTEMAS S/A  x;Regra operacional;0;0.0
 12/06/2026;184;Bloqueia Dialogo, J&T e Magalu nas cadeiras de itau origem Serra;Regra operacional;0;0.0
-12/06/2026;202;Bloqueia todas as transportadoras em hub09 e hub10 , exceto aquelas com SLA acima de 97%  origem VGP;Oportunidade;111;1120.04
+12/06/2026;202;Bloqueia todas as transportadoras em hub09 e hub10 , exceto aquelas com SLA acima de 97%  origem VGP;Oportunidade;114;1223.36
 12/06/2026;207;Bloqueia Magalu e Dialogo de alguns SKU's;Regra operacional;0;0.0
 12/06/2026;208;Bloqueia Jamef de dois SKUs;Regra operacional;0;0.0
 12/06/2026;211;Bloqueia Jamef de dois SKUs;Regra operacional;0;0.0
@@ -1180,9 +1180,9 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 12/06/2026;336;;Sem Categoria;0;0.0
 12/06/2026;368;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem Cotia;Oportunidade;7;177.66
 12/06/2026;369;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem VGP;Oportunidade;2;21.31
-12/06/2026;409;Bloqueio campanhas prioritarias em correios ;Oportunidade;114;1139.08
-12/06/2026;410;Bloqueio campanhas prioritarias em correios ;Oportunidade;114;1139.08
-12/06/2026;424;Bloquieo de HUB09 em Pacifico, Dominalog, Jadlog, Gol e J&T em HUB09 origem VGP;Oportunidade;100;1099.63
+12/06/2026;409;Bloqueio campanhas prioritarias em correios ;Oportunidade;117;1242.4
+12/06/2026;410;Bloqueio campanhas prioritarias em correios ;Oportunidade;117;1242.4
+12/06/2026;424;Bloquieo de HUB09 em Pacifico, Dominalog, Jadlog, Gol e J&T em HUB09 origem VGP;Oportunidade;103;1202.95
 12/06/2026;301;Regra de caixa postal;Regra operacional;0;0.0
 12/06/2026;302;Regra de caixa postal;Regra operacional;0;0.0
 12/06/2026;303;Regra de caixa postal;Regra operacional;0;0.0
@@ -1238,7 +1238,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 13/06/2026;406;bloqueio EBB;Regra operacional;0;0.0
 13/06/2026;407;bloqueio ebb;Regra operacional;0;0.0
 13/06/2026;408;Bloqueio EBB;Regra operacional;0;0.0
-13/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;99;986.96
+13/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;100;997.26
 13/06/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;Regra operacional;0;0.0
 13/06/2026;411;Atrus - Apenas HEIST;Regra operacional;0;0.0
 13/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;15;135.71
@@ -1281,7 +1281,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 14/06/2026;186;Bloqueia Carriers de Serra;Regra operacional;0;0.0
 14/06/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 14/06/2026;212;;Sem Categoria;0;0.0
-14/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;197;404.69
+14/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;198;496.51
 14/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;192;2417.96
 14/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;65;1233.21
 14/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;23;247.88
@@ -1366,7 +1366,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 15/06/2026;186;Bloqueia Carriers de Serra;Regra operacional;0;0.0
 15/06/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 15/06/2026;212;;Sem Categoria;0;0.0
-15/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;432;1043.71
+15/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;433;1068.87
 15/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;216;3264.7
 15/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;95;1507.99
 15/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;48;638.04
@@ -1408,7 +1408,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 15/06/2026;406;bloqueio EBB;Regra operacional;0;0.0
 15/06/2026;407;bloqueio ebb;Regra operacional;0;0.0
 15/06/2026;408;Bloqueio EBB;Regra operacional;0;0.0
-15/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;246;4134.57
+15/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;252;4322.12
 15/06/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;Regra operacional;0;0.0
 15/06/2026;411;Atrus - Apenas HEIST;Regra operacional;0;0.0
 15/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;43;616.69
@@ -1435,8 +1435,8 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 15/06/2026;336;;Sem Categoria;0;0.0
 15/06/2026;368;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem Cotia;Oportunidade;2;21.85
 15/06/2026;369;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem VGP;Oportunidade;3;20.17
-15/06/2026;409;Bloqueio campanhas prioritarias em correios ;Oportunidade;9;106.67
-15/06/2026;410;Bloqueio campanhas prioritarias em correios ;Oportunidade;9;106.67
+15/06/2026;409;Bloqueio campanhas prioritarias em correios ;Oportunidade;10;131.83
+15/06/2026;410;Bloqueio campanhas prioritarias em correios ;Oportunidade;10;131.83
 15/06/2026;424;Bloquieo de HUB09 em Pacifico, Dominalog, Jadlog, Gol e J&T em HUB09 origem VGP;Oportunidade;3;29.48
 15/06/2026;301;Regra de caixa postal;Regra operacional;0;0.0
 15/06/2026;302;Regra de caixa postal;Regra operacional;0;0.0
@@ -1451,10 +1451,10 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 16/06/2026;186;Bloqueia Carriers de Serra;Regra operacional;0;0.0
 16/06/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 16/06/2026;212;;Sem Categoria;0;0.0
-16/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;436;1631.84
-16/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;458;6241.64
+16/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;442;1691.37
+16/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;460;6286.7
 16/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;100;2131.56
-16/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;82;1360.32
+16/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;84;1405.38
 16/06/2026;198;Bloqueia Sedex de Cuaba;Regra operacional;0;0.0
 16/06/2026;404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;Regra operacional;0;0.0
 16/06/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;Oportunidade;3;146.74
@@ -1472,8 +1472,8 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 16/06/2026;190;Bloqueia BRBAY em Carriers, Atrus, todo brasil, Sedex, Eu entrego;Oportunidade;1;72.12
 16/06/2026;206;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem Serra;Regra operacional;0;0.0
 16/06/2026;313;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem MG;Regra operacional;0;0.0
-16/06/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;Regra operacional;58;733.42
-16/06/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;Oportunidade;27;554.32
+16/06/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;Regra operacional;62;786.01
+16/06/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;Oportunidade;31;606.91
 16/06/2026;371;Bloqueia HUB09 em R3;Regra operacional;15;237.09
 16/06/2026;372;Bloqueia HUB09 em R3;Regra operacional;15;237.09
 16/06/2026;288;Bloquieo de HUB10 e jadlog;Oportunidade;0;0.0
@@ -1493,7 +1493,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 16/06/2026;406;bloqueio EBB;Regra operacional;0;0.0
 16/06/2026;407;bloqueio ebb;Regra operacional;0;0.0
 16/06/2026;408;Bloqueio EBB;Regra operacional;0;0.0
-16/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;311;6576.36
+16/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;319;6999.56
 16/06/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;Regra operacional;0;0.0
 16/06/2026;411;Atrus - Apenas HEIST;Regra operacional;0;0.0
 16/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;203;1961.28
@@ -1505,7 +1505,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 16/06/2026;83;Bloqueia TV origem Cotia 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;Regra operacional;0;0.0
 16/06/2026;84;Bloqueia TV Todas as origens 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x139 - EU ENTREGO SISTEMAS S/A  x;Regra operacional;0;0.0
 16/06/2026;184;Bloqueia Dialogo, J&T e Magalu nas cadeiras de itau origem Serra;Regra operacional;0;0.0
-16/06/2026;202;Bloqueia todas as transportadoras em hub09 e hub10 , exceto aquelas com SLA acima de 97%  origem VGP;Oportunidade;67;742.51
+16/06/2026;202;Bloqueia todas as transportadoras em hub09 e hub10 , exceto aquelas com SLA acima de 97%  origem VGP;Oportunidade;70;756.62
 16/06/2026;207;Bloqueia Magalu e Dialogo de alguns SKU's;Regra operacional;0;0.0
 16/06/2026;208;Bloqueia Jamef de dois SKUs;Regra operacional;0;0.0
 16/06/2026;211;Bloqueia Jamef de dois SKUs;Regra operacional;0;0.0
@@ -1520,9 +1520,9 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 16/06/2026;336;;Sem Categoria;0;0.0
 16/06/2026;368;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem Cotia;Oportunidade;6;39.84
 16/06/2026;369;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem VGP;Oportunidade;6;160.47
-16/06/2026;409;Bloqueio campanhas prioritarias em correios ;Oportunidade;69;743.66
-16/06/2026;410;Bloqueio campanhas prioritarias em correios ;Oportunidade;69;743.66
-16/06/2026;424;Bloquieo de HUB09 em Pacifico, Dominalog, Jadlog, Gol e J&T em HUB09 origem VGP;Oportunidade;59;735.48
+16/06/2026;409;Bloqueio campanhas prioritarias em correios ;Oportunidade;72;757.77
+16/06/2026;410;Bloqueio campanhas prioritarias em correios ;Oportunidade;72;757.77
+16/06/2026;424;Bloquieo de HUB09 em Pacifico, Dominalog, Jadlog, Gol e J&T em HUB09 origem VGP;Oportunidade;63;788.07
 16/06/2026;301;Regra de caixa postal;Regra operacional;0;0.0
 16/06/2026;302;Regra de caixa postal;Regra operacional;0;0.0
 16/06/2026;303;Regra de caixa postal;Regra operacional;0;0.0
@@ -1536,10 +1536,10 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 17/06/2026;186;Bloqueia Carriers de Serra;Regra operacional;0;0.0
 17/06/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 17/06/2026;212;;Sem Categoria;0;0.0
-17/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;360;1111.36
-17/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;173;2593.64
+17/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;373;1337.08
+17/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;177;2783.21
 17/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;54;1008.13
-17/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;75;1157.89
+17/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;79;1347.46
 17/06/2026;198;Bloqueia Sedex de Cuaba;Regra operacional;0;0.0
 17/06/2026;404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;Regra operacional;0;0.0
 17/06/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;Oportunidade;0;0.0
@@ -1557,10 +1557,10 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 17/06/2026;190;Bloqueia BRBAY em Carriers, Atrus, todo brasil, Sedex, Eu entrego;Oportunidade;0;0.0
 17/06/2026;206;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem Serra;Regra operacional;0;0.0
 17/06/2026;313;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem MG;Regra operacional;0;0.0
-17/06/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;Regra operacional;49;557.28
-17/06/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;Oportunidade;46;516.77
-17/06/2026;371;Bloqueia HUB09 em R3;Regra operacional;32;266.86
-17/06/2026;372;Bloqueia HUB09 em R3;Regra operacional;32;266.86
+17/06/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;Regra operacional;59;771.99
+17/06/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;Oportunidade;53;720.45
+17/06/2026;371;Bloqueia HUB09 em R3;Regra operacional;33;302.65
+17/06/2026;372;Bloqueia HUB09 em R3;Regra operacional;33;302.65
 17/06/2026;288;Bloquieo de HUB10 e jadlog;Oportunidade;0;0.0
 17/06/2026;234;Bloqueio ITALA;Regra operacional;0;0.0
 17/06/2026;243;Bloqueia Itala em tudo exceto atrus Cotia;Regra operacional;0;0.0
@@ -1578,7 +1578,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 17/06/2026;406;bloqueio EBB;Regra operacional;0;0.0
 17/06/2026;407;bloqueio ebb;Regra operacional;0;0.0
 17/06/2026;408;Bloqueio EBB;Regra operacional;0;0.0
-17/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;222;3525.59
+17/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;237;3933.65
 17/06/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;Regra operacional;0;0.0
 17/06/2026;411;Atrus - Apenas HEIST;Regra operacional;0;0.0
 17/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;25;228.85
@@ -1590,7 +1590,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 17/06/2026;83;Bloqueia TV origem Cotia 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;Regra operacional;0;0.0
 17/06/2026;84;Bloqueia TV Todas as origens 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x139 - EU ENTREGO SISTEMAS S/A  x;Regra operacional;0;0.0
 17/06/2026;184;Bloqueia Dialogo, J&T e Magalu nas cadeiras de itau origem Serra;Regra operacional;0;0.0
-17/06/2026;202;Bloqueia todas as transportadoras em hub09 e hub10 , exceto aquelas com SLA acima de 97%  origem VGP;Oportunidade;51;582.92
+17/06/2026;202;Bloqueia todas as transportadoras em hub09 e hub10 , exceto aquelas com SLA acima de 97%  origem VGP;Oportunidade;57;641.87
 17/06/2026;207;Bloqueia Magalu e Dialogo de alguns SKU's;Regra operacional;0;0.0
 17/06/2026;208;Bloqueia Jamef de dois SKUs;Regra operacional;0;0.0
 17/06/2026;211;Bloqueia Jamef de dois SKUs;Regra operacional;0;0.0
@@ -1605,9 +1605,9 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 17/06/2026;336;;Sem Categoria;0;0.0
 17/06/2026;368;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem Cotia;Oportunidade;2;22.35
 17/06/2026;369;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem VGP;Oportunidade;0;0.0
-17/06/2026;409;Bloqueio campanhas prioritarias em correios ;Oportunidade;54;606.22
-17/06/2026;410;Bloqueio campanhas prioritarias em correios ;Oportunidade;54;606.22
-17/06/2026;424;Bloquieo de HUB09 em Pacifico, Dominalog, Jadlog, Gol e J&T em HUB09 origem VGP;Oportunidade;51;582.92
+17/06/2026;409;Bloqueio campanhas prioritarias em correios ;Oportunidade;60;665.17
+17/06/2026;410;Bloqueio campanhas prioritarias em correios ;Oportunidade;60;665.17
+17/06/2026;424;Bloquieo de HUB09 em Pacifico, Dominalog, Jadlog, Gol e J&T em HUB09 origem VGP;Oportunidade;60;795.65
 17/06/2026;301;Regra de caixa postal;Regra operacional;0;0.0
 17/06/2026;302;Regra de caixa postal;Regra operacional;0;0.0
 17/06/2026;303;Regra de caixa postal;Regra operacional;0;0.0
@@ -1621,7 +1621,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 18/06/2026;186;Bloqueia Carriers de Serra;Regra operacional;0;0.0
 18/06/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 18/06/2026;212;;Sem Categoria;0;0.0
-18/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;326;799.45
+18/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;333;926.0
 18/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;140;2456.62
 18/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;26;431.74
 18/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;53;1105.71
@@ -1663,7 +1663,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 18/06/2026;406;bloqueio EBB;Regra operacional;0;0.0
 18/06/2026;407;bloqueio ebb;Regra operacional;0;0.0
 18/06/2026;408;Bloqueio EBB;Regra operacional;0;0.0
-18/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;193;4876.68
+18/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;195;5118.32
 18/06/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;Regra operacional;0;0.0
 18/06/2026;411;Atrus - Apenas HEIST;Regra operacional;0;0.0
 18/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;31;402.1
@@ -1706,10 +1706,10 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 19/06/2026;186;Bloqueia Carriers de Serra;Regra operacional;0;0.0
 19/06/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 19/06/2026;212;;Sem Categoria;0;0.0
-19/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;404;1818.39
-19/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;145;2485.0
+19/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;411;1979.96
+19/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;148;2625.38
 19/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;21;192.54
-19/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;72;1994.88
+19/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;75;2135.26
 19/06/2026;198;Bloqueia Sedex de Cuaba;Regra operacional;0;0.0
 19/06/2026;404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;Regra operacional;0;0.0
 19/06/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;Oportunidade;0;0.0
@@ -1727,8 +1727,8 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 19/06/2026;190;Bloqueia BRBAY em Carriers, Atrus, todo brasil, Sedex, Eu entrego;Oportunidade;1;28.48
 19/06/2026;206;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem Serra;Regra operacional;0;0.0
 19/06/2026;313;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem MG;Regra operacional;0;0.0
-19/06/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;Regra operacional;83;1043.9
-19/06/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;Oportunidade;43;944.99
+19/06/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;Regra operacional;87;1189.34
+19/06/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;Oportunidade;47;1090.43
 19/06/2026;371;Bloqueia HUB09 em R3;Regra operacional;22;410.47
 19/06/2026;372;Bloqueia HUB09 em R3;Regra operacional;22;410.47
 19/06/2026;288;Bloquieo de HUB10 e jadlog;Oportunidade;1;52.31
@@ -1748,7 +1748,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 19/06/2026;406;bloqueio EBB;Regra operacional;0;0.0
 19/06/2026;407;bloqueio ebb;Regra operacional;0;0.0
 19/06/2026;408;Bloqueio EBB;Regra operacional;0;0.0
-19/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;200;3276.73
+19/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;207;3486.34
 19/06/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;Regra operacional;0;0.0
 19/06/2026;411;Atrus - Apenas HEIST;Regra operacional;0;0.0
 19/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;21;56.64
@@ -1760,7 +1760,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 19/06/2026;83;Bloqueia TV origem Cotia 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;Regra operacional;0;0.0
 19/06/2026;84;Bloqueia TV Todas as origens 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x139 - EU ENTREGO SISTEMAS S/A  x;Regra operacional;0;0.0
 19/06/2026;184;Bloqueia Dialogo, J&T e Magalu nas cadeiras de itau origem Serra;Regra operacional;0;0.0
-19/06/2026;202;Bloqueia todas as transportadoras em hub09 e hub10 , exceto aquelas com SLA acima de 97%  origem VGP;Oportunidade;95;1166.5
+19/06/2026;202;Bloqueia todas as transportadoras em hub09 e hub10 , exceto aquelas com SLA acima de 97%  origem VGP;Oportunidade;96;1171.56
 19/06/2026;207;Bloqueia Magalu e Dialogo de alguns SKU's;Regra operacional;0;0.0
 19/06/2026;208;Bloqueia Jamef de dois SKUs;Regra operacional;0;0.0
 19/06/2026;211;Bloqueia Jamef de dois SKUs;Regra operacional;0;0.0
@@ -1775,9 +1775,9 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 19/06/2026;336;;Sem Categoria;0;0.0
 19/06/2026;368;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem Cotia;Oportunidade;8;173.45
 19/06/2026;369;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem VGP;Oportunidade;2;36.73
-19/06/2026;409;Bloqueio campanhas prioritarias em correios ;Oportunidade;95;1166.5
-19/06/2026;410;Bloqueio campanhas prioritarias em correios ;Oportunidade;95;1166.5
-19/06/2026;424;Bloquieo de HUB09 em Pacifico, Dominalog, Jadlog, Gol e J&T em HUB09 origem VGP;Oportunidade;85;1108.71
+19/06/2026;409;Bloqueio campanhas prioritarias em correios ;Oportunidade;96;1171.56
+19/06/2026;410;Bloqueio campanhas prioritarias em correios ;Oportunidade;96;1171.56
+19/06/2026;424;Bloquieo de HUB09 em Pacifico, Dominalog, Jadlog, Gol e J&T em HUB09 origem VGP;Oportunidade;89;1254.15
 19/06/2026;301;Regra de caixa postal;Regra operacional;0;0.0
 19/06/2026;302;Regra de caixa postal;Regra operacional;0;0.0
 19/06/2026;303;Regra de caixa postal;Regra operacional;0;0.0
@@ -1791,7 +1791,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 20/06/2026;186;Bloqueia Carriers de Serra;Regra operacional;0;0.0
 20/06/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 20/06/2026;212;;Sem Categoria;0;0.0
-20/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;131;231.4
+20/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;132;250.0
 20/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;48;348.65
 20/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;11;13.71
 20/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;13;143.66
@@ -1876,7 +1876,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 21/06/2026;186;Bloqueia Carriers de Serra;Regra operacional;0;0.0
 21/06/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 21/06/2026;212;;Sem Categoria;0;0.0
-21/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;199;330.85
+21/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;201;365.39
 21/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;81;689.36
 21/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;21;139.45
 21/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;15;371.95
@@ -1961,10 +1961,10 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 22/06/2026;186;Bloqueia Carriers de Serra;Regra operacional;0;0.0
 22/06/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 22/06/2026;212;;Sem Categoria;0;0.0
-22/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;183;1000.41
-22/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;116;1965.69
+22/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;186;1041.99
+22/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;117;1995.94
 22/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;41;565.29
-22/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;42;1257.87
+22/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;43;1288.12
 22/06/2026;198;Bloqueia Sedex de Cuaba;Regra operacional;0;0.0
 22/06/2026;404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;Regra operacional;0;0.0
 22/06/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;Oportunidade;3;52.57
@@ -1982,8 +1982,8 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 22/06/2026;190;Bloqueia BRBAY em Carriers, Atrus, todo brasil, Sedex, Eu entrego;Oportunidade;0;0.0
 22/06/2026;206;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem Serra;Regra operacional;0;0.0
 22/06/2026;313;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem MG;Regra operacional;0;0.0
-22/06/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;Regra operacional;58;523.81
-22/06/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;Oportunidade;36;470.61
+22/06/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;Regra operacional;60;558.3
+22/06/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;Oportunidade;37;500.86
 22/06/2026;371;Bloqueia HUB09 em R3;Regra operacional;33;307.25
 22/06/2026;372;Bloqueia HUB09 em R3;Regra operacional;33;307.25
 22/06/2026;288;Bloquieo de HUB10 e jadlog;Oportunidade;0;0.0
@@ -2003,7 +2003,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 22/06/2026;406;bloqueio EBB;Regra operacional;0;0.0
 22/06/2026;407;bloqueio ebb;Regra operacional;0;0.0
 22/06/2026;408;Bloqueio EBB;Regra operacional;0;0.0
-22/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;213;3282.51
+22/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;216;3646.02
 22/06/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;Regra operacional;0;0.0
 22/06/2026;411;Atrus - Apenas HEIST;Regra operacional;0;0.0
 22/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;16;96.87
@@ -2015,7 +2015,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 22/06/2026;83;Bloqueia TV origem Cotia 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;Regra operacional;0;0.0
 22/06/2026;84;Bloqueia TV Todas as origens 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x139 - EU ENTREGO SISTEMAS S/A  x;Regra operacional;0;0.0
 22/06/2026;184;Bloqueia Dialogo, J&T e Magalu nas cadeiras de itau origem Serra;Regra operacional;0;0.0
-22/06/2026;202;Bloqueia todas as transportadoras em hub09 e hub10 , exceto aquelas com SLA acima de 97%  origem VGP;Oportunidade;64;587.65
+22/06/2026;202;Bloqueia todas as transportadoras em hub09 e hub10 , exceto aquelas com SLA acima de 97%  origem VGP;Oportunidade;65;591.89
 22/06/2026;207;Bloqueia Magalu e Dialogo de alguns SKU's;Regra operacional;0;0.0
 22/06/2026;208;Bloqueia Jamef de dois SKUs;Regra operacional;0;0.0
 22/06/2026;211;Bloqueia Jamef de dois SKUs;Regra operacional;0;0.0
@@ -2030,9 +2030,9 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 22/06/2026;336;;Sem Categoria;0;0.0
 22/06/2026;368;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem Cotia;Oportunidade;8;134.34
 22/06/2026;369;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem VGP;Oportunidade;4;77.37
-22/06/2026;409;Bloqueio campanhas prioritarias em correios ;Oportunidade;64;587.65
-22/06/2026;410;Bloqueio campanhas prioritarias em correios ;Oportunidade;64;587.65
-22/06/2026;424;Bloquieo de HUB09 em Pacifico, Dominalog, Jadlog, Gol e J&T em HUB09 origem VGP;Oportunidade;59;586.56
+22/06/2026;409;Bloqueio campanhas prioritarias em correios ;Oportunidade;65;591.89
+22/06/2026;410;Bloqueio campanhas prioritarias em correios ;Oportunidade;65;591.89
+22/06/2026;424;Bloquieo de HUB09 em Pacifico, Dominalog, Jadlog, Gol e J&T em HUB09 origem VGP;Oportunidade;61;621.05
 22/06/2026;301;Regra de caixa postal;Regra operacional;0;0.0
 22/06/2026;302;Regra de caixa postal;Regra operacional;0;0.0
 22/06/2026;303;Regra de caixa postal;Regra operacional;0;0.0
@@ -2046,7 +2046,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 23/06/2026;186;Bloqueia Carriers de Serra;Regra operacional;0;0.0
 23/06/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 23/06/2026;212;;Sem Categoria;0;0.0
-23/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;8;260.01
+23/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;9;265.16
 23/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;206;1773.25
 23/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;165;1117.16
 23/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;23;442.82
@@ -2125,14 +2125,14 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 23/06/2026;305;Regra de caixa postal;Regra operacional;0;0.0
 23/06/2026;355;Bloqueia jad e jamef em SKUs de ON;Oportunidade;0;0.0
 24/06/2026;420;Peso minimo J&T origem Cotia;Ganho Imediato;10;43.14
-24/06/2026;421;Peso minimo J&T origem MG;Ganho Imediato;5;11.92
+24/06/2026;421;Peso minimo J&T origem MG;Ganho Imediato;6;42.4
 24/06/2026;422;Peso minimo J&T VGP;Ganho Imediato;12;137.09
 24/06/2026;423;Bloqueio J&T peso minimo Serra;Ganho Imediato;0;0.0
 24/06/2026;186;Bloqueia Carriers de Serra;Regra operacional;0;0.0
 24/06/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 24/06/2026;212;;Sem Categoria;0;0.0
-24/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;23;440.09
-24/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;88;1669.56
+24/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;25;463.74
+24/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;89;1717.95
 24/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;22;347.14
 24/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;33;776.92
 24/06/2026;198;Bloqueia Sedex de Cuaba;Regra operacional;0;0.0
@@ -2173,7 +2173,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 24/06/2026;406;bloqueio EBB;Regra operacional;0;0.0
 24/06/2026;407;bloqueio ebb;Regra operacional;0;0.0
 24/06/2026;408;Bloqueio EBB;Regra operacional;0;0.0
-24/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;165;2356.59
+24/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;169;2459.11
 24/06/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;Regra operacional;0;0.0
 24/06/2026;411;Atrus - Apenas HEIST;Regra operacional;0;0.0
 24/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;13;33.98
@@ -2216,7 +2216,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 25/06/2026;186;Bloqueia Carriers de Serra;Regra operacional;0;0.0
 25/06/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 25/06/2026;212;;Sem Categoria;0;0.0
-25/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;48;1187.29
+25/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;49;1196.02
 25/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;197;3500.05
 25/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;32;383.06
 25/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;134;2660.43
@@ -2237,8 +2237,8 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 25/06/2026;190;Bloqueia BRBAY em Carriers, Atrus, todo brasil, Sedex, Eu entrego;Oportunidade;0;0.0
 25/06/2026;206;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem Serra;Regra operacional;0;0.0
 25/06/2026;313;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem MG;Regra operacional;0;0.0
-25/06/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;Regra operacional;47;259.12
-25/06/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;Oportunidade;11;90.94
+25/06/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;Regra operacional;48;337.45
+25/06/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;Oportunidade;12;169.27
 25/06/2026;371;Bloqueia HUB09 em R3;Regra operacional;4;58.76
 25/06/2026;372;Bloqueia HUB09 em R3;Regra operacional;4;58.76
 25/06/2026;288;Bloquieo de HUB10 e jadlog;Oportunidade;0;0.0
@@ -2258,7 +2258,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 25/06/2026;406;bloqueio EBB;Regra operacional;0;0.0
 25/06/2026;407;bloqueio ebb;Regra operacional;0;0.0
 25/06/2026;408;Bloqueio EBB;Regra operacional;0;0.0
-25/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;305;7242.82
+25/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;306;7321.15
 25/06/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;Regra operacional;0;0.0
 25/06/2026;411;Atrus - Apenas HEIST;Regra operacional;0;0.0
 25/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;7;40.08
@@ -2287,7 +2287,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 25/06/2026;369;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem VGP;Oportunidade;5;84.48
 25/06/2026;409;Bloqueio campanhas prioritarias em correios ;Oportunidade;28;181.8
 25/06/2026;410;Bloqueio campanhas prioritarias em correios ;Oportunidade;28;181.8
-25/06/2026;424;Bloquieo de HUB09 em Pacifico, Dominalog, Jadlog, Gol e J&T em HUB09 origem VGP;Oportunidade;47;259.12
+25/06/2026;424;Bloquieo de HUB09 em Pacifico, Dominalog, Jadlog, Gol e J&T em HUB09 origem VGP;Oportunidade;48;337.45
 25/06/2026;301;Regra de caixa postal;Regra operacional;0;0.0
 25/06/2026;302;Regra de caixa postal;Regra operacional;0;0.0
 25/06/2026;303;Regra de caixa postal;Regra operacional;0;0.0
@@ -2301,7 +2301,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 26/06/2026;186;Bloqueia Carriers de Serra;Regra operacional;0;0.0
 26/06/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 26/06/2026;212;;Sem Categoria;0;0.0
-26/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;9;196.36
+26/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;10;202.1
 26/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;111;1681.99
 26/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;34;416.38
 26/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;36;1124.53
@@ -2386,7 +2386,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 27/06/2026;186;Bloqueia Carriers de Serra;Regra operacional;0;0.0
 27/06/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 27/06/2026;212;;Sem Categoria;0;0.0
-27/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;12;256.81
+27/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;15;333.76
 27/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;56;861.87
 27/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;10;173.06
 27/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;27;620.19
@@ -2556,7 +2556,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 29/06/2026;186;Bloqueia Carriers de Serra;Regra operacional;0;0.0
 29/06/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 29/06/2026;212;;Sem Categoria;0;0.0
-29/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;7;103.06
+29/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;11;139.2
 29/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;111;3386.81
 29/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;31;516.45
 29/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;22;675.86
@@ -2598,7 +2598,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 29/06/2026;406;bloqueio EBB;Regra operacional;0;0.0
 29/06/2026;407;bloqueio ebb;Regra operacional;0;0.0
 29/06/2026;408;Bloqueio EBB;Regra operacional;0;0.0
-29/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;133;2904.79
+29/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;135;3011.87
 29/06/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;Regra operacional;0;0.0
 29/06/2026;411;Atrus - Apenas HEIST;Regra operacional;0;0.0
 29/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;14;863.11
@@ -2641,10 +2641,10 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 30/06/2026;186;Bloqueia Carriers de Serra;Regra operacional;0;0.0
 30/06/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 30/06/2026;212;;Sem Categoria;0;0.0
-30/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;7;106.47
-30/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;107;1286.66
+30/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;11;240.0
+30/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;108;1309.49
 30/06/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;29;117.35
-30/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;21;629.84
+30/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;22;652.67
 30/06/2026;198;Bloqueia Sedex de Cuaba;Regra operacional;0;0.0
 30/06/2026;404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;Regra operacional;0;0.0
 30/06/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;Oportunidade;0;0.0
@@ -2683,7 +2683,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 30/06/2026;406;bloqueio EBB;Regra operacional;0;0.0
 30/06/2026;407;bloqueio ebb;Regra operacional;0;0.0
 30/06/2026;408;Bloqueio EBB;Regra operacional;0;0.0
-30/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;157;2521.2
+30/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;160;2666.19
 30/06/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;Regra operacional;0;0.0
 30/06/2026;411;Atrus - Apenas HEIST;Regra operacional;0;0.0
 30/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;34;336.75
@@ -2709,7 +2709,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 30/06/2026;278;Bloquieo de Pajuçara em VGP em SKUs que não fazem;Regra operacional;0;0.0
 30/06/2026;336;;Sem Categoria;0;0.0
 30/06/2026;368;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem Cotia;Oportunidade;12;232.08
-30/06/2026;369;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem VGP;Oportunidade;3;22.08
+30/06/2026;369;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem VGP;Oportunidade;4;44.91
 30/06/2026;409;Bloqueio campanhas prioritarias em correios ;Oportunidade;7;49.1
 30/06/2026;410;Bloqueio campanhas prioritarias em correios ;Oportunidade;7;49.1
 30/06/2026;424;Bloquieo de HUB09 em Pacifico, Dominalog, Jadlog, Gol e J&T em HUB09 origem VGP;Oportunidade;18;76.13
@@ -2726,10 +2726,10 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 01/07/2026;186;Bloqueia Carriers de Serra;Regra operacional;0;0.0
 01/07/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 01/07/2026;212;;Sem Categoria;0;0.0
-01/07/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;8;133.55
-01/07/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;97;1502.04
-01/07/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;22;272.7
-01/07/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;21;818.82
+01/07/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;12;241.1
+01/07/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;99;1563.86
+01/07/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;23;304.23
+01/07/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;22;849.11
 01/07/2026;198;Bloqueia Sedex de Cuaba;Regra operacional;0;0.0
 01/07/2026;404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;Regra operacional;0;0.0
 01/07/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;Oportunidade;0;0.0
@@ -2768,7 +2768,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 01/07/2026;406;bloqueio EBB;Regra operacional;0;0.0
 01/07/2026;407;bloqueio ebb;Regra operacional;0;0.0
 01/07/2026;408;Bloqueio EBB;Regra operacional;0;0.0
-01/07/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;187;2119.8
+01/07/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;191;2318.6
 01/07/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;Regra operacional;0;0.0
 01/07/2026;411;Atrus - Apenas HEIST;Regra operacional;0;0.0
 01/07/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;27;112.6
@@ -2794,7 +2794,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 01/07/2026;278;Bloquieo de Pajuçara em VGP em SKUs que não fazem;Regra operacional;0;0.0
 01/07/2026;336;;Sem Categoria;0;0.0
 01/07/2026;368;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem Cotia;Oportunidade;4;30.83
-01/07/2026;369;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem VGP;Oportunidade;3;28.72
+01/07/2026;369;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem VGP;Oportunidade;4;59.01
 01/07/2026;409;Bloqueio campanhas prioritarias em correios ;Oportunidade;0;0.0
 01/07/2026;410;Bloqueio campanhas prioritarias em correios ;Oportunidade;0;0.0
 01/07/2026;424;Bloquieo de HUB09 em Pacifico, Dominalog, Jadlog, Gol e J&T em HUB09 origem VGP;Oportunidade;0;0.0
@@ -2811,9 +2811,9 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 02/07/2026;186;Bloqueia Carriers de Serra;Regra operacional;0;0.0
 02/07/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 02/07/2026;212;;Sem Categoria;0;0.0
-02/07/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;8;273.29
-02/07/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;93;2100.92
-02/07/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;28;585.86
+02/07/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;9;276.75
+02/07/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;94;2122.81
+02/07/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;29;607.75
 02/07/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;35;1050.62
 02/07/2026;198;Bloqueia Sedex de Cuaba;Regra operacional;0;0.0
 02/07/2026;404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;Regra operacional;0;0.0
@@ -2832,8 +2832,8 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 02/07/2026;190;Bloqueia BRBAY em Carriers, Atrus, todo brasil, Sedex, Eu entrego;Oportunidade;0;0.0
 02/07/2026;206;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem Serra;Regra operacional;0;0.0
 02/07/2026;313;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem MG;Regra operacional;0;0.0
-02/07/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;Regra operacional;34;205.88
-02/07/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;Oportunidade;12;242.51
+02/07/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;Regra operacional;36;248.35
+02/07/2026;269;Bloqueio de HUB09 em jadlog, Pajuçara e Dominalog;Oportunidade;14;284.98
 02/07/2026;371;Bloqueia HUB09 em R3;Regra operacional;4;59.78
 02/07/2026;372;Bloqueia HUB09 em R3;Regra operacional;4;59.78
 02/07/2026;288;Bloquieo de HUB10 e jadlog;Oportunidade;4;55.58
@@ -2853,7 +2853,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 02/07/2026;406;bloqueio EBB;Regra operacional;0;0.0
 02/07/2026;407;bloqueio ebb;Regra operacional;0;0.0
 02/07/2026;408;Bloqueio EBB;Regra operacional;0;0.0
-02/07/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;190;3874.35
+02/07/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;194;3964.22
 02/07/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;Regra operacional;0;0.0
 02/07/2026;411;Atrus - Apenas HEIST;Regra operacional;0;0.0
 02/07/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;17;203.59
@@ -2865,7 +2865,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 02/07/2026;83;Bloqueia TV origem Cotia 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x;Regra operacional;0;0.0
 02/07/2026;84;Bloqueia TV Todas as origens 56 - Pajucara  x57 - Carriers  x66 - Dialogo - SP  x92 - JeT EXPRESS  x110 - ATRUS INTERMEDIACAO  x119 - MAGALU  x127 - Correios SEDEX - 34028316000103  x139 - EU ENTREGO SISTEMAS S/A  x;Regra operacional;0;0.0
 02/07/2026;184;Bloqueia Dialogo, J&T e Magalu nas cadeiras de itau origem Serra;Regra operacional;0;0.0
-02/07/2026;202;Bloqueia todas as transportadoras em hub09 e hub10 , exceto aquelas com SLA acima de 97%  origem VGP;Oportunidade;21;281.19
+02/07/2026;202;Bloqueia todas as transportadoras em hub09 e hub10 , exceto aquelas com SLA acima de 97%  origem VGP;Oportunidade;22;285.18
 02/07/2026;207;Bloqueia Magalu e Dialogo de alguns SKU's;Regra operacional;0;0.0
 02/07/2026;208;Bloqueia Jamef de dois SKUs;Regra operacional;0;0.0
 02/07/2026;211;Bloqueia Jamef de dois SKUs;Regra operacional;0;0.0
@@ -2880,9 +2880,9 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 02/07/2026;336;;Sem Categoria;0;0.0
 02/07/2026;368;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem Cotia;Oportunidade;0;0.0
 02/07/2026;369;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem VGP;Oportunidade;4;103.41
-02/07/2026;409;Bloqueio campanhas prioritarias em correios ;Oportunidade;21;281.19
-02/07/2026;410;Bloqueio campanhas prioritarias em correios ;Oportunidade;21;281.19
-02/07/2026;424;Bloquieo de HUB09 em Pacifico, Dominalog, Jadlog, Gol e J&T em HUB09 origem VGP;Oportunidade;36;331.38
+02/07/2026;409;Bloqueio campanhas prioritarias em correios ;Oportunidade;22;285.18
+02/07/2026;410;Bloqueio campanhas prioritarias em correios ;Oportunidade;22;285.18
+02/07/2026;424;Bloquieo de HUB09 em Pacifico, Dominalog, Jadlog, Gol e J&T em HUB09 origem VGP;Oportunidade;38;373.85
 02/07/2026;301;Regra de caixa postal;Regra operacional;0;0.0
 02/07/2026;302;Regra de caixa postal;Regra operacional;0;0.0
 02/07/2026;303;Regra de caixa postal;Regra operacional;0;0.0
@@ -2896,8 +2896,8 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 03/07/2026;186;Bloqueia Carriers de Serra;Regra operacional;0;0.0
 03/07/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 03/07/2026;212;;Sem Categoria;0;0.0
-03/07/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;5;69.89
-03/07/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;45;592.11
+03/07/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;6;76.76
+03/07/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;46;639.75
 03/07/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;16;50.62
 03/07/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;13;482.8
 03/07/2026;198;Bloqueia Sedex de Cuaba;Regra operacional;0;0.0
@@ -2938,7 +2938,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 03/07/2026;406;bloqueio EBB;Regra operacional;0;0.0
 03/07/2026;407;bloqueio ebb;Regra operacional;0;0.0
 03/07/2026;408;Bloqueio EBB;Regra operacional;0;0.0
-03/07/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;89;897.43
+03/07/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;90;945.07
 03/07/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;Regra operacional;0;0.0
 03/07/2026;411;Atrus - Apenas HEIST;Regra operacional;0;0.0
 03/07/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;10;2.4
@@ -2957,7 +2957,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 03/07/2026;250;Bloqeuio de imile na origem VGP algumas cidades especificas ;Oportunidade;2;11.98
 03/07/2026;251;Bloqeuio de imile na origem Serra algumas cidades especificas;Oportunidade;0;0.0
 03/07/2026;264;Bloquieo de JET no SKU SI5435;Oportunidade;0;0.0
-03/07/2026;268;Bloquieo de bebidas em 35 - Pacifico  x56 - Pajucara  x90 - Jamef SP  x92 - JeT EXPRESS  x120 - TODOBRASIL  x127 - Correios SEDEX - 34028316000103  x140 - LAUTO CARGO  x164 - IMILE Standard  x;Regra operacional;20;424.51
+03/07/2026;268;Bloquieo de bebidas em 35 - Pacifico  x56 - Pajucara  x90 - Jamef SP  x92 - JeT EXPRESS  x120 - TODOBRASIL  x127 - Correios SEDEX - 34028316000103  x140 - LAUTO CARGO  x164 - IMILE Standard  x;Regra operacional;33;7557.19
 03/07/2026;275;Bloquieo de Pajuçara em MG em SKUs que não fazem;Regra operacional;0;0.0
 03/07/2026;276;Bloquieo de Pajuçara em ES em SKUs que não fazem;Regra operacional;0;0.0
 03/07/2026;277;Bloquieo de Pajuçara em Cotia em SKUs que não fazem;Regra operacional;0;0.0
@@ -2982,7 +2982,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 04/07/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 04/07/2026;212;;Sem Categoria;0;0.0
 04/07/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;6;188.48
-04/07/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;52;858.08
+04/07/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;54;938.1
 04/07/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;16;221.59
 04/07/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;10;342.64
 04/07/2026;198;Bloqueia Sedex de Cuaba;Regra operacional;0;0.0
@@ -2999,7 +2999,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 04/07/2026;161;Bloqueia HPAMZ, HPB2W e HPMLU com origem Serra de sair por Sedex;Oportunidade;0;0.0
 04/07/2026;162;Bloqueia HPAMZ, HPB2W e HPMLU com origem Coria de sair por Sedex;Oportunidade;0;0.0
 04/07/2026;163;Bloqueia HPAMZ, HPB2W e HPMLU com todas as origens de sair por Sedex;Oportunidade;0;0.0
-04/07/2026;190;Bloqueia BRBAY em Carriers, Atrus, todo brasil, Sedex, Eu entrego;Oportunidade;0;0.0
+04/07/2026;190;Bloqueia BRBAY em Carriers, Atrus, todo brasil, Sedex, Eu entrego;Oportunidade;1;37.22
 04/07/2026;206;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem Serra;Regra operacional;0;0.0
 04/07/2026;313;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem MG;Regra operacional;0;0.0
 04/07/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;Regra operacional;6;15.17
@@ -3023,7 +3023,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 04/07/2026;406;bloqueio EBB;Regra operacional;0;0.0
 04/07/2026;407;bloqueio ebb;Regra operacional;0;0.0
 04/07/2026;408;Bloqueio EBB;Regra operacional;0;0.0
-04/07/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;67;870.73
+04/07/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;69;950.75
 04/07/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;Regra operacional;0;0.0
 04/07/2026;411;Atrus - Apenas HEIST;Regra operacional;0;0.0
 04/07/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;13;144.56
@@ -3042,7 +3042,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 04/07/2026;250;Bloqeuio de imile na origem VGP algumas cidades especificas ;Oportunidade;2;5.09
 04/07/2026;251;Bloqeuio de imile na origem Serra algumas cidades especificas;Oportunidade;0;0.0
 04/07/2026;264;Bloquieo de JET no SKU SI5435;Oportunidade;0;0.0
-04/07/2026;268;Bloquieo de bebidas em 35 - Pacifico  x56 - Pajucara  x90 - Jamef SP  x92 - JeT EXPRESS  x120 - TODOBRASIL  x127 - Correios SEDEX - 34028316000103  x140 - LAUTO CARGO  x164 - IMILE Standard  x;Regra operacional;23;517.74
+04/07/2026;268;Bloquieo de bebidas em 35 - Pacifico  x56 - Pajucara  x90 - Jamef SP  x92 - JeT EXPRESS  x120 - TODOBRASIL  x127 - Correios SEDEX - 34028316000103  x140 - LAUTO CARGO  x164 - IMILE Standard  x;Regra operacional;26;903.83
 04/07/2026;275;Bloquieo de Pajuçara em MG em SKUs que não fazem;Regra operacional;0;0.0
 04/07/2026;276;Bloquieo de Pajuçara em ES em SKUs que não fazem;Regra operacional;0;0.0
 04/07/2026;277;Bloquieo de Pajuçara em Cotia em SKUs que não fazem;Regra operacional;0;0.0
@@ -3067,7 +3067,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 05/07/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 05/07/2026;212;;Sem Categoria;0;0.0
 05/07/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;7;33.44
-05/07/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;70;548.93
+05/07/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;72;657.17
 05/07/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;29;119.16
 05/07/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;6;217.58
 05/07/2026;198;Bloqueia Sedex de Cuaba;Regra operacional;0;0.0
@@ -3108,7 +3108,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 05/07/2026;406;bloqueio EBB;Regra operacional;0;0.0
 05/07/2026;407;bloqueio ebb;Regra operacional;0;0.0
 05/07/2026;408;Bloqueio EBB;Regra operacional;0;0.0
-05/07/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;67;604.14
+05/07/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;69;712.38
 05/07/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;Regra operacional;0;0.0
 05/07/2026;411;Atrus - Apenas HEIST;Regra operacional;0;0.0
 05/07/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;17;123.93
@@ -3127,7 +3127,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 05/07/2026;250;Bloqeuio de imile na origem VGP algumas cidades especificas ;Oportunidade;6;11.53
 05/07/2026;251;Bloqeuio de imile na origem Serra algumas cidades especificas;Oportunidade;0;0.0
 05/07/2026;264;Bloquieo de JET no SKU SI5435;Oportunidade;0;0.0
-05/07/2026;268;Bloquieo de bebidas em 35 - Pacifico  x56 - Pajucara  x90 - Jamef SP  x92 - JeT EXPRESS  x120 - TODOBRASIL  x127 - Correios SEDEX - 34028316000103  x140 - LAUTO CARGO  x164 - IMILE Standard  x;Regra operacional;32;277.1
+05/07/2026;268;Bloquieo de bebidas em 35 - Pacifico  x56 - Pajucara  x90 - Jamef SP  x92 - JeT EXPRESS  x120 - TODOBRASIL  x127 - Correios SEDEX - 34028316000103  x140 - LAUTO CARGO  x164 - IMILE Standard  x;Regra operacional;34;665.56
 05/07/2026;275;Bloquieo de Pajuçara em MG em SKUs que não fazem;Regra operacional;0;0.0
 05/07/2026;276;Bloquieo de Pajuçara em ES em SKUs que não fazem;Regra operacional;0;0.0
 05/07/2026;277;Bloquieo de Pajuçara em Cotia em SKUs que não fazem;Regra operacional;0;0.0
@@ -3144,20 +3144,20 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 05/07/2026;304;Regra de caixa postal;Regra operacional;0;0.0
 05/07/2026;305;Regra de caixa postal;Regra operacional;0;0.0
 05/07/2026;355;Bloqueia jad e jamef em SKUs de ON;Oportunidade;0;0.0
-06/07/2026;420;Peso minimo J&T origem Cotia;Ganho Imediato;5;14.71
-06/07/2026;421;Peso minimo J&T origem MG;Ganho Imediato;5;18.38
-06/07/2026;422;Peso minimo J&T VGP;Ganho Imediato;0;0.0
+06/07/2026;420;Peso minimo J&T origem Cotia;Ganho Imediato;11;26.48
+06/07/2026;421;Peso minimo J&T origem MG;Ganho Imediato;9;33.32
+06/07/2026;422;Peso minimo J&T VGP;Ganho Imediato;1;2.41
 06/07/2026;423;Bloqueio J&T peso minimo Serra;Ganho Imediato;0;0.0
 06/07/2026;186;Bloqueia Carriers de Serra;Regra operacional;0;0.0
 06/07/2026;187;Bloqueia Carriers em Cotia;Regra operacional;0;0.0
 06/07/2026;212;;Sem Categoria;0;0.0
-06/07/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;1;4.7
-06/07/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;16;344.24
-06/07/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;4;136.27
-06/07/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;5;111.74
-06/07/2026;198;Bloqueia Sedex de Cuaba;Regra operacional;0;0.0
+06/07/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;2;5.95
+06/07/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;41;929.42
+06/07/2026;416;Bloqueio da jad em MG ate 10kg - Inativo;Ganho Imediato - Já realizado;14;258.06
+06/07/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;10;247.63
+06/07/2026;198;Bloqueia Sedex de Cuaba;Regra operacional;1;165.65
 06/07/2026;404;Bloqueia Gol de todas as campanhas para pesados, exceto heist;Regra operacional;0;0.0
-06/07/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;Oportunidade;0;0.0
+06/07/2026;396;Bloquear a transportadora stone para pedidos com o peso acima de 30kg;Oportunidade;1;21.01
 06/07/2026;153;Bloqueia Cadeiras de itau de sair para Carriers, Dialogo, J&T, Magalu, TodoBrasil;Regra operacional;0;0.0
 06/07/2026;166;Bloqueia Todo Brasil, iMile e Pajuçara com origem Serra de levar notebook;Regra operacional;0;0.0
 06/07/2026;167;Bloqueia Magalu, com origem Cotia de levar carrinho de compras;Regra operacional;0;0.0
@@ -3169,7 +3169,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 06/07/2026;161;Bloqueia HPAMZ, HPB2W e HPMLU com origem Serra de sair por Sedex;Oportunidade;0;0.0
 06/07/2026;162;Bloqueia HPAMZ, HPB2W e HPMLU com origem Coria de sair por Sedex;Oportunidade;0;0.0
 06/07/2026;163;Bloqueia HPAMZ, HPB2W e HPMLU com todas as origens de sair por Sedex;Oportunidade;0;0.0
-06/07/2026;190;Bloqueia BRBAY em Carriers, Atrus, todo brasil, Sedex, Eu entrego;Oportunidade;0;0.0
+06/07/2026;190;Bloqueia BRBAY em Carriers, Atrus, todo brasil, Sedex, Eu entrego;Oportunidade;3;274.19
 06/07/2026;206;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem Serra;Regra operacional;0;0.0
 06/07/2026;313;Bloqueia Celular de todas, exceto sedex, Carvalima, R3, Atrus, Magalu, LSP e Jamef origem MG;Regra operacional;0;0.0
 06/07/2026;213;Bloqueia HUB09 de JeT e TodoBrasil;Regra operacional;0;0.0
@@ -3180,7 +3180,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 06/07/2026;234;Bloqueio ITALA;Regra operacional;0;0.0
 06/07/2026;243;Bloqueia Itala em tudo exceto atrus Cotia;Regra operacional;0;0.0
 06/07/2026;244;Bloqueia Itala em tudo exceto atrus origem VGP;Regra operacional;0;0.0
-06/07/2026;274;Bloquieo de HEIST em várias TSP;Regra operacional;3;102.66
+06/07/2026;274;Bloquieo de HEIST em várias TSP;Regra operacional;5;140.56
 06/07/2026;382;Bloqueio gol e sedex em MG;Oportunidade;0;0.0
 06/07/2026;389;Bloqueio bebidas, powerbank e perfume para Gol;Regra operacional;0;0.0
 06/07/2026;390;Bloqueio bebidas, powerbank e perfume para Gol 2;Regra operacional;0;0.0
@@ -3193,10 +3193,10 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 06/07/2026;406;bloqueio EBB;Regra operacional;0;0.0
 06/07/2026;407;bloqueio ebb;Regra operacional;0;0.0
 06/07/2026;408;Bloqueio EBB;Regra operacional;0;0.0
-06/07/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;17;387.38
+06/07/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;50;1115.92
 06/07/2026;400;Não deixar que a transportadora Stone retorne para pedidos expressos, exceto campanha STOLJ;Regra operacional;0;0.0
 06/07/2026;411;Atrus - Apenas HEIST;Regra operacional;0;0.0
-06/07/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;2;1.36
+06/07/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;8;42.61
 06/07/2026;38;Bloqueia Linha branca origem Serra de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;Regra operacional;0;0.0
 06/07/2026;39;Bloqueia Linha branca origem Cotia de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;Regra operacional;0;0.0
 06/07/2026;40;Bloqueia Linha branca todas as origens de Jad, Pajuçara, Carriers, Dialogo, Jamef, Atrus, Magalu, iMile, J&T e Sedex;Regra operacional;0;0.0
@@ -3212,13 +3212,13 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 06/07/2026;250;Bloqeuio de imile na origem VGP algumas cidades especificas ;Oportunidade;0;0.0
 06/07/2026;251;Bloqeuio de imile na origem Serra algumas cidades especificas;Oportunidade;0;0.0
 06/07/2026;264;Bloquieo de JET no SKU SI5435;Oportunidade;0;0.0
-06/07/2026;268;Bloquieo de bebidas em 35 - Pacifico  x56 - Pajucara  x90 - Jamef SP  x92 - JeT EXPRESS  x120 - TODOBRASIL  x127 - Correios SEDEX - 34028316000103  x140 - LAUTO CARGO  x164 - IMILE Standard  x;Regra operacional;7;235.24
+06/07/2026;268;Bloquieo de bebidas em 35 - Pacifico  x56 - Pajucara  x90 - Jamef SP  x92 - JeT EXPRESS  x120 - TODOBRASIL  x127 - Correios SEDEX - 34028316000103  x140 - LAUTO CARGO  x164 - IMILE Standard  x;Regra operacional;9;272.6
 06/07/2026;275;Bloquieo de Pajuçara em MG em SKUs que não fazem;Regra operacional;0;0.0
 06/07/2026;276;Bloquieo de Pajuçara em ES em SKUs que não fazem;Regra operacional;0;0.0
 06/07/2026;277;Bloquieo de Pajuçara em Cotia em SKUs que não fazem;Regra operacional;0;0.0
 06/07/2026;278;Bloquieo de Pajuçara em VGP em SKUs que não fazem;Regra operacional;0;0.0
 06/07/2026;336;;Sem Categoria;0;0.0
-06/07/2026;368;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem Cotia;Oportunidade;0;0.0
+06/07/2026;368;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem Cotia;Oportunidade;1;31.62
 06/07/2026;369;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem VGP;Oportunidade;0;0.0
 06/07/2026;409;Bloqueio campanhas prioritarias em correios ;Oportunidade;0;0.0
 06/07/2026;410;Bloqueio campanhas prioritarias em correios ;Oportunidade;0;0.0
