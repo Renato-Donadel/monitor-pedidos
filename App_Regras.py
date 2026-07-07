@@ -9,6 +9,7 @@ ARQ_REGRAS  = os.path.join(PASTA_DATA, "Regras_Resultado.xlsx")
 ARQ_IMPACTO     = os.path.join(PASTA_DATA, "Impacto_Financeiro.csv")
 ARQ_DETALHE     = os.path.join(PASTA_DATA, "Impacto_Detalhe.csv")
 ARQ_CATEGORIAS  = os.path.join(PASTA_DATA, "Regras_Categorias.csv")
+ARQ_ENTRADAS    = os.path.join(PASTA_DATA, "Novas_Transportadoras.csv")
 
 
 @st.cache_data(ttl=3600)
@@ -43,6 +44,25 @@ def carregar_detalhe(path):
     df["Impacto"] = df["Impacto"].fillna(0.0)
     df["Regras"]  = df["Regras"].fillna("")
     return df.dropna(subset=["Data", "DataHora"])
+
+
+@st.cache_data(ttl=3600)
+def carregar_entradas(path):
+    """What-if das entradas de transportadoras (Novas_Transportadoras.csv)."""
+    if not os.path.exists(path):
+        return pd.DataFrame()
+    try:
+        df = pd.read_csv(path, sep=";")
+    except Exception:
+        return pd.DataFrame()
+    if "Entrada" not in df.columns:
+        return pd.DataFrame()
+    df["Data"]     = pd.to_datetime(df["Data"], dayfirst=True, errors="coerce")
+    df["DataHora"] = pd.to_datetime(df["DataHora"], errors="coerce")
+    for c in ["Valor_Escolhida", "Valor_Segunda", "Economia"]:
+        df[c] = pd.to_numeric(df[c], errors="coerce")
+    df["Campanha"] = df["Campanha"].astype(str)
+    return df.dropna(subset=["Data", "DataHora", "Economia"])
 
 
 @st.cache_data(ttl=60)
@@ -643,3 +663,108 @@ def render_regras():
                 ).round(2)
                 df_det["Impacto_Total"]     = df_det["Impacto_Total"].round(2)
                 st.dataframe(df_det, use_container_width=True, hide_index=True)
+
+
+    # ══════════════════════════════════════════════════════════
+    # 🚚 ENTRADAS DE TRANSPORTADORAS — what-if de economia
+    # ══════════════════════════════════════════════════════════
+    st.markdown("---")
+    st.markdown("### 🚚 Entradas de Transportadoras — quanto elas economizam")
+    st.caption(
+        "Para cada frete vencido por uma transportadora nova, comparamos com a "
+        "**2ª opção mais barata do mesmo leilão** — quem levaria o frete se a "
+        "entrada não existisse. Economia líquida = soma de (2ª opção − escolhida); "
+        "valores negativos entram na conta (fretes em que a entrada era mais cara)."
+    )
+
+    df_ent = carregar_entradas(ARQ_ENTRADAS)
+    if df_ent.empty:
+        st.info("Sem dados ainda — rode o `Regras.py` atualizado para gerar o "
+                "`Novas_Transportadoras.csv` na pasta `data/`.")
+    else:
+        def _brl(v):
+            return f"R$ {v:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+        e1, e2, e3 = st.columns([1, 1, 2])
+        ent_ini = e1.date_input("De",  value=df_ent["Data"].min().date(),
+                                key="ent_d_ini")
+        ent_fim = e2.date_input("Até", value=df_ent["Data"].max().date(),
+                                key="ent_d_fim")
+        sem_heist = e3.toggle("Excluir campanha Heist", value=True, key="ent_heist",
+                              help="Heist tem direcionamento próprio e não conta "
+                                   "como economia da entrada.")
+
+        mask_e = (df_ent["Data"].dt.date >= ent_ini) & (df_ent["Data"].dt.date <= ent_fim)
+        df_e = df_ent[mask_e].copy()
+        if sem_heist:
+            df_e = df_e[~df_e["Campanha"].str.upper().str.contains("HEIST", na=False)]
+
+        # 1 NF conta uma vez: último evento do período por ShipmentID
+        df_e = (df_e.sort_values("DataHora")
+                    .drop_duplicates(subset=["ShipmentID"], keep="last"))
+
+        if df_e.empty:
+            st.warning("Nenhum frete das entradas no período selecionado.")
+        else:
+            entradas = sorted(df_e["Entrada"].unique())
+            cols = st.columns(len(entradas)) if len(entradas) <= 6 else st.columns(6)
+            for i, ent in enumerate(entradas):
+                d = df_e[df_e["Entrada"] == ent]
+                eco = d["Economia"].sum()
+                cols[i % len(cols)].metric(
+                    f"🚚 {ent}", _brl(eco),
+                    delta=f"{d['ShipmentID'].nunique():,} fretes · "
+                          f"{_brl(d['Economia'].mean())}/frete",
+                    delta_color="off",
+                    help=f"Economia líquida vs 2ª opção do leilão. "
+                         f"{(d['Economia'] < 0).sum():,} fretes em que "
+                         f"{ent} era mais cara que a 2ª opção.")
+
+            total_eco = df_e["Economia"].sum()
+            st.success(f"**Economia líquida total no período: {_brl(total_eco)}** "
+                       f"em {df_e['ShipmentID'].nunique():,} fretes")
+
+            # ── Evolução mensal por entrada ────────────────────
+            df_e["Mes"] = df_e["Data"].dt.to_period("M").dt.to_timestamp()
+            piv = (df_e.groupby(["Mes", "Entrada"])["Economia"]
+                       .sum().reset_index())
+            fig_ent = go.Figure()
+            for ent in entradas:
+                d = piv[piv["Entrada"] == ent]
+                fig_ent.add_trace(go.Bar(x=d["Mes"], y=d["Economia"], name=ent))
+            fig_ent.update_layout(
+                barmode="group", height=380,
+                title="Economia mensal por entrada",
+                yaxis=dict(title="Economia (R$)", tickformat=",.0f"),
+                xaxis=dict(dtick="M1", tickformat="%b/%Y"),
+                legend=dict(orientation="h", y=1.12),
+            )
+            st.plotly_chart(fig_ent, use_container_width=True)
+
+            # ── Quem herdaria os fretes ────────────────────────
+            with st.expander("🔍 Detalhe por entrada — quem herdaria os fretes"):
+                ent_sel = st.selectbox("Entrada", entradas, key="ent_sel")
+                d = df_e[df_e["Entrada"] == ent_sel]
+
+                c_h1, c_h2 = st.columns(2)
+                herd = (d.groupby("Segunda_Tsp")
+                          .agg(Fretes=("ShipmentID", "nunique"),
+                               Economia=("Economia", "sum"),
+                               Media=("Economia", "mean"))
+                          .round(2).sort_values("Economia", ascending=False))
+                c_h1.markdown(f"**Para quem iriam os fretes da {ent_sel}:**")
+                c_h1.dataframe(herd, use_container_width=True)
+
+                top_nf = (d.nlargest(15, "Economia")
+                            [["NF", "Data", "Tsp_Escolhida", "Valor_Escolhida",
+                              "Segunda_Tsp", "Valor_Segunda", "Economia", "Campanha"]])
+                top_nf["Data"] = top_nf["Data"].dt.strftime("%d/%m/%Y")
+                c_h2.markdown("**Top 15 maiores economias:**")
+                c_h2.dataframe(top_nf, use_container_width=True, hide_index=True)
+
+            # ── Exportar ───────────────────────────────────────
+            st.download_button(
+                "⬇️ Exportar composição (CSV)",
+                df_e.to_csv(index=False, sep=";").encode("utf-8-sig"),
+                file_name=f"Entradas_{ent_ini:%d%m%Y}_{ent_fim:%d%m%Y}.csv",
+                mime="text/csv", key="ent_dl")
