@@ -143,6 +143,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 07/06/2026;420;Peso minimo J&T origem Cotia;Ganho Imediato;30;76.18
 07/07/2026;420;Peso minimo J&T origem Cotia;Ganho Imediato;13;111.8
 08/06/2026;420;Peso minimo J&T origem Cotia;Ganho Imediato;33;248.75
+08/07/2026;420;Peso minimo J&T origem Cotia;Ganho Imediato;1;32.53
 09/06/2026;420;Peso minimo J&T origem Cotia;Ganho Imediato;55;184.99
 10/06/2026;420;Peso minimo J&T origem Cotia;Ganho Imediato;108;380.16
 11/06/2026;420;Peso minimo J&T origem Cotia;Ganho Imediato;19;187.05
@@ -202,8 +203,9 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 05/07/2026;422;Peso minimo J&T VGP;Ganho Imediato;1;8.12
 06/07/2026;422;Peso minimo J&T VGP;Ganho Imediato;1;2.41
 07/06/2026;422;Peso minimo J&T VGP;Ganho Imediato;4;12.81
-07/07/2026;422;Peso minimo J&T VGP;Ganho Imediato;7;49.45
+07/07/2026;422;Peso minimo J&T VGP;Ganho Imediato;8;51.42
 08/06/2026;422;Peso minimo J&T VGP;Ganho Imediato;8;20.66
+08/07/2026;422;Peso minimo J&T VGP;Ganho Imediato;1;1.29
 09/06/2026;422;Peso minimo J&T VGP;Ganho Imediato;11;45.72
 10/06/2026;422;Peso minimo J&T VGP;Ganho Imediato;28;188.61
 11/06/2026;422;Peso minimo J&T VGP;Ganho Imediato;5;30.61
@@ -233,8 +235,9 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 05/07/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;7;33.44
 06/07/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;6;83.09
 07/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;42;96.73
-07/07/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;2;4.86
+07/07/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;3;7.44
 08/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;258;971.22
+08/07/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;1;28.73
 09/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;262;1185.73
 10/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;296;1503.69
 11/06/2026;412;Bloqueio iMile VGP - Inativo;Ganho Imediato - Já realizado;260;1064.87
@@ -264,8 +267,9 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 05/07/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;70;532.64
 06/07/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;80;958.89
 07/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;133;1080.2
-07/07/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;67;1426.4
+07/07/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;75;1665.8
 08/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;328;4548.73
+08/07/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;6;56.06
 09/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;315;4724.22
 10/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;436;7057.57
 11/06/2026;393;Bloquear a Jalod em pedidos ate 10kg - Inativo;Ganho Imediato - Já realizado;208;3687.46
@@ -326,8 +330,9 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 05/07/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;6;217.58
 06/07/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;17;304.22
 07/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;5;70.53
-07/07/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;9;211.78
+07/07/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;12;419.84
 08/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;54;858.86
+08/07/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;1;28.73
 09/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;75;1587.9
 10/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;82;1627.73
 11/06/2026;417;Bloqueio da Jad em VGP ate 10kg - Inativo;Ganho Imediato - Já realizado;53;968.49
@@ -467,7 +472,8 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 04/07/2026;274;Bloquieo de HEIST em várias TSP;Regra operacional;5;335.21
 05/07/2026;274;Bloquieo de HEIST em várias TSP;Regra operacional;2;176.72
 06/07/2026;274;Bloquieo de HEIST em várias TSP;Regra operacional;6;147.45
-07/07/2026;274;Bloquieo de HEIST em várias TSP;Regra operacional;5;310.08
+07/07/2026;274;Bloquieo de HEIST em várias TSP;Regra operacional;7;517.07
+08/07/2026;274;Bloquieo de HEIST em várias TSP;Regra operacional;1;122.82
 09/06/2026;274;Bloquieo de HEIST em várias TSP;Regra operacional;11;413.11
 10/06/2026;274;Bloquieo de HEIST em várias TSP;Regra operacional;11;570.75
 11/06/2026;274;Bloquieo de HEIST em várias TSP;Regra operacional;12;479.75
@@ -501,8 +507,9 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 05/07/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;67;587.85
 06/07/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;126;2171.63
 07/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;108;1131.71
-07/07/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;72;1562.16
+07/07/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;86;1619.84
 08/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;290;8553.36
+08/07/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;12;280.97
 09/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;294;5638.59
 10/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;465;9406.65
 11/06/2026;397;A transportadora stone só poderá trabalhar com a campanha STOLJ;Oportunidade;230;5837.79
@@ -532,8 +539,9 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 05/07/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;17;107.64
 06/07/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;18;72.74
 07/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;19;282.37
-07/07/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;14;358.82
+07/07/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;16;359.36
 08/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;50;680.95
+08/07/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;2;0.46
 09/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;57;592.57
 10/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;38;489.58
 11/06/2026;419;Bloqueio da Jad nv Brasil, origem Cotia, exceto Sul e Sudeste - Inativo;Ganho Imediato - Já realizado;37;567.5
@@ -619,7 +627,7 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 04/07/2026;250;Bloqeuio de imile na origem VGP algumas cidades especificas ;Oportunidade;2;5.09
 05/07/2026;250;Bloqeuio de imile na origem VGP algumas cidades especificas ;Oportunidade;6;11.53
 06/07/2026;250;Bloqeuio de imile na origem VGP algumas cidades especificas ;Oportunidade;2;8.54
-07/07/2026;250;Bloqeuio de imile na origem VGP algumas cidades especificas ;Oportunidade;1;1.98
+07/07/2026;250;Bloqeuio de imile na origem VGP algumas cidades especificas ;Oportunidade;2;4.56
 08/06/2026;250;Bloqeuio de imile na origem VGP algumas cidades especificas ;Oportunidade;8;9.35
 09/06/2026;250;Bloqeuio de imile na origem VGP algumas cidades especificas ;Oportunidade;11;37.24
 10/06/2026;250;Bloqeuio de imile na origem VGP algumas cidades especificas ;Oportunidade;12;39.84
@@ -649,7 +657,8 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 04/07/2026;268;Bloquieo de bebidas em 35 - Pacifico  x56 - Pajucara  x90 - Jamef SP  x92 - JeT EXPRESS  x120 - TODOBRASIL  x127 - Correios SEDEX - 34028316000103  x140 - LAUTO CARGO  x164 - IMILE Standard  x;Regra operacional;23;517.74
 05/07/2026;268;Bloquieo de bebidas em 35 - Pacifico  x56 - Pajucara  x90 - Jamef SP  x92 - JeT EXPRESS  x120 - TODOBRASIL  x127 - Correios SEDEX - 34028316000103  x140 - LAUTO CARGO  x164 - IMILE Standard  x;Regra operacional;32;277.1
 06/07/2026;268;Bloquieo de bebidas em 35 - Pacifico  x56 - Pajucara  x90 - Jamef SP  x92 - JeT EXPRESS  x120 - TODOBRASIL  x127 - Correios SEDEX - 34028316000103  x140 - LAUTO CARGO  x164 - IMILE Standard  x;Regra operacional;27;350.67
-07/07/2026;268;Bloquieo de bebidas em 35 - Pacifico  x56 - Pajucara  x90 - Jamef SP  x92 - JeT EXPRESS  x120 - TODOBRASIL  x127 - Correios SEDEX - 34028316000103  x140 - LAUTO CARGO  x164 - IMILE Standard  x;Regra operacional;19;425.22
+07/07/2026;268;Bloquieo de bebidas em 35 - Pacifico  x56 - Pajucara  x90 - Jamef SP  x92 - JeT EXPRESS  x120 - TODOBRASIL  x127 - Correios SEDEX - 34028316000103  x140 - LAUTO CARGO  x164 - IMILE Standard  x;Regra operacional;23;632.91
+08/07/2026;268;Bloquieo de bebidas em 35 - Pacifico  x56 - Pajucara  x90 - Jamef SP  x92 - JeT EXPRESS  x120 - TODOBRASIL  x127 - Correios SEDEX - 34028316000103  x140 - LAUTO CARGO  x164 - IMILE Standard  x;Regra operacional;5;184.57
 09/06/2026;268;Bloquieo de bebidas em 35 - Pacifico  x56 - Pajucara  x90 - Jamef SP  x92 - JeT EXPRESS  x120 - TODOBRASIL  x127 - Correios SEDEX - 34028316000103  x140 - LAUTO CARGO  x164 - IMILE Standard  x;Regra operacional;4;36.02
 10/06/2026;268;Bloquieo de bebidas em 35 - Pacifico  x56 - Pajucara  x90 - Jamef SP  x92 - JeT EXPRESS  x120 - TODOBRASIL  x127 - Correios SEDEX - 34028316000103  x140 - LAUTO CARGO  x164 - IMILE Standard  x;Regra operacional;11;625.05
 11/06/2026;268;Bloquieo de bebidas em 35 - Pacifico  x56 - Pajucara  x90 - Jamef SP  x92 - JeT EXPRESS  x120 - TODOBRASIL  x127 - Correios SEDEX - 34028316000103  x140 - LAUTO CARGO  x164 - IMILE Standard  x;Regra operacional;12;503.11
@@ -686,8 +695,9 @@ Data;Regra;Descricao;Categoria;NOrders;Impacto_Total
 01/07/2026;368;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem Cotia;Oportunidade;4;30.83
 05/07/2026;368;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem Cotia;Oportunidade;1;21.01
 06/07/2026;368;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem Cotia;Oportunidade;1;31.62
-07/07/2026;368;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem Cotia;Oportunidade;11;313.46
+07/07/2026;368;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem Cotia;Oportunidade;12;320.44
 08/06/2026;368;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem Cotia;Oportunidade;2;35.67
+08/07/2026;368;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem Cotia;Oportunidade;1;8.55
 09/06/2026;368;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem Cotia;Oportunidade;15;14116.63
 10/06/2026;368;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem Cotia;Oportunidade;2;70.84
 11/06/2026;368;Bloqueia todas as transportadoras de entregarem em MT e MS exceto Carvalima e Favorita para BRBAY Origem Cotia;Oportunidade;15;262.92

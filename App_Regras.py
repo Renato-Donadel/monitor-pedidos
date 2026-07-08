@@ -706,40 +706,82 @@ def render_regras():
         if df_e.empty:
             st.warning("Nenhum frete das entradas no período selecionado.")
         else:
+            # Economia real (ganhou no preço) ≠ direcionamento (regra
+            # escolheu a entrada mesmo mais cara). São perguntas diferentes.
+            df_e["Tipo"] = df_e["Economia"].apply(
+                lambda v: "Ganhou no preço" if v >= 0 else "Direcionada (mais cara)")
+
             entradas = sorted(df_e["Entrada"].unique())
+            ESPERADAS = ["JADLOG", "GOL (SPO LOG)", "LSP",
+                         "IMILE (VGP)", "ASAP (Casas Bahia)"]
+            faltando = [e for e in ESPERADAS if e not in entradas]
+            if faltando:
+                st.caption("⚠️ Sem fretes no período para: **" + ", ".join(faltando) +
+                           "** — confira o nome/armazém no `NOVAS_TSP` do Regras.py.")
+
             cols = st.columns(len(entradas)) if len(entradas) <= 6 else st.columns(6)
             for i, ent in enumerate(entradas):
-                d = df_e[df_e["Entrada"] == ent]
-                eco = d["Economia"].sum()
+                d    = df_e[df_e["Entrada"] == ent]
+                pos  = d[d["Economia"] >= 0]
+                neg  = d[d["Economia"] < 0]
                 cols[i % len(cols)].metric(
-                    f"🚚 {ent}", _brl(eco),
-                    delta=f"{d['ShipmentID'].nunique():,} fretes · "
-                          f"{_brl(d['Economia'].mean())}/frete",
+                    f"🚚 {ent}", _brl(pos["Economia"].sum()),
+                    delta=f"{pos['ShipmentID'].nunique():,} fretes ganhos no preço",
                     delta_color="off",
-                    help=f"Economia líquida vs 2ª opção do leilão. "
-                         f"{(d['Economia'] < 0).sum():,} fretes em que "
-                         f"{ent} era mais cara que a 2ª opção.")
+                    help=f"Economia real: soma de (2ª opção − {ent}) apenas nos "
+                         f"fretes em que {ent} era a mais barata. Fora do número: "
+                         f"{neg['ShipmentID'].nunique():,} fretes direcionados "
+                         f"(custo de {_brl(-neg['Economia'].sum())}).")
 
-            total_eco = df_e["Economia"].sum()
-            st.success(f"**Economia líquida total no período: {_brl(total_eco)}** "
-                       f"em {df_e['ShipmentID'].nunique():,} fretes")
+            resumo_ent = (df_e.groupby(["Entrada", "Tipo"])
+                              .agg(Fretes=("ShipmentID", "nunique"),
+                                   Valor=("Economia", "sum"))
+                              .reset_index()
+                              .pivot(index="Entrada", columns="Tipo",
+                                     values=["Fretes", "Valor"]))
+            eco_tot = df_e.loc[df_e["Economia"] >= 0, "Economia"].sum()
+            dir_tot = -df_e.loc[df_e["Economia"] < 0, "Economia"].sum()
+            c_ok, c_dir = st.columns(2)
+            c_ok.success(f"**💰 Economia real (ganhou no preço): {_brl(eco_tot)}**")
+            c_dir.warning(f"**🎯 Custo de direcionamento (regra escolheu mesmo "
+                          f"mais cara): {_brl(dir_tot)}**")
+            with st.expander("📊 Composição economia × direcionamento por entrada"):
+                st.dataframe(resumo_ent.round(2), use_container_width=True)
 
-            # ── Evolução mensal por entrada ────────────────────
-            df_e["Mes"] = df_e["Data"].dt.to_period("M").dt.to_timestamp()
-            piv = (df_e.groupby(["Mes", "Entrada"])["Economia"]
-                       .sum().reset_index())
-            fig_ent = go.Figure()
+            # ── Evolução semanal e mensal (só economia real) ───
+            df_pos = df_e[df_e["Economia"] >= 0].copy()
+            df_pos["Semana"] = df_pos["Data"].dt.to_period("W").dt.start_time
+            df_pos["Mes"]    = df_pos["Data"].dt.to_period("M").dt.to_timestamp()
+
+            piv_s = (df_pos.groupby(["Semana", "Entrada"])["Economia"]
+                           .sum().reset_index())
+            fig_sem = go.Figure()
             for ent in entradas:
-                d = piv[piv["Entrada"] == ent]
-                fig_ent.add_trace(go.Bar(x=d["Mes"], y=d["Economia"], name=ent))
-            fig_ent.update_layout(
-                barmode="group", height=380,
-                title="Economia mensal por entrada",
+                d = piv_s[piv_s["Entrada"] == ent]
+                fig_sem.add_trace(go.Bar(x=d["Semana"], y=d["Economia"], name=ent))
+            fig_sem.update_layout(
+                barmode="group", height=360,
+                title="Economia real por SEMANA (fretes ganhos no preço)",
+                yaxis=dict(title="Economia (R$)", tickformat=",.0f"),
+                xaxis=dict(tickformat="%d/%m"),
+                legend=dict(orientation="h", y=1.15),
+            )
+            st.plotly_chart(fig_sem, use_container_width=True)
+
+            piv_m = (df_pos.groupby(["Mes", "Entrada"])["Economia"]
+                           .sum().reset_index())
+            fig_mes = go.Figure()
+            for ent in entradas:
+                d = piv_m[piv_m["Entrada"] == ent]
+                fig_mes.add_trace(go.Bar(x=d["Mes"], y=d["Economia"], name=ent))
+            fig_mes.update_layout(
+                barmode="group", height=360,
+                title="Economia real por MÊS (fretes ganhos no preço)",
                 yaxis=dict(title="Economia (R$)", tickformat=",.0f"),
                 xaxis=dict(dtick="M1", tickformat="%b/%Y"),
-                legend=dict(orientation="h", y=1.12),
+                legend=dict(orientation="h", y=1.15),
             )
-            st.plotly_chart(fig_ent, use_container_width=True)
+            st.plotly_chart(fig_mes, use_container_width=True)
 
             # ── Quem herdaria os fretes ────────────────────────
             with st.expander("🔍 Detalhe por entrada — quem herdaria os fretes"):
