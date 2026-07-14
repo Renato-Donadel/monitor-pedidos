@@ -42,7 +42,10 @@ def carregar_bases():
     df_trade = pd.read_excel(arq_pedidos) if os.path.exists(arq_pedidos) else pd.DataFrame()
     df_sim   = pd.read_excel(arq_sim)     if os.path.exists(arq_sim)     else pd.DataFrame()
     df_nfd   = pd.read_excel(arq_nfd, sheet_name="NFD_Real") if os.path.exists(arq_nfd) else pd.DataFrame()
-    df_intel = pd.read_excel(arq_intel)   if os.path.exists(arq_intel)   else pd.DataFrame()
+    df_intel   = pd.read_excel(arq_intel)   if os.path.exists(arq_intel)   else pd.DataFrame()
+    arq_mensal = "data/Base_Mensal.xlsx"
+    df_mensal_geral  = pd.read_excel(arq_mensal, sheet_name="Geral")        if os.path.exists(arq_mensal) else pd.DataFrame()
+    df_mensal_transp = pd.read_excel(arq_mensal, sheet_name="Transportadoras") if os.path.exists(arq_mensal) else pd.DataFrame()
 
     if not df_trade.empty:
         df_trade.columns = df_trade.columns.str.strip()
@@ -63,11 +66,11 @@ def carregar_bases():
         if "CruzouIntelipost" in df_nfd.columns: df_nfd["CruzouIntelipost"] = df_nfd["CruzouIntelipost"].fillna(False).astype(bool)
         if "StatusNaoTsp"     in df_nfd.columns: df_nfd["StatusNaoTsp"]     = df_nfd["StatusNaoTsp"].fillna("").astype(str)
 
-    return df_trade, df_sim, df_nfd, df_intel
+    return df_trade, df_sim, df_nfd, df_intel, df_mensal_geral, df_mensal_transp
 
 def render_tradeoff():
 
-    df_trade, df_sim, df_nfd_real, df_intel = carregar_bases()
+    df_trade, df_sim, df_nfd_real, df_intel, df_mensal_geral, df_mensal_transp = carregar_bases()
     if df_trade.empty or df_sim.empty:
         st.error("Bases nao encontradas. Execute o ETL primeiro.")
         return
@@ -172,6 +175,93 @@ def render_tradeoff():
             file_name="nfd_fora_intelipost.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
+
+    st.divider()
+
+    # ── EVOLUÇÃO MENSAL ───────────────────────────────────────────────
+    st.markdown("### 📅 Evolução Mensal")
+
+    if not df_mensal_geral.empty:
+        import plotly.graph_objects as go
+
+        df_mg = df_mensal_geral.copy()
+        df_mg["Mes"] = df_mg["Mes"].astype(str)
+        df_mg = df_mg[df_mg["Mes"].str.startswith("2026")].sort_values("Mes")
+
+        # ── Tabela resumo ─────────────────────────────────────────────
+        cols_tab = st.columns(len(df_mg))
+        for idx, (_, row) in enumerate(df_mg.iterrows()):
+            mes_label = row["Mes"]
+            with cols_tab[idx]:
+                st.markdown(
+                    f"<div style='background:#F4F7FF;border-radius:8px;padding:8px 6px;text-align:center;border:1px solid #E2E8F0'>"
+                    f"<div style='font-size:10px;color:#64748B;font-weight:600'>{mes_label}</div>"
+                    f"<div style='font-size:9px;color:#888;margin-top:4px'>Vendas</div>"
+                    f"<div style='font-size:11px;font-weight:700;color:#0F172A'>R$ {row['TotalVendas']/1e6:.1f}M</div>"
+                    f"<div style='font-size:9px;color:#888;margin-top:2px'>NFD Total</div>"
+                    f"<div style='font-size:11px;font-weight:700;color:#E65100'>R$ {row['TotalNFD']/1e3:.0f}K</div>"
+                    f"<div style='font-size:9px;color:#888;margin-top:2px'>NFD TSP</div>"
+                    f"<div style='font-size:11px;font-weight:700;color:#D32F2F'>R$ {row['NFDTSP']/1e3:.0f}K</div>"
+                    f"<div style='font-size:9px;color:#888;margin-top:2px'>% TSP/Vendas</div>"
+                    f"<div style='font-size:12px;font-weight:700;color:{'#2E7D32' if row['PctNFDTSP'] < 1 else '#E65100' if row['PctNFDTSP'] < 2 else '#D32F2F'}'>{row['PctNFDTSP']:.2f}%</div>"
+                    f"</div>",
+                    unsafe_allow_html=True
+                )
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # ── Gráfico de linhas por transportadora ──────────────────────
+        if not df_mensal_transp.empty:
+            df_mt = df_mensal_transp.copy()
+            df_mt = df_mt[df_mt["Mes"].astype(str).str.startswith("2026")].sort_values("Mes")
+
+            fig_mensal = go.Figure()
+
+            # Linhas por transportadora
+            cores_transp = {
+                "IMILE":    "#D32F2F",
+                "JET":      "#1976D2",
+                "MAGALU":   "#7B1FA2",
+                "JAMEF":    "#F57C00",
+                "JADLOG":   "#388E3C",
+                "FAVORITA": "#0097A7",
+            }
+            transportadoras = sorted(df_mt["Transportadora"].unique())
+            for tsp in transportadoras:
+                df_t = df_mt[df_mt["Transportadora"] == tsp].sort_values("Mes")
+                cor  = cores_transp.get(tsp, "#90A4AE")
+                fig_mensal.add_trace(go.Scatter(
+                    x=df_t["Mes"], y=df_t["NFDTSP"],
+                    name=tsp, mode="lines+markers",
+                    line=dict(color=cor, width=2),
+                    marker=dict(size=6)
+                ))
+
+            # Linha total empresa (mais grossa)
+            df_total = df_mt.groupby("Mes", as_index=False)["NFDTSP"].sum().sort_values("Mes")
+            fig_mensal.add_trace(go.Scatter(
+                x=df_total["Mes"], y=df_total["NFDTSP"],
+                name="TOTAL EMPRESA", mode="lines+markers",
+                line=dict(color="#0F172A", width=4, dash="solid"),
+                marker=dict(size=8, symbol="diamond")
+            ))
+
+            fig_mensal.update_layout(
+                title=None,
+                xaxis_title="Mês",
+                yaxis_title="NFD TSP (R$)",
+                plot_bgcolor="#FFFFFF",
+                paper_bgcolor="#FFFFFF",
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
+                margin=dict(l=10, r=10, t=40, b=10),
+                height=380,
+                font=dict(family="Arial", size=11),
+                xaxis=dict(gridcolor="#F1F5F9"),
+                yaxis=dict(gridcolor="#F1F5F9", tickprefix="R$ ", tickformat=",.0f"),
+            )
+            st.plotly_chart(fig_mensal, use_container_width=True)
+    else:
+        st.info("Base_Mensal.xlsx não encontrada. Rode o ETL e suba os dados.")
 
     st.divider()
 
