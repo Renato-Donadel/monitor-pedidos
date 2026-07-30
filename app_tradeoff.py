@@ -196,6 +196,86 @@ def render_tradeoff():
 
     st.divider()
 
+    # ── ANÁLISE POR CAMPANHA ──────────────────────────────
+    st.markdown("### 🎯 Análise por Campanha")
+
+    if "Campanha" in df_nfd_real.columns:
+        # Filtro de campanha
+        campanhas_disp = sorted(df_nfd_real["Campanha"].dropna().unique())
+        campanhas_disp = [c for c in campanhas_disp if c not in ("", "nan")]
+        campanha_sel = st.multiselect(
+            "Filtrar por Campanha (deixe vazio para todas)",
+            options=campanhas_disp,
+            default=[],
+            key="campanha_sel"
+        )
+
+        df_nfd_camp = df_nfd_real.copy()
+        if campanha_sel:
+            df_nfd_camp = df_nfd_camp[df_nfd_camp["Campanha"].isin(campanha_sel)]
+
+        # Aplica filtro de período
+        if "DataDespacho" in df_nfd_camp.columns:
+            df_nfd_camp["DataDespacho"] = pd.to_datetime(df_nfd_camp["DataDespacho"], errors="coerce")
+            df_nfd_camp = df_nfd_camp[df_nfd_camp["DataDespacho"] >= data_corte]
+
+        # Filtra só TSP real
+        mask_tsp_camp   = df_nfd_camp["TemNFD"] == True
+        mask_nao_tsp    = df_nfd_camp.get("TspMasNaoTsp", pd.Series(False, index=df_nfd_camp.index)) != True
+        mask_com_transp = df_nfd_camp["Transportadora"].fillna("").str.strip() != "" if "Transportadora" in df_nfd_camp.columns else pd.Series(True, index=df_nfd_camp.index)
+        df_nfd_tsp_camp = df_nfd_camp[mask_tsp_camp & mask_nao_tsp & mask_com_transp]
+
+        if df_nfd_tsp_camp.empty:
+            st.info("Nenhuma NFD TSP encontrada para os filtros selecionados.")
+        else:
+            # Ranking Campanha × Código Tarifário
+            # Cruza NFD com Base_Pedidos para pegar CodigoTarifario
+            if not df_trade.empty and "CodigoTarifario" in df_trade.columns:
+                df_camp_cod = df_nfd_tsp_camp.merge(
+                    df_trade[["PedidoFormatado", "CodigoTarifario", "Transportadora", "ValorNota"]].drop_duplicates(subset=["PedidoFormatado"]),
+                    on="PedidoFormatado", how="left", suffixes=("", "_trade")
+                )
+                cod_col = "CodigoTarifario"
+                transp_col = "Transportadora"
+                val_col = "ValorNota"
+            else:
+                df_camp_cod = df_nfd_tsp_camp.copy()
+                cod_col = None
+
+            # Ranking por Campanha
+            st.markdown("#### Ranking por Campanha")
+            rank_camp = (
+                df_nfd_tsp_camp.groupby("Campanha", as_index=False)
+                .agg(
+                    Pedidos_NFD = ("PedidoFormatado", "count"),
+                    Valor_NFD   = ("ValorNota", "sum")
+                )
+                .sort_values("Valor_NFD", ascending=False)
+                .head(20)
+            )
+            rank_camp["Valor_NFD"] = rank_camp["Valor_NFD"].apply(fmt_brl)
+            st.dataframe(rank_camp, use_container_width=True, hide_index=True)
+
+            # Ranking Campanha × Código Tarifário
+            if cod_col and not df_camp_cod.empty:
+                st.markdown("#### Ranking Campanha × Código Tarifário × Transportadora")
+                rank_cod = (
+                    df_camp_cod[df_camp_cod[cod_col].notna()]
+                    .groupby(["Campanha", transp_col, cod_col], as_index=False)
+                    .agg(
+                        Pedidos_NFD = ("PedidoFormatado", "count"),
+                        Valor_NFD   = (val_col, "sum")
+                    )
+                    .sort_values("Valor_NFD", ascending=False)
+                    .head(30)
+                )
+                rank_cod["Valor_NFD"] = rank_cod["Valor_NFD"].apply(fmt_brl)
+                st.dataframe(rank_cod, use_container_width=True, hide_index=True)
+    else:
+        st.info("Coluna 'Campanha' não disponível. Rode o ETL para gerar os dados.")
+
+    st.divider()
+
     # ── EVOLUÇÃO MENSAL ───────────────────────────────────
     st.markdown("### 📅 Evolução Mensal")
 
