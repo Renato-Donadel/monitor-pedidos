@@ -196,6 +196,16 @@ def render_tradeoff():
 
     st.divider()
 
+    # ── PERÍODO (usado pela Análise por Campanha e pelas secoes seguintes) ──
+    col_per, _ = st.columns([1, 1])
+    with col_per:
+        periodo = st.selectbox("Periodo", ["30 dias", "60 dias", "90 dias"])
+        dias = {"30 dias": 30, "60 dias": 60, "90 dias": 90}[periodo]
+
+    data_corte = pd.Timestamp.today() - pd.Timedelta(days=dias)
+
+    st.divider()
+
     # ── ANÁLISE POR CAMPANHA ──────────────────────────────
     st.markdown("### 🎯 Análise por Campanha")
 
@@ -230,7 +240,9 @@ def render_tradeoff():
         else:
             # Ranking Campanha × Código Tarifário
             # Cruza NFD com Base_Pedidos para pegar CodigoTarifario
-            if not df_trade.empty and "CodigoTarifario" in df_trade.columns:
+            if (not df_trade.empty and "CodigoTarifario" in df_trade.columns
+                    and "PedidoFormatado" in df_trade.columns
+                    and "PedidoFormatado" in df_nfd_tsp_camp.columns):
                 df_camp_cod = df_nfd_tsp_camp.merge(
                     df_trade[["PedidoFormatado", "CodigoTarifario", "Transportadora", "ValorNota"]].drop_duplicates(subset=["PedidoFormatado"]),
                     on="PedidoFormatado", how="left", suffixes=("", "_trade")
@@ -350,16 +362,6 @@ def render_tradeoff():
             st.plotly_chart(fig_mensal, use_container_width=True)
     else:
         st.info("Base_Mensal.xlsx não encontrada. Rode o ETL e suba os dados.")
-
-    st.divider()
-
-    # ── PERÍODO (sem transportadora ainda) ──────────────
-    col_per, _ = st.columns([1, 1])
-    with col_per:
-        periodo = st.selectbox("Periodo", ["30 dias", "60 dias", "90 dias"])
-        dias = {"30 dias": 30, "60 dias": 60, "90 dias": 90}[periodo]
-
-    data_corte = pd.Timestamp.today() - pd.Timedelta(days=dias)
 
     df_todas = df_trade[df_trade["DataFinal"] >= data_corte].copy()
 
