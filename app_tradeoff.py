@@ -445,6 +445,20 @@ def render_tradeoff():
         (df_trade["DataFinal"] >= data_corte)
     ].copy()
 
+    # TemNFD do df_trade vem de um merge aproximado no ETL (perde pedidos no
+    # cruzamento e nao exclui TspMasNaoTsp). Sobrescreve com a mesma fonte e
+    # regra oficial usada na tabela "NFD por Transportadora" acima, para os
+    # numeros baterem.
+    if "PedidoFormatado" in df_periodo.columns and not df_nfd_real.empty and "PedidoFormatado" in df_nfd_real.columns:
+        mask_periodo_nfd = df_nfd_real["DataDespacho"] >= data_corte
+        mask_tsp_nfd      = df_nfd_real["TemNFD"] == True
+        mask_real_nfd     = df_nfd_real.get("TspMasNaoTsp", pd.Series(False, index=df_nfd_real.index)) != True
+        mask_intel_nfd    = df_nfd_real["Transportadora"].fillna("").str.strip() != ""
+        pedidos_nfd_oficial = set(
+            df_nfd_real.loc[mask_periodo_nfd & mask_tsp_nfd & mask_real_nfd & mask_intel_nfd, "PedidoFormatado"]
+        )
+        df_periodo["TemNFD"] = df_periodo["PedidoFormatado"].isin(pedidos_nfd_oficial)
+
     # ── VISÃO GERAL DA TRANSPORTADORA SELECIONADA ─────────
     if df_periodo.empty:
         st.warning("Nenhum pedido encontrado para esse filtro.")
