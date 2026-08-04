@@ -18,6 +18,7 @@ from app_devolucao import render_devolucao
 from app_desempenho import render_desempenho
 from app_tradeoff import render_tradeoff
 from App_Regras import render_regras
+from app_doccob import render_doccob
 
 # ==============================
 # CONFIG STREAMLIT
@@ -144,6 +145,7 @@ pagina = st.sidebar.radio(
         "Desempenho por Transportadora",
         "Trade-Off Logístico",
         "Regras PRW",
+        "Gerador de DOCCOB",
     ]
 )
 
@@ -194,6 +196,15 @@ elif pagina == "Regras PRW":
     subtitulo = (
         "Conformidade das Regras de Cotação • "
         "Bloqueios • Leilões • Restrições"
+    )
+
+elif pagina == "Gerador de DOCCOB":
+
+    titulo = "Gerador de DOCCOB"
+
+    subtitulo = (
+        "Ferramenta manual • Padrão Proceda 5.0 • "
+        "Fallback quando a transportadora não envia o arquivo pronto"
     )
 
 col1, col2 = st.columns([1, 7])
@@ -254,3 +265,6 @@ elif pagina == "Trade-Off Logístico":
 
 elif pagina == "Regras PRW":
     render_regras()
+
+elif pagina == "Gerador de DOCCOB":
+    render_doccob()

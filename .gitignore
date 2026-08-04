@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+.claude/
+data/doccob_cadastro_transportadoras.json
