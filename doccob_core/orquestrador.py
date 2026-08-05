@@ -33,12 +33,18 @@ PADROES_PENDENCIA = [
 def identificar_pendencias(avisos: list) -> list:
     """Devolve as pendencias (campos estimados que a planilha nao trouxe e
     que precisam de confirmacao humana) encontradas na lista de avisos -
-    [{"campo": ..., "aviso": ...}, ...]."""
+    [{"campo": ..., "aviso": ...}, ...]. No maximo UMA pendencia por
+    `campo` (esses campos sao de nivel-arquivo/fatura - se o arquivo foi
+    dividido em varios lotes por CNPJ emissor, o mesmo aviso aparece
+    repetido em cada lote, mas so' precisa ser perguntado uma vez)."""
     pendencias = []
+    campos_vistos = set()
     for aviso in avisos:
         for campo, padrao in PADROES_PENDENCIA:
             if padrao.search(aviso):
-                pendencias.append({"campo": campo, "aviso": aviso})
+                if campo not in campos_vistos:
+                    pendencias.append({"campo": campo, "aviso": aviso})
+                    campos_vistos.add(campo)
                 break
     return pendencias
 
