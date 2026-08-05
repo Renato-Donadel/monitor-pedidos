@@ -96,8 +96,14 @@ def ler_csv_transportadora(caminho: str, encoding: str = "latin-1") -> tuple[str
     registros = []
     for linha in linhas[2:]:
         campos = linha.rstrip("\r\n").split(";")
+        # Cada linha comeca com um marcador de tipo: "2" = dado de CT-e,
+        # "9" = rodape (so' checar contagem de campos NAO basta - o rodape
+        # real observado tem campos de sobra, todos vazios, e passava pelo
+        # filtro antigo causando erro ao tentar parsear a data vazia).
+        if not campos or campos[0].strip() != "2":
+            continue
         if len(campos) <= COL_NUMERO_FATURA:
-            continue  # linha de rodape ou incompleta
+            continue  # linha de dado truncada/incompleta
         registros.append({
             "numero_cte": _limpar(campos[COL_NUMERO_CTE]),
             "praca_expedidora": _limpar(campos[COL_PRACA_EXPEDIDORA]),
