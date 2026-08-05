@@ -50,6 +50,7 @@ def carregar_bases():
     if not df_trade.empty:
         df_trade.columns = df_trade.columns.str.strip()
         if "DataFinal"      in df_trade.columns: df_trade["DataFinal"]   = pd.to_datetime(df_trade["DataFinal"],   errors="coerce")
+        if "DataDespacho"   in df_trade.columns: df_trade["DataDespacho"]= pd.to_datetime(df_trade["DataDespacho"],errors="coerce")
         if "TemNFD"         in df_trade.columns: df_trade["TemNFD"]      = df_trade["TemNFD"].fillna(False).astype(bool)
         if "DentroPrazo"    in df_trade.columns: df_trade["DentroPrazo"] = df_trade["DentroPrazo"].fillna(False).astype(bool)
         if "ValorFrete"     in df_trade.columns: df_trade["ValorFrete"]  = pd.to_numeric(df_trade["ValorFrete"],  errors="coerce")
@@ -74,6 +75,13 @@ def render_tradeoff():
     if df_trade.empty or df_sim.empty:
         st.error("Bases nao encontradas. Execute o ETL primeiro.")
         return
+
+    # DataFinal so existe quando o pedido chegou a um status de entrega bem
+    # sucedida (usada para SLA/DentroPrazo - NaT ali significa "nao entregue",
+    # o que deve mesmo contar como insucesso de SLA). Para decidir "o pedido e
+    # dos ultimos N dias" usamos DataDespacho, que existe pra todo pedido
+    # despachado — inclusive os que viraram NFD e nunca tiveram DataFinal.
+    col_periodo = "DataDespacho" if "DataDespacho" in df_trade.columns else "DataFinal"
 
     # ====================================================
     # TOTAIS GERAIS (sem filtro — dados históricos completos)
@@ -363,7 +371,7 @@ def render_tradeoff():
     else:
         st.info("Base_Mensal.xlsx não encontrada. Rode o ETL e suba os dados.")
 
-    df_todas = df_trade[df_trade["DataFinal"] >= data_corte].copy()
+    df_todas = df_trade[df_trade[col_periodo] >= data_corte].copy()
 
     st.divider()
 
@@ -442,7 +450,7 @@ def render_tradeoff():
 
     df_periodo = df_trade[
         (df_trade["Transportadora"] == transp_sel) &
-        (df_trade["DataFinal"] >= data_corte)
+        (df_trade[col_periodo] >= data_corte)
     ].copy()
 
     # TemNFD do df_trade vem de um merge aproximado no ETL (perde pedidos no
@@ -1036,7 +1044,7 @@ def render_tradeoff():
 
     # Recalcula para todas as transportadoras, últimos 90 dias
     data_corte_90 = pd.Timestamp.today() - pd.Timedelta(days=90)
-    df_emp = df_trade[df_trade["DataFinal"] >= data_corte_90].copy()
+    df_emp = df_trade[df_trade[col_periodo] >= data_corte_90].copy()
 
     nfd_emp = (
         df_emp.groupby(["Transportadora", "CodigoTarifario"])
