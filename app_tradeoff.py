@@ -478,7 +478,10 @@ def render_tradeoff():
     total_notas   = df_periodo["ValorNota"].sum()   if "ValorNota" in df_periodo.columns else None
     total_nfd_n   = int(df_periodo["TemNFD"].sum()) if "TemNFD"    in df_periodo.columns else 0
     nfd_pct_ger   = total_nfd_n / total_ped * 100   if total_ped > 0 else 0
-    nfd_valor_ger = (total_notas * nfd_pct_ger / 100) if total_notas else None
+    nfd_valor_ger = (
+        df_periodo.loc[df_periodo["TemNFD"], "ValorNota"].sum()
+        if "ValorNota" in df_periodo.columns and "TemNFD" in df_periodo.columns else None
+    )
 
     g1,g2,g3,g4,g5 = st.columns(5)
     g1.markdown(kpi_box("Total de Pedidos",    fmt_int(total_ped)), unsafe_allow_html=True)
@@ -588,7 +591,7 @@ def render_tradeoff():
             nfd_orig_pct  = df_cod["TemNFD"].mean() * 100       if pedidos_orig > 0 else 0
             frete_orig    = df_cod["ValorFrete"].sum()
             valor_notas   = df_cod["ValorNota"].sum() if "ValorNota" in df_cod.columns and df_cod["ValorNota"].notna().any() else None
-            nfd_orig_valor= (valor_notas * nfd_orig_pct / 100) if valor_notas else None
+            nfd_orig_valor= df_cod.loc[df_cod["TemNFD"], "ValorNota"].sum() if "ValorNota" in df_cod.columns else None
 
             st.markdown("**Situacao atual**")
             c1,c2,c3,c4,c5,c6 = st.columns(6)
@@ -1199,7 +1202,7 @@ def render_tradeoff():
             pedidos_c     = len(df_c)
             nfd_pct_c     = df_c["TemNFD"].mean() * 100 if pedidos_c > 0 else 0
             valor_notas_c = df_c["ValorNota"].sum() if "ValorNota" in df_c.columns and df_c["ValorNota"].notna().any() else None
-            nfd_orig_c    = (valor_notas_c * nfd_pct_c / 100) if valor_notas_c else None
+            nfd_orig_c    = df_c.loc[df_c["TemNFD"], "ValorNota"].sum() if "ValorNota" in df_c.columns else None
 
             df_sim_c = df_sim[
                 (df_sim["TransportadoraOrigem"] == transp_sel) &
