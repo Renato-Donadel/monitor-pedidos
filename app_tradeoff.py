@@ -456,16 +456,24 @@ def render_tradeoff():
     # TemNFD do df_trade vem de um merge aproximado no ETL (perde pedidos no
     # cruzamento e nao exclui TspMasNaoTsp). Sobrescreve com a mesma fonte e
     # regra oficial usada na tabela "NFD por Transportadora" acima, para os
-    # numeros baterem.
+    # numeros baterem. O valor tambem vem do NFD oficial (ValorNota do
+    # Base_NFD_Real, o valor realmente devolvido) em vez do ValorNota do
+    # Intelipost (valor da nota original, que pode ser maior em devolucao
+    # parcial).
+    df_periodo["ValorNFD_Oficial"] = 0.0
     if "PedidoFormatado" in df_periodo.columns and not df_nfd_real.empty and "PedidoFormatado" in df_nfd_real.columns:
         mask_periodo_nfd = df_nfd_real["DataDespacho"] >= data_corte
         mask_tsp_nfd      = df_nfd_real["TemNFD"] == True
         mask_real_nfd     = df_nfd_real.get("TspMasNaoTsp", pd.Series(False, index=df_nfd_real.index)) != True
         mask_intel_nfd    = df_nfd_real["Transportadora"].fillna("").str.strip() != ""
-        pedidos_nfd_oficial = set(
-            df_nfd_real.loc[mask_periodo_nfd & mask_tsp_nfd & mask_real_nfd & mask_intel_nfd, "PedidoFormatado"]
+        valor_nfd_oficial_map = (
+            df_nfd_real.loc[mask_periodo_nfd & mask_tsp_nfd & mask_real_nfd & mask_intel_nfd,
+                             ["PedidoFormatado", "ValorNota"]]
+            .drop_duplicates(subset=["PedidoFormatado"], keep="last")
+            .set_index("PedidoFormatado")["ValorNota"]
         )
-        df_periodo["TemNFD"] = df_periodo["PedidoFormatado"].isin(pedidos_nfd_oficial)
+        df_periodo["TemNFD"] = df_periodo["PedidoFormatado"].isin(valor_nfd_oficial_map.index)
+        df_periodo["ValorNFD_Oficial"] = df_periodo["PedidoFormatado"].map(valor_nfd_oficial_map).fillna(0.0)
 
     # ── VISÃO GERAL DA TRANSPORTADORA SELECIONADA ─────────
     if df_periodo.empty:
@@ -477,11 +485,8 @@ def render_tradeoff():
     total_ped     = len(df_periodo)
     total_notas   = df_periodo["ValorNota"].sum()   if "ValorNota" in df_periodo.columns else None
     total_nfd_n   = int(df_periodo["TemNFD"].sum()) if "TemNFD"    in df_periodo.columns else 0
-    nfd_pct_ger   = total_nfd_n / total_ped * 100   if total_ped > 0 else 0
-    nfd_valor_ger = (
-        df_periodo.loc[df_periodo["TemNFD"], "ValorNota"].sum()
-        if "ValorNota" in df_periodo.columns and "TemNFD" in df_periodo.columns else None
-    )
+    nfd_valor_ger = df_periodo["ValorNFD_Oficial"].sum()
+    nfd_pct_ger   = (nfd_valor_ger / total_notas * 100) if total_notas else 0
 
     g1,g2,g3,g4,g5 = st.columns(5)
     g1.markdown(kpi_box("Total de Pedidos",    fmt_int(total_ped)), unsafe_allow_html=True)
@@ -588,10 +593,10 @@ def render_tradeoff():
             pedidos_orig  = len(df_cod)
             sla_orig      = df_cod["DentroPrazo"].mean() * 100 if pedidos_orig > 0 else 0
             tm_orig       = df_cod["ValorFrete"].mean()         if pedidos_orig > 0 else 0
-            nfd_orig_pct  = df_cod["TemNFD"].mean() * 100       if pedidos_orig > 0 else 0
             frete_orig    = df_cod["ValorFrete"].sum()
             valor_notas   = df_cod["ValorNota"].sum() if "ValorNota" in df_cod.columns and df_cod["ValorNota"].notna().any() else None
-            nfd_orig_valor= df_cod.loc[df_cod["TemNFD"], "ValorNota"].sum() if "ValorNota" in df_cod.columns else None
+            nfd_orig_valor= df_cod["ValorNFD_Oficial"].sum()
+            nfd_orig_pct  = (nfd_orig_valor / valor_notas * 100) if valor_notas else 0
 
             st.markdown("**Situacao atual**")
             c1,c2,c3,c4,c5,c6 = st.columns(6)
@@ -1200,9 +1205,9 @@ def render_tradeoff():
 
             df_c = df_periodo[df_periodo["CodigoTarifario"] == cod]
             pedidos_c     = len(df_c)
-            nfd_pct_c     = df_c["TemNFD"].mean() * 100 if pedidos_c > 0 else 0
             valor_notas_c = df_c["ValorNota"].sum() if "ValorNota" in df_c.columns and df_c["ValorNota"].notna().any() else None
-            nfd_orig_c    = df_c.loc[df_c["TemNFD"], "ValorNota"].sum() if "ValorNota" in df_c.columns else None
+            nfd_orig_c    = df_c["ValorNFD_Oficial"].sum()
+            nfd_pct_c     = (nfd_orig_c / valor_notas_c * 100) if valor_notas_c else 0
 
             df_sim_c = df_sim[
                 (df_sim["TransportadoraOrigem"] == transp_sel) &
