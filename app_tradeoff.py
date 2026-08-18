@@ -389,7 +389,7 @@ def render_tradeoff():
 
     # NFD por transportadora: df_nfd_real (Base_NFD_Real) com Transportadora do Intelipost
     # Filtro: DataDespacho no periodo + TemNFD (motivo TSP) + exclui TspMasNaoTsp
-    nfd_tsp_tabela = pd.DataFrame()
+    nfd_tsp_tabela = pd.DataFrame(columns=["Transportadora", "PedidosNFD", "ValorNFD"])
     nfd_sem_tsp_periodo = 0
     if not df_nfd_real.empty and "DataDespacho" in df_nfd_real.columns and "Transportadora" in df_nfd_real.columns:
         mask_periodo = df_nfd_real["DataDespacho"] >= data_corte
