@@ -19,6 +19,7 @@ from app_desempenho import render_desempenho
 from app_tradeoff import render_tradeoff
 from App_Regras import render_regras
 from app_doccob import render_doccob
+from app_fluxo_devolucao import render_fluxo_devolucao
 
 # ==============================
 # CONFIG STREAMLIT
@@ -146,6 +147,7 @@ pagina = st.sidebar.radio(
         "Trade-Off Logístico",
         "Regras PRW",
         "Gerador de DOCCOB",
+        "Fluxo de Devolução",
     ]
 )
 
@@ -205,6 +207,15 @@ elif pagina == "Gerador de DOCCOB":
     subtitulo = (
         "Ferramenta manual • Padrão Proceda 5.0 • "
         "Fallback quando a transportadora não envia o arquivo pronto"
+    )
+
+elif pagina == "Fluxo de Devolução":
+
+    titulo = "Fluxo de Devolução"
+
+    subtitulo = (
+        "TSP → Intelipost → Armazém → Entrega • "
+        "Estado por pedido • Alerta de Reenvio Ativo"
     )
 
 col1, col2 = st.columns([1, 7])
@@ -268,3 +279,6 @@ elif pagina == "Regras PRW":
 
 elif pagina == "Gerador de DOCCOB":
     render_doccob()
+
+elif pagina == "Fluxo de Devolução":
+    render_fluxo_devolucao()
