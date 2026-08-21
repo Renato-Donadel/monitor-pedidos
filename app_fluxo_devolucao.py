@@ -149,7 +149,17 @@ def render_fluxo_devolucao():
 
     with aba_devolucao:
         sub = df[df["estado_atual"] == "em_devolucao"]
-        st.dataframe(sub[colunas_base], use_container_width=True)
+        colunas = colunas_base + ["status_prw_atual", "nfd_emitida"]
+        st.dataframe(sub[colunas], use_container_width=True)
+
+        ja_com_nfd = (sub["nfd_emitida"] == 1).sum()
+        if ja_com_nfd:
+            st.caption(
+                f"{ja_com_nfd} pedido(s) aqui já têm NF de devolução emitida no PRW (status "
+                "979) — normalmente são um ciclo antigo de uma cadeia de reenvio que já foi "
+                "resolvido; o reenvio mais recente dessa mesma família aparece como um registro "
+                "à parte nesta lista."
+            )
 
     with aba_devolvido:
         sub = df[df["estado_atual"] == "devolvido_intelipost"]
