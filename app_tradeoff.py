@@ -1,6 +1,7 @@
 import os
 import streamlit as st
 import pandas as pd
+import numpy as np
 import plotly.graph_objects as go
 
 COR_ORIGEM = "#1f4e79"
@@ -582,6 +583,33 @@ def render_tradeoff():
     # ── CARDS POR CODIGO ─────────────────────────────────
     st.markdown("### Detalhe por Codigo Tarifario")
 
+    # Tendencia diaria de NFD por codigo: uma media do periodo inteiro esconde
+    # se o problema esta piorando dia a dia (perde o "tempo de reacao"). Aqui
+    # calculamos a taxa de NFD (valor NFD / valor vendido) de cada DIA e
+    # ajustamos uma reta (regressao linear ponderada pelo volume do dia) — a
+    # inclinacao (slope) mostra se esta acelerando (positivo, piorando) ou
+    # melhorando (negativo), mesmo com a media do mes estavel.
+    df_periodo["_dia"] = df_periodo[col_periodo].dt.floor("D")
+    diario_codigo = (
+        df_periodo.groupby(["CodigoTarifario", "_dia"], as_index=False)
+        .agg(ValorNFD_dia=("ValorNFD_Oficial", "sum"), ValorVendas_dia=("ValorNota", "sum"))
+    )
+    diario_codigo = diario_codigo[diario_codigo["ValorVendas_dia"] > 0].copy()
+    diario_codigo["Taxa_dia"] = diario_codigo["ValorNFD_dia"] / diario_codigo["ValorVendas_dia"] * 100
+
+    def calc_tendencia_nfd(codigo):
+        sub = diario_codigo[diario_codigo["CodigoTarifario"] == codigo].sort_values("_dia")
+        # Com poucos dias de dado o slope vira ruido (uma amostra de 5-8 dias
+        # pode dar +20pp/dia sem significar nada real). Exige um minimo maior
+        # pra so mostrar tendencia quando ha base suficiente pra confiar nela.
+        if len(sub) < 15:
+            return None, len(sub)
+        x = np.arange(len(sub), dtype=float)
+        y = sub["Taxa_dia"].to_numpy(dtype=float)
+        w = sub["ValorVendas_dia"].to_numpy(dtype=float)  # dias com mais volume pesam mais
+        slope = np.polyfit(x, y, 1, w=w)[0]  # pontos percentuais de NFD por dia
+        return slope, len(sub)
+
     resumo_codigos  = []
     ganhos_positivos = []
 
@@ -597,15 +625,24 @@ def render_tradeoff():
             valor_notas   = df_cod["ValorNota"].sum() if "ValorNota" in df_cod.columns and df_cod["ValorNota"].notna().any() else None
             nfd_orig_valor= df_cod["ValorNFD_Oficial"].sum()
             nfd_orig_pct  = (nfd_orig_valor / valor_notas * 100) if valor_notas else 0
+            tendencia_slope, tendencia_dias = calc_tendencia_nfd(codigo)
 
             st.markdown("**Situacao atual**")
-            c1,c2,c3,c4,c5,c6 = st.columns(6)
+            c1,c2,c3,c4,c5,c6,c7 = st.columns(7)
             c1.markdown(kpi_box("Pedidos",    fmt_int(pedidos_orig)), unsafe_allow_html=True)
             c2.markdown(kpi_box("SLA",        fmt_pct(sla_orig),    cor_valor=COR_OK if sla_orig>=95 else COR_ALERTA), unsafe_allow_html=True)
             c3.markdown(kpi_box("TM Frete",   fmt_brl(tm_orig)),    unsafe_allow_html=True)
             c4.markdown(kpi_box("NFD %",      fmt_pct(nfd_orig_pct),cor_valor=COR_ALERTA if nfd_orig_pct>=5 else COR_NEUTRO if nfd_orig_pct>=2 else COR_OK), unsafe_allow_html=True)
             c5.markdown(kpi_box("NFD R$",     fmt_brl(nfd_orig_valor) if nfd_orig_valor else "sem dado", cor_valor=COR_ALERTA), unsafe_allow_html=True)
             c6.markdown(kpi_box("Valor Notas",fmt_brl(valor_notas) if valor_notas else "sem dado"), unsafe_allow_html=True)
+            if tendencia_slope is None:
+                c7.markdown(kpi_box("Tendencia NFD", "sem dado", cor_valor="#999999",
+                    delta=f"{tendencia_dias} dia(s) c/ venda"), unsafe_allow_html=True)
+            else:
+                seta = "↑" if tendencia_slope > 0.05 else "↓" if tendencia_slope < -0.05 else "→"
+                cor_tend = COR_ALERTA if tendencia_slope > 0.05 else COR_OK if tendencia_slope < -0.05 else COR_NEUTRO
+                c7.markdown(kpi_box("Tendencia NFD", f"{seta} {tendencia_slope:+.3f}pp/dia", cor_valor=cor_tend,
+                    delta=f"{tendencia_dias} dias c/ dado", delta_cor=cor_tend), unsafe_allow_html=True)
 
             st.markdown("<br>", unsafe_allow_html=True)
 
