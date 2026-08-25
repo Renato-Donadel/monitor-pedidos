@@ -84,6 +84,21 @@ def render_tradeoff():
     # despachado — inclusive os que viraram NFD e nunca tiveram DataFinal.
     col_periodo = "DataDespacho" if "DataDespacho" in df_trade.columns else "DataFinal"
 
+    # A DataDespacho vem do feed do Intelipost, que e alimentado por fora
+    # (nao pelo notebook) e pode ficar sem atualizar por semanas sem ninguem
+    # perceber. Se a data mais recente estiver muito velha, avisa na tela em
+    # vez de mascarar o problema silenciosamente (ex: caindo pra outra data).
+    if col_periodo == "DataDespacho" and not df_trade["DataDespacho"].dropna().empty:
+        ultima_despacho = df_trade["DataDespacho"].max()
+        dias_atraso = (pd.Timestamp.today() - ultima_despacho).days
+        if dias_atraso > 10:
+            st.error(
+                f"⚠️ **Feed do Intelipost parece parado**: a DataDespacho mais recente na base é "
+                f"{ultima_despacho:%d/%m/%Y} — {dias_atraso} dias atrás. Os filtros de período usam essa "
+                f"data, então pedidos mais recentes que isso não aparecem em nenhuma tabela abaixo. "
+                f"Provavelmente os arquivos de export do Intelipost pararam de ser atualizados na pasta de origem."
+            )
+
     # ====================================================
     # TOTAIS GERAIS (sem filtro — dados históricos completos)
     # ====================================================
