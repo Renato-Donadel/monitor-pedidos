@@ -1239,6 +1239,86 @@ def render_tradeoff():
         f"10 piores codigos: " +
         ", ".join(f"{r['Transportadora']}/{r['CodigoTarifario']}" for _, r in top10_emp.iterrows())
     )
+
+    # ── ALERTA — Códigos com NFD acelerando (empresa toda) ────
+    # Risco acumulado = integral de s(t)*v(t) dt = so o total de NFD do
+    # periodo (o volume cancela matematicamente — nao mede tendencia).
+    # O que mostra "vai dar merda se nao bloquear" e a INCLINACAO da taxa
+    # diaria s(t) = NFD(t)/Venda(t) isolada: regressao linear ponderada
+    # pelo volume de cada dia, por (Transportadora, Codigo), nos ultimos
+    # 90 dias — so entram codigos com volume e historico suficientes pra
+    # a tendencia ser confiavel (senao vira ruido, ex: +22pp/dia com 7 dias).
+    st.divider()
+    st.markdown("#### ⚠️ Alerta — Códigos Acelerando (candidatos a bloqueio)")
+    st.caption("Ultimos 90 dias, todas as transportadoras | Minimo 30 pedidos e 15 dias com venda no periodo")
+
+    mask_periodo_emp = df_nfd_real["DataDespacho"] >= data_corte_90
+    mask_tsp_emp      = df_nfd_real["TemNFD"] == True
+    mask_real_emp     = df_nfd_real.get("TspMasNaoTsp", pd.Series(False, index=df_nfd_real.index)) != True
+    mask_intel_emp    = df_nfd_real["Transportadora"].fillna("").str.strip() != ""
+    valor_nfd_oficial_map_emp = (
+        df_nfd_real.loc[mask_periodo_emp & mask_tsp_emp & mask_real_emp & mask_intel_emp,
+                         ["PedidoFormatado", "ValorNota"]]
+        .drop_duplicates(subset=["PedidoFormatado"], keep="last")
+        .set_index("PedidoFormatado")["ValorNota"]
+    )
+    df_emp["ValorNFD_Oficial"] = (
+        df_emp["PedidoFormatado"].map(valor_nfd_oficial_map_emp).fillna(0.0)
+        if "PedidoFormatado" in df_emp.columns else 0.0
+    )
+    df_emp["_dia"] = df_emp[col_periodo].dt.floor("D")
+
+    diario_emp = (
+        df_emp.groupby(["Transportadora", "CodigoTarifario", "_dia"], as_index=False)
+        .agg(ValorNFD_dia=("ValorNFD_Oficial", "sum"), ValorVendas_dia=("ValorNota", "sum"))
+    )
+    diario_emp = diario_emp[diario_emp["ValorVendas_dia"] > 0].copy()
+    diario_emp["Taxa_dia"] = diario_emp["ValorNFD_dia"] / diario_emp["ValorVendas_dia"] * 100
+
+    volume_total_emp = (
+        df_emp.groupby(["Transportadora", "CodigoTarifario"])["ValorNota"]
+        .count().rename("Pedidos_total")
+    )
+
+    alertas_tendencia = []
+    for (tsp, cod), sub in diario_emp.groupby(["Transportadora", "CodigoTarifario"]):
+        sub = sub.sort_values("_dia")
+        if len(sub) < 15:
+            continue
+        ped_total = int(volume_total_emp.get((tsp, cod), 0))
+        if ped_total < 30:
+            continue
+        x = np.arange(len(sub), dtype=float)
+        y = sub["Taxa_dia"].to_numpy(dtype=float)
+        w = sub["ValorVendas_dia"].to_numpy(dtype=float)
+        slope = np.polyfit(x, y, 1, w=w)[0]
+        if slope > 0.05:
+            alertas_tendencia.append({
+                "Transportadora":         tsp,
+                "Codigo Tarifario":       cod,
+                "Tendencia (pp/dia)":     slope,
+                "NFD % (ult. 7d c/dado)": sub["Taxa_dia"].tail(7).mean(),
+                "Dias com dado":          len(sub),
+                "Pedidos (90d)":          ped_total,
+            })
+
+    if alertas_tendencia:
+        df_alertas = pd.DataFrame(alertas_tendencia).sort_values("Tendencia (pp/dia)", ascending=False)
+        st.dataframe(
+            df_alertas.style.format({
+                "Tendencia (pp/dia)":     "{:+.3f}",
+                "NFD % (ult. 7d c/dado)": "{:.2f}%",
+                "Pedidos (90d)":          "{:,.0f}",
+            }).background_gradient(subset=["Tendencia (pp/dia)"], cmap="Reds"),
+            use_container_width=True, hide_index=True
+        )
+        st.caption(
+            f"{len(df_alertas)} codigo(s) tarifario(s) com tendencia de piora significativa "
+            f"(inclinacao > 0.05pp/dia, ponderada pelo volume diario)."
+        )
+    else:
+        st.success("Nenhum codigo tarifario com tendencia de piora significativa e dado suficiente no momento.")
+
     # ====================================================
     # SECAO GANHO LIQUIDO GLOBAL (todos os códigos)
     # ====================================================
