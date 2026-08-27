@@ -10,6 +10,8 @@ ARQ_IMPACTO     = os.path.join(PASTA_DATA, "Impacto_Financeiro.csv")
 ARQ_DETALHE     = os.path.join(PASTA_DATA, "Impacto_Detalhe.csv")
 ARQ_CATEGORIAS  = os.path.join(PASTA_DATA, "Regras_Categorias.csv")
 ARQ_ENTRADAS    = os.path.join(PASTA_DATA, "Novas_Transportadoras.csv")
+ARQ_MCPOR       = os.path.join(PASTA_DATA, "MCPOR_Economia.csv")
+MCPOR_CAP_PCT   = 999  # deve ficar igual ao MCPOR_CAP_PCT do Regras.py — só pra exibir na legenda
 
 
 @st.cache_data(ttl=3600)
@@ -62,6 +64,30 @@ def carregar_entradas(path):
     for c in ["Valor_Escolhida", "Valor_Segunda", "Economia"]:
         df[c] = pd.to_numeric(df[c], errors="coerce")
     df["Campanha"] = df["Campanha"].astype(str)
+    return df.dropna(subset=["Data", "DataHora", "Economia"])
+
+
+@st.cache_data(ttl=3600)
+def carregar_mcpor(path):
+    """
+    What-if MCPOR: regra ANTIGA (mais rápida, até 999% mais cara que a
+    mais barata do leilão) x regra ATUAL (sempre a mais barata).
+    Colunas: Data;DataHora;PedidoID;ShipmentID;NF;CotacaoID;Tsp_Novo;
+    Valor_Novo;Prazo_Novo;Tsp_Antigo;Valor_Antigo;Prazo_Antigo;Economia;
+    Campanha;ARM
+    """
+    if not os.path.exists(path):
+        return pd.DataFrame()
+    try:
+        df = pd.read_csv(path, sep=";")
+    except Exception:
+        return pd.DataFrame()
+    if "Economia" not in df.columns:
+        return pd.DataFrame()
+    df["Data"]     = pd.to_datetime(df["Data"], dayfirst=True, errors="coerce")
+    df["DataHora"] = pd.to_datetime(df["DataHora"], errors="coerce")
+    for c in ["Valor_Novo", "Valor_Antigo", "Prazo_Novo", "Prazo_Antigo", "Economia"]:
+        df[c] = pd.to_numeric(df[c], errors="coerce")
     return df.dropna(subset=["Data", "DataHora", "Economia"])
 
 
@@ -810,3 +836,108 @@ def render_regras():
                 df_e.to_csv(index=False, sep=";").encode("utf-8-sig"),
                 file_name=f"Entradas_{ent_ini:%d%m%Y}_{ent_fim:%d%m%Y}.csv",
                 mime="text/csv", key="ent_dl")
+
+    # ══════════════════════════════════════════════════════════
+    # 🥤 MCPOR — economia com a troca de regra (mais barato x mais rápido)
+    # ══════════════════════════════════════════════════════════
+    st.markdown("---")
+    st.markdown("### 🥤 MCPOR — Economia com a troca de regra de leilão")
+    st.caption(
+        "Comparação por leilão (2+ transportadoras elegíveis cotando) da campanha MCPOR: "
+        "regra **antiga** — escolhia a **mais rápida**, desde que o valor não passasse de "
+        f"**{MCPOR_CAP_PCT}% mais caro** que a mais barata do leilão — contra a regra "
+        "**atual** — escolhe sempre a **mais barata**. "
+        "Economia = valor da regra antiga − valor da regra atual (positivo = economizado). "
+        "EBB é excluída dos dois lados por já ser bloqueada em MCPOR pela Regra 394."
+    )
+
+    df_mcp = carregar_mcpor(ARQ_MCPOR)
+    if df_mcp.empty:
+        st.info("Sem dados ainda — rode o `Regras.py` atualizado para gerar o "
+                "`MCPOR_Economia.csv` na pasta `data/`.")
+    else:
+        def _brl2(v):
+            return f"R$ {v:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+        m1, m2 = st.columns(2)
+        mc_ini = m1.date_input("De",  value=df_mcp["Data"].min().date(), key="mcp_d_ini")
+        mc_fim = m2.date_input("Até", value=df_mcp["Data"].max().date(), key="mcp_d_fim")
+
+        mask_m = (df_mcp["Data"].dt.date >= mc_ini) & (df_mcp["Data"].dt.date <= mc_fim)
+        df_m = df_mcp[mask_m].copy()
+
+        # 1 leilão conta uma vez: último evento do período por ShipmentID+CotacaoID
+        df_m = (df_m.sort_values("DataHora")
+                    .drop_duplicates(subset=["ShipmentID", "CotacaoID"], keep="last"))
+
+        if df_m.empty:
+            st.warning("Nenhum leilão de MCPOR no período selecionado.")
+        else:
+            df_m["Trocou_Tsp"] = df_m["Tsp_Novo"] != df_m["Tsp_Antigo"]
+            n_dias_m       = (mc_fim - mc_ini).days + 1
+            economia_total = df_m["Economia"].sum()
+            n_leiloes      = len(df_m)
+            n_trocou       = int(df_m["Trocou_Tsp"].sum())
+
+            c1, c2, c3, c4 = st.columns(4)
+            c1.metric("💰 Economia total", _brl2(economia_total),
+                      help="Soma de (valor da regra antiga − valor da regra atual) em todos os leilões do período.")
+            c2.metric("📦 Leilões MCPOR", f"{n_leiloes:,}")
+            c3.metric("🔀 Trocaram de transportadora", f"{n_trocou:,}",
+                      help="Leilões em que a regra atual (mais barata) escolheria uma "
+                           "transportadora diferente da regra antiga (mais rápida).")
+            c4.metric("📊 Média por dia", _brl2(economia_total / n_dias_m if n_dias_m > 0 else 0))
+
+            # ── Evolução semanal e mensal ───────────────────────
+            df_m["Semana"] = df_m["Data"].dt.to_period("W").dt.start_time
+            df_m["Mes"]    = df_m["Data"].dt.to_period("M").dt.to_timestamp()
+
+            piv_s = df_m.groupby("Semana", as_index=False)["Economia"].sum()
+            fig_sem = go.Figure(go.Bar(x=piv_s["Semana"], y=piv_s["Economia"],
+                                       marker_color="#2a9d8f"))
+            fig_sem.update_layout(
+                height=320, title="Economia MCPOR por SEMANA",
+                yaxis=dict(title="Economia (R$)", tickformat=",.0f"),
+                xaxis=dict(tickformat="%d/%m"),
+                margin=dict(t=50, b=10, l=10, r=10),
+            )
+            st.plotly_chart(fig_sem, use_container_width=True)
+
+            piv_m = df_m.groupby("Mes", as_index=False)["Economia"].sum()
+            fig_mes = go.Figure(go.Bar(x=piv_m["Mes"], y=piv_m["Economia"],
+                                       marker_color="#2a9d8f"))
+            fig_mes.update_layout(
+                height=320, title="Economia MCPOR por MÊS",
+                yaxis=dict(title="Economia (R$)", tickformat=",.0f"),
+                xaxis=dict(dtick="M1", tickformat="%b/%Y"),
+                margin=dict(t=50, b=10, l=10, r=10),
+            )
+            st.plotly_chart(fig_mes, use_container_width=True)
+
+            # ── Quem ganhava x quem ganha hoje ──────────────────
+            with st.expander("🔍 Quem ganhava (regra antiga) x quem ganha hoje (regra atual)"):
+                col_g1, col_g2 = st.columns(2)
+                ganhava = (df_m.groupby("Tsp_Antigo")
+                              .agg(Leiloes=("ShipmentID", "nunique"))
+                              .sort_values("Leiloes", ascending=False))
+                ganha = (df_m.groupby("Tsp_Novo")
+                            .agg(Leiloes=("ShipmentID", "nunique"))
+                            .sort_values("Leiloes", ascending=False))
+                col_g1.markdown("**Regra antiga (mais rápida elegível):**")
+                col_g1.dataframe(ganhava, use_container_width=True)
+                col_g2.markdown("**Regra atual (mais barata):**")
+                col_g2.dataframe(ganha, use_container_width=True)
+
+                top_nf_m = (df_m.nlargest(15, "Economia")
+                              [["NF", "Data", "Tsp_Antigo", "Valor_Antigo", "Prazo_Antigo",
+                                "Tsp_Novo", "Valor_Novo", "Prazo_Novo", "Economia", "Campanha"]])
+                top_nf_m["Data"] = top_nf_m["Data"].dt.strftime("%d/%m/%Y")
+                st.markdown("**Top 15 maiores economias:**")
+                st.dataframe(top_nf_m, use_container_width=True, hide_index=True)
+
+            # ── Exportar ─────────────────────────────────────────
+            st.download_button(
+                "⬇️ Exportar MCPOR (CSV)",
+                df_m.to_csv(index=False, sep=";").encode("utf-8-sig"),
+                file_name=f"MCPOR_{mc_ini:%d%m%Y}_{mc_fim:%d%m%Y}.csv",
+                mime="text/csv", key="mcp_dl")
