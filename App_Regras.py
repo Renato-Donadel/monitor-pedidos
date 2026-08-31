@@ -12,6 +12,7 @@ ARQ_CATEGORIAS  = os.path.join(PASTA_DATA, "Regras_Categorias.csv")
 ARQ_ENTRADAS    = os.path.join(PASTA_DATA, "Novas_Transportadoras.csv")
 ARQ_MCPOR       = os.path.join(PASTA_DATA, "MCPOR_Economia.csv")
 MCPOR_CAP_PCT   = 999  # deve ficar igual ao MCPOR_CAP_PCT do Regras.py — só pra exibir na legenda
+ARQ_ECONOMIA_EBB = os.path.join(PASTA_DATA, "Economia_EBB.csv")
 
 
 @st.cache_data(ttl=3600)
@@ -89,6 +90,33 @@ def carregar_mcpor(path):
     for c in ["Valor_Novo", "Valor_Antigo", "Prazo_Novo", "Prazo_Antigo", "Economia"]:
         df[c] = pd.to_numeric(df[c], errors="coerce")
     return df.dropna(subset=["Data", "DataHora", "Economia"])
+
+
+@st.cache_data(ttl=3600)
+def carregar_economia_ebb(path):
+    """
+    Economia estimada por NÃO usar mais a EBB (Todo Brasil/Dominalog no
+    Sul/Sudeste e campanha HEIST). Diferente das demais seções desta
+    página: não é uma 2ª cotação real do MESMO leilão — é uma ESTIMATIVA
+    baseada na curva histórica de preço da EBB por (UF de destino x faixa
+    de peso). Gerado por
+    Projeto_CTE_Completo/scripts_temp/economia_ebb_todobrasil_dominalog_heist.py
+    Colunas: Data;DataHora;Grupo;Transportadora;ChaveNFe;NumeroNF;
+    ShipmentOrderID;UF;FaixaPeso;PesoRealKg;ValorCobrado;ValorEBBEstimado;Economia
+    """
+    if not os.path.exists(path):
+        return pd.DataFrame()
+    try:
+        df = pd.read_csv(path, sep=";")
+    except Exception:
+        return pd.DataFrame()
+    if "Economia" not in df.columns:
+        return pd.DataFrame()
+    df["Data"]     = pd.to_datetime(df["Data"], errors="coerce")
+    df["DataHora"] = pd.to_datetime(df["DataHora"], errors="coerce")
+    for c in ["PesoRealKg", "ValorCobrado", "ValorEBBEstimado", "Economia"]:
+        df[c] = pd.to_numeric(df[c], errors="coerce")
+    return df.dropna(subset=["Data", "Economia"])
 
 
 @st.cache_data(ttl=60)
@@ -941,3 +969,77 @@ def render_regras():
                 df_m.to_csv(index=False, sep=";").encode("utf-8-sig"),
                 file_name=f"MCPOR_{mc_ini:%d%m%Y}_{mc_fim:%d%m%Y}.csv",
                 mime="text/csv", key="mcp_dl")
+
+    # ══════════════════════════════════════════════════════════
+    # 🚛 EBB — Economia estimada por não usar mais (histórico)
+    # ══════════════════════════════════════════════════════════
+    st.markdown("---")
+    st.markdown("### 🚛 EBB — Economia por não usar mais (estimado)")
+    st.caption(
+        "⚠️ **Diferente das seções acima**: aqui não comparamos com a 2ª cotação real do "
+        "mesmo leilão — a EBB foi retirada da operação, então estimamos quanto ela cobraria "
+        "hoje pela **curva histórica de preço dela** (média por UF de destino x faixa de peso, "
+        "com base nos próprios fretes que ela já levou). Peso = peso real (físico x cubagem) via "
+        "Intelipost. Economia = valor estimado da EBB − valor realmente cobrado "
+        "(positivo = economizado por não mandar mais pela EBB, já que ela foi tirada por sair mais cara)."
+    )
+
+    df_ebb = carregar_economia_ebb(ARQ_ECONOMIA_EBB)
+    if df_ebb.empty:
+        st.info("Sem dados ainda — rode "
+                "`Projeto_CTE_Completo/scripts_temp/economia_ebb_todobrasil_dominalog_heist.py` "
+                "para gerar o `Economia_EBB.csv` na pasta `data/`.")
+    else:
+        def _brl3(v):
+            return f"R$ {v:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+        b1, b2 = st.columns(2)
+        ebb_ini = b1.date_input("De",  value=df_ebb["Data"].min().date(), key="ebb_d_ini")
+        ebb_fim = b2.date_input("Até", value=df_ebb["Data"].max().date(), key="ebb_d_fim")
+
+        mask_b = (df_ebb["Data"].dt.date >= ebb_ini) & (df_ebb["Data"].dt.date <= ebb_fim)
+        df_b = df_ebb[mask_b].copy()
+
+        if df_b.empty:
+            st.warning("Nenhum pedido no período selecionado.")
+        else:
+            grupos = sorted(df_b["Grupo"].unique())
+            cols_g = st.columns(len(grupos))
+            for i, g in enumerate(grupos):
+                d = df_b[df_b["Grupo"] == g]
+                cols_g[i].metric(
+                    f"💰 {g}", _brl3(d["Economia"].sum()),
+                    delta=f"{len(d):,} pedido(s)", delta_color="off",
+                    help="Soma de (valor estimado da EBB − valor cobrado) nos pedidos "
+                         "com faixa de peso/UF que tiveram histórico da EBB pra comparar.",
+                )
+
+            st.markdown("**Economia estimada por UF de destino**")
+            por_uf_ebb = (df_b.groupby(["UF", "Grupo"], as_index=False)["Economia"].sum())
+            fig_uf = go.Figure()
+            for g in grupos:
+                d = por_uf_ebb[por_uf_ebb["Grupo"] == g].sort_values("UF")
+                fig_uf.add_trace(go.Bar(x=d["UF"], y=d["Economia"], name=g))
+            fig_uf.update_layout(
+                barmode="group", height=340,
+                yaxis=dict(title="Economia (R$)", tickformat=",.0f"),
+                legend=dict(orientation="h", y=1.15),
+                margin=dict(t=30, b=10, l=10, r=10),
+            )
+            st.plotly_chart(fig_uf, use_container_width=True)
+
+            with st.expander("🔍 Detalhe — maiores economias e amostra completa"):
+                g_sel = st.selectbox("Grupo", grupos, key="ebb_grupo_sel")
+                d_sel = df_b[df_b["Grupo"] == g_sel]
+                top_ebb = (d_sel.nlargest(15, "Economia")
+                           [["NumeroNF", "Data", "Transportadora", "UF", "FaixaPeso",
+                             "ValorCobrado", "ValorEBBEstimado", "Economia"]])
+                top_ebb["Data"] = top_ebb["Data"].dt.strftime("%d/%m/%Y")
+                st.markdown(f"**Top 15 maiores economias — {g_sel}:**")
+                st.dataframe(top_ebb, use_container_width=True, hide_index=True)
+
+            st.download_button(
+                "⬇️ Exportar Economia EBB (CSV)",
+                df_b.to_csv(index=False, sep=";").encode("utf-8-sig"),
+                file_name=f"Economia_EBB_{ebb_ini:%d%m%Y}_{ebb_fim:%d%m%Y}.csv",
+                mime="text/csv", key="ebb_dl")
