@@ -55,14 +55,62 @@ def render_monitor():
         total_erros = len(df_erros)
 
         if total_erros > 0:
+
+            # Motivo do campo vazio — nem todo "vazio" é problema:
+            # "Aguardando Expedição" ainda não tem DataExpedição porque o
+            # pedido genuinamente não foi despachado ainda (não existe
+            # essa data em lugar nenhum, normal). "Transferência para
+            # Devolução" é outro fluxo (devolução), que por enquanto não
+            # tem a mesma fonte de enriquecimento. O resto é o que
+            # realmente vale a pena revisar.
+            status_norm = (
+                df_erros["Status"]
+                .astype(str)
+                .str.upper()
+                .str.strip()
+                if "Status" in df_erros.columns
+                else pd.Series("", index=df_erros.index)
+            )
+
+            mask_aguardando = status_norm.str.contains(
+                "AGUARDANDO EXPEDI", na=False
+            )
+            mask_devolucao = status_norm.str.contains(
+                "DEVOLU", na=False
+            )
+            mask_outros = ~mask_aguardando & ~mask_devolucao
+
+            df_erros["Motivo"] = "Revisar"
+            df_erros.loc[mask_aguardando, "Motivo"] = (
+                "Normal — ainda não foi expedido"
+            )
+            df_erros.loc[mask_devolucao, "Motivo"] = (
+                "Fluxo de devolução — sem essa data por enquanto"
+            )
+
             with st.expander(f"⚠️ {total_erros:,} pedidos com campos vazios — clique para ver"):
-                # Resumo por coluna
+
+                st.write("**Por que estão vazios:**")
+                st.write(
+                    f"- 🟢 Normal (ainda não expedido): "
+                    f"{int(mask_aguardando.sum()):,} pedidos"
+                )
+                st.write(
+                    f"- 🔵 Fluxo de devolução: "
+                    f"{int(mask_devolucao.sum()):,} pedidos"
+                )
+                st.write(
+                    f"- 🟠 Revisar (sem explicação conhecida): "
+                    f"{int(mask_outros.sum()):,} pedidos"
+                )
+
+                st.write("")
+                st.write("**Campos com valores ausentes:**")
                 resumo = {
                     c: int(df_erros[c].isnull().sum())
                     for c in colunas_verificar
                     if df_erros[c].isnull().sum() > 0
                 }
-                st.write("**Campos com valores ausentes:**")
                 for col, qtd in resumo.items():
                     st.write(f"- `{col}`: {qtd:,} pedidos")
 
