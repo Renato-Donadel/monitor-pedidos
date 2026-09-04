@@ -82,7 +82,9 @@ def carregar_base_devolucao():
             "nfd_coleta",
             "base",
             "retornando_detalhado",
-            "dev_atrasada_detalhado"
+            "dev_atrasada_detalhado",
+            "extravio_detalhado",
+            "extravio_transportadora"
         ]
     )
 

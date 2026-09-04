@@ -27,15 +27,6 @@ def render_devolucao():
         bases = carregar_base_devolucao()
         dev_atrasada_det = bases["dev_atrasada_detalhado"]
         retornando_det = bases["retornando_detalhado"]
-        
-        # ==============================
-        # AJUSTE Sem_Data_Coleta
-        # ==============================
-
-        for df in [retornando_det, dev_atrasada_det]:
-            if "Mes" in df.columns:
-                df["Mes"] = df["Mes"].replace("Sem_Data_Coleta", "1977-07-01")
-        
 
         vendas_mes = bases["vendas_mes"]
         vendas_mes_pedido = bases["vendas_mes_pedido"]
@@ -43,11 +34,11 @@ def render_devolucao():
         potencial = bases["potencial_triplo"]
         devolucao_proc = bases["devolucao_processo"]
         retornando_transp = bases["retornando_transportes"]
-        if "Mes" in retornando_transp.columns:
-            retornando_transp["Mes"] = retornando_transp["Mes"].replace("Sem_Data_Coleta", "1977-07-01")
         devolucao_atras = bases["devolucao_atrasada"]
         nfd_mes = bases["nfd_mes"]
         nfd_coleta = bases["nfd_coleta"]
+        extravio_transp = bases.get("extravio_transportadora")
+        extravio_det = bases.get("extravio_detalhado")
 
     except Exception as e:
         st.error(f"Erro ao ler base de devolução: {e}")
@@ -138,66 +129,31 @@ def render_devolucao():
 
     meses = sorted(vendas_transp["Mes"].dropna().unique())
     transportadoras = sorted(vendas_transp["Transportadora"].unique())
-    
-    # ==============================
-    # CONTROLE DE ABERTURA DOS FILTROS
-    # ==============================
 
-    if "abrir_filtro_mes" not in st.session_state:
-        st.session_state["abrir_filtro_mes"] = False
+    with st.expander("🔍 Filtros (Mês / Transportadora)", expanded=False):
 
-    if "abrir_filtro_transp" not in st.session_state:
-        st.session_state["abrir_filtro_transp"] = False
+        col_f1, col_f2 = st.columns(2)
 
-    col_space1, col_btn1, col_btn2, col_space2 = st.columns([2,1,1,2])
+        with col_f1:
+            filtro_mes = st.multiselect(
+                "Mês",
+                options=meses,
+                default=meses,
+                key="devolucao_filtro_mes"
+            )
 
-    with col_btn1:
-        if st.button("Mês"):
-            st.session_state["abrir_filtro_mes"] = not st.session_state["abrir_filtro_mes"]
+        with col_f2:
+            filtro_transportadora = st.multiselect(
+                "Transportadora",
+                options=transportadoras,
+                default=transportadoras,
+                key="devolucao_filtro_transportadora"
+            )
 
-    with col_btn2:
-        if st.button("Transportadora"):
-            st.session_state["abrir_filtro_transp"] = not st.session_state["abrir_filtro_transp"]
-
-
-    # ==============================
-    # FILTRO MÊS
-    # ==============================
-
-    if st.session_state["abrir_filtro_mes"]:
-
-        filtro_mes = st.multiselect(
-            "Filtrar mês",
-            options=meses,
-            default=meses
-        )
-
-        if st.button("Aplicar filtro mês"):
-            st.session_state["abrir_filtro_mes"] = False
-
-    else:
-        filtro_mes = meses
-
-
-    # ==============================
-    # FILTRO TRANSPORTADORA
-    # ==============================
-
-    if st.session_state["abrir_filtro_transp"]:
-
-        filtro_transportadora = st.multiselect(
-            "Filtrar transportadora",
-            options=transportadoras,
-            default=transportadoras
-        )
-
-        if st.button("Aplicar filtro transportadora"):
-            st.session_state["abrir_filtro_transp"] = False
-
-    else:
-        filtro_transportadora = transportadoras
-        
-    # filtros já existem aqui
+    # multiselect vazio = "sem filtro selecionado ainda", não "nada corresponde" — cai pra
+    # tudo, senão a página inteira zera assim que alguém limpa a seleção sem querer
+    filtro_mes = filtro_mes or meses
+    filtro_transportadora = filtro_transportadora or transportadoras
 
     retornando_det["ValorNota"] = retornando_det["ValorNota"].fillna(0)
 
@@ -261,9 +217,114 @@ def render_devolucao():
     # formatação
     def moeda(x):
         return f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-        
+
+    def card(titulo, valor, subtitulo=None):
+        """Cartão branco padrão usado em todos os totais da página (venda, KPIs, extravio)."""
+        sub_html = (
+            f'<div style="font-size:11px;color:#9aa5b1;margin-top:2px;">{subtitulo}</div>'
+            if subtitulo else ""
+        )
+        st.markdown(
+            f"""
+            <div style="
+                background:white;
+                padding:10px 14px;
+                border-radius:10px;
+                box-shadow:0 2px 6px rgba(0,0,0,0.06);
+                text-align:center;
+                display:inline-block;
+                min-width:200px;
+                margin:0 8px 20px 0;
+            ">
+                <div style="font-size:12px;color:#6b7280;">{titulo}</div>
+                <div style="font-size:18px;font-weight:800;color:#0f2a44;">{valor}</div>
+                {sub_html}
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    # ==============================
+    # EXTRAVIO — PREPARO (reaproveitado no resumo geral abaixo e no painel detalhado no fim
+    # da página, pra não filtrar/agrupar a mesma base duas vezes)
+    # ==============================
+
+    if extravio_transp is not None and not extravio_transp.empty:
+
+        extravio_transp = extravio_transp.copy()
+
+        extravio_transp["Transportadora"] = (
+            extravio_transp["Transportadora"].astype(str).str.strip().str.upper()
+        )
+
+        extravio_transp["Mes"] = pd.to_datetime(extravio_transp["Mes"].astype(str))
+        extravio_transp["Mes"] = extravio_transp["Mes"].dt.strftime("%B %Y").str.capitalize()
+
+        extravio_filtrado = extravio_transp[
+            extravio_transp["Mes"].isin(filtro_mes) &
+            extravio_transp["Transportadora"].isin(filtro_transportadora)
+        ]
+
+        resumo_extravio = (
+            extravio_filtrado
+            .groupby(["Transportadora", "Desfecho"])["ValorNota"]
+            .sum()
+            .reset_index()
+        )
+
+        pivot_extravio = (
+            resumo_extravio
+            .pivot(index="Transportadora", columns="Desfecho", values="ValorNota")
+            .fillna(0)
+        )
+
+        for col_desfecho in ["Entregue", "Devolvido", "Em aberto"]:
+            if col_desfecho not in pivot_extravio.columns:
+                pivot_extravio[col_desfecho] = 0.0
+
+        pivot_extravio = pivot_extravio[["Entregue", "Devolvido", "Em aberto"]]
+        pivot_extravio["Total Extraviado"] = pivot_extravio.sum(axis=1)
+        pivot_extravio = pivot_extravio.sort_values("Total Extraviado", ascending=False)
+
+        total_ext_entregue = pivot_extravio["Entregue"].sum()
+        total_ext_devolvido = pivot_extravio["Devolvido"].sum()
+        total_ext_aberto = pivot_extravio["Em aberto"].sum()
+
+    else:
+        resumo_extravio = pd.DataFrame(columns=["Transportadora", "Desfecho", "ValorNota"])
+        pivot_extravio = pd.DataFrame(
+            columns=["Entregue", "Devolvido", "Em aberto", "Total Extraviado"]
+        )
+        total_ext_entregue = total_ext_devolvido = total_ext_aberto = 0.0
+
+    # ==============================
+    # VISÃO GERAL (RESUMO RÁPIDO NO TOPO DA PÁGINA)
+    # ==============================
+
+    st.markdown("### Visão geral")
+
+    col_kpi1, col_kpi2, col_kpi3, col_kpi4 = st.columns(4)
+
+    with col_kpi1:
+        card("Venda Total", moeda(venda_total))
+
+    with col_kpi2:
+        card(
+            "Devolução em processo",
+            moeda(devolucao_total),
+            perc_transportes(devolucao_total, venda_total)
+        )
+
+    with col_kpi3:
+        card("Extraviado → Entregue", moeda(total_ext_entregue))
+
+    with col_kpi4:
+        card("Extraviado → Devolvido (NFD)", moeda(total_ext_devolvido))
+
+    st.markdown("---")
+
     col_transp, col_brav = st.columns([2,2])
-    
+
     hoje = pd.Timestamp.today().normalize()
     fim_mes = hoje + pd.offsets.MonthEnd(0)
     dias_restantes_mes = (fim_mes - hoje).days
@@ -397,40 +458,12 @@ def render_devolucao():
             )   
 
             # =====================================
-            # FUNÇÕES FORMATAÇÃO
-            # =====================================
-
-            # formatação
-            def moeda(x):
-                return f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-            
-            # =====================================
             # EXIBIÇÃO
             # =====================================
 
             st.markdown("### Venda total")
-            
-            st.markdown(
-                f"""
-                <div style="
-                    background:white;
-                    padding:8px 12px;
-                    border-radius:10px;
-                    box-shadow:0 2px 6px rgba(0,0,0,0.06);
-                    text-align:center;
-                    display:inline-block;
-                    min-width:220px;
-                    margin-bottom:30px;
-                ">
-                    <div style="font-size:12px;color:#6b7280;">Venda Total</div>
-                    <div style="font-size:18px;font-weight:800;color:#0f2a44;">
-                        {moeda(venda_mes)}
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-                    
+            card("Venda Total", moeda(venda_mes))
+
             # ==============================
             # GRÁFICO VENDAS POR MÊS - TRANSPORTES
             # ==============================
@@ -747,29 +780,9 @@ def render_devolucao():
         # EXIBIÇÃO
         # ==============================
         
-        st.markdown("### Venda total(Empresa)")
+        st.markdown("### Venda total (Empresa)")
+        card("Venda Total", moeda(venda_mes))
 
-        st.markdown(
-            f"""
-            <div style="
-                background:white;
-                padding:8px 12px;
-                border-radius:10px;
-                box-shadow:0 2px 6px rgba(0,0,0,0.06);
-                text-align:center;
-                display:inline-block;
-                min-width:220px;
-                margin-bottom:30px;
-            ">
-                <div style="font-size:12px;color:#6b7280;">Venda Total</div>
-                <div style="font-size:18px;font-weight:800;color:#0f2a44;">
-                    {moeda(venda_mes)}
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-        
         # ==============================
         # GRÁFICO VENDAS POR MÊS - BRAVIUM
         # ==============================
@@ -846,3 +859,69 @@ def render_devolucao():
             f"Cenário Potencial + Provável + Possível: {moeda(potencial_brav)} | "
             f"{perc_bravium(indice_brav_potencial_2)} → {perc_bravium(indice_brav_potencial_poss)}"
         )
+
+    # =====================================
+    # EXTRAVIO — ENTREGUE x DEVOLVIDO POR TRANSPORTADORA
+    # =====================================
+    # Regra: "Entregue" = a remessa extraviada acabou entregue mesmo assim (status Delivered/
+    # DeliveredSAT). "Devolvido" = a remessa extraviada teve NFD de devolução emitida. Ambos
+    # são calculados por remessa individual (não por família de reenvio) em
+    # Indicador_de_Devolucao.py — ver comentário lá para o detalhe da regra e dos status do PRW
+    # considerados "extravio".
+
+    st.markdown("---")
+
+    st.markdown(
+        '<div class="titulo-painel">Extravio — Entregue x Devolvido por Transportadora</div>',
+        unsafe_allow_html=True
+    )
+
+    # pivot_extravio/resumo_extravio já foram calculados lá em cima (seção "Visão geral"),
+    # com os mesmos filtro_mes/filtro_transportadora — reaproveitados aqui pro detalhe.
+    if extravio_transp is None or extravio_transp.empty:
+        st.info("Nenhum pedido com extravio encontrado na base.")
+
+    else:
+        col_ext1, col_ext2, col_ext3 = st.columns(3)
+
+        with col_ext1:
+            card("Extraviado → Entregue", moeda(total_ext_entregue))
+
+        with col_ext2:
+            card("Extraviado → Devolvido (NFD)", moeda(total_ext_devolvido))
+
+        with col_ext3:
+            card("Extraviado → Em aberto", moeda(total_ext_aberto))
+
+        st.dataframe(
+            pivot_extravio.style.format(moeda),
+            use_container_width=True
+        )
+
+        graf_extravio = resumo_extravio[
+            resumo_extravio["Desfecho"].isin(["Entregue", "Devolvido"])
+        ]
+
+        if not graf_extravio.empty:
+
+            fig_extravio = px.bar(
+                graf_extravio,
+                x="Transportadora",
+                y="ValorNota",
+                color="Desfecho",
+                barmode="group",
+                title="Valor extraviado por transportadora — Entregue x Devolvido"
+            )
+
+            fig_extravio.update_layout(
+                xaxis_title="Transportadora",
+                yaxis_title="Valor (R$)",
+                height=450
+            )
+
+            st.plotly_chart(fig_extravio, use_container_width=True)
+
+        if extravio_det is not None and not extravio_det.empty:
+
+            with st.expander("Ver pedidos extraviados em detalhe"):
+                st.dataframe(extravio_det, use_container_width=True)
