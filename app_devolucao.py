@@ -245,10 +245,17 @@ def render_devolucao():
         )
 
     # ==============================
-    # EXTRAVIO — PREPARO (reaproveitado no resumo geral abaixo e no painel detalhado no fim
-    # da página, pra não filtrar/agrupar a mesma base duas vezes)
+    # EXTRAVIO — PREPARO
     # ==============================
-
+    # O filtro de Mês/Transportadora do Extravio é PRÓPRIO (dropdowns na seção, lá embaixo) e
+    # NÃO usa o filtro_mes/filtro_transportadora geral da página. Motivo (achado real, dados de
+    # produção): esse filtro geral usa meses/nomes de transportadora vindos da Intelipost
+    # (vendas_transportadora), que cobre só uma janela rolante de ~6 meses e nomeia
+    # transportadora diferente do PRW (ex.: "J&T EXPRESS" na Intelipost vs "JET EXPRESS" no
+    # PRW, "IMILIE" vs "IMILE STANDARD" etc.) — aplicado ao extravio (cuja Transportadora/Mes
+    # vêm direto do PRW, ano completo), ele escondia ~19 das 22 transportadoras e todo mês fora
+    # de Mar-Ago. Por isso os cartões do topo abaixo mostram o total GERAL (ano completo, todas
+    # as transportadoras) e a seção "Extravio" no fim da página tem seu próprio filtro.
     if extravio_transp is not None and not extravio_transp.empty:
 
         extravio_transp = extravio_transp.copy()
@@ -257,45 +264,29 @@ def render_devolucao():
             extravio_transp["Transportadora"].astype(str).str.strip().str.upper()
         )
 
+        # guarda a ordem cronológica antes de formatar o mês como texto ("Janeiro 2026"),
+        # senão a lista do dropdown sairia em ordem alfabética
+        extravio_transp["MesOrdenacao"] = pd.PeriodIndex(
+            extravio_transp["Mes"].astype(str), freq="M"
+        )
         extravio_transp["Mes"] = pd.to_datetime(extravio_transp["Mes"].astype(str))
         extravio_transp["Mes"] = extravio_transp["Mes"].dt.strftime("%B %Y").str.capitalize()
 
-        extravio_filtrado = extravio_transp[
-            extravio_transp["Mes"].isin(filtro_mes) &
-            extravio_transp["Transportadora"].isin(filtro_transportadora)
-        ]
-
-        resumo_extravio = (
-            extravio_filtrado
-            .groupby(["Transportadora", "Desfecho"])["ValorNota"]
-            .sum()
-            .reset_index()
+        meses_extravio = (
+            extravio_transp
+            .sort_values("MesOrdenacao")["Mes"]
+            .unique()
+            .tolist()
         )
+        transportadoras_extravio = sorted(extravio_transp["Transportadora"].unique().tolist())
 
-        pivot_extravio = (
-            resumo_extravio
-            .pivot(index="Transportadora", columns="Desfecho", values="ValorNota")
-            .fillna(0)
-        )
-
-        for col_desfecho in ["Entregue", "Devolvido", "Em aberto"]:
-            if col_desfecho not in pivot_extravio.columns:
-                pivot_extravio[col_desfecho] = 0.0
-
-        pivot_extravio = pivot_extravio[["Entregue", "Devolvido", "Em aberto"]]
-        pivot_extravio["Total Extraviado"] = pivot_extravio.sum(axis=1)
-        pivot_extravio = pivot_extravio.sort_values("Total Extraviado", ascending=False)
-
-        total_ext_entregue = pivot_extravio["Entregue"].sum()
-        total_ext_devolvido = pivot_extravio["Devolvido"].sum()
-        total_ext_aberto = pivot_extravio["Em aberto"].sum()
+        totais_geral_extravio = extravio_transp.groupby("Desfecho")["ValorNota"].sum()
+        total_ext_entregue = totais_geral_extravio.get("Entregue", 0.0)
+        total_ext_devolvido = totais_geral_extravio.get("Devolvido", 0.0)
 
     else:
-        resumo_extravio = pd.DataFrame(columns=["Transportadora", "Desfecho", "ValorNota"])
-        pivot_extravio = pd.DataFrame(
-            columns=["Entregue", "Devolvido", "Em aberto", "Total Extraviado"]
-        )
-        total_ext_entregue = total_ext_devolvido = total_ext_aberto = 0.0
+        meses_extravio, transportadoras_extravio = [], []
+        total_ext_entregue = total_ext_devolvido = 0.0
 
     # ==============================
     # VISÃO GERAL (RESUMO RÁPIDO NO TOPO DA PÁGINA)
@@ -316,10 +307,14 @@ def render_devolucao():
         )
 
     with col_kpi3:
-        card("Extraviado → Entregue", moeda(total_ext_entregue))
+        card("Extraviado → Entregue", moeda(total_ext_entregue), "ano completo, todas transp.")
 
     with col_kpi4:
-        card("Extraviado → Devolvido (NFD)", moeda(total_ext_devolvido))
+        card(
+            "Extraviado → Devolvido (NFD)",
+            moeda(total_ext_devolvido),
+            "ano completo, todas transp."
+        )
 
     st.markdown("---")
 
@@ -876,22 +871,69 @@ def render_devolucao():
         unsafe_allow_html=True
     )
 
-    # pivot_extravio/resumo_extravio já foram calculados lá em cima (seção "Visão geral"),
-    # com os mesmos filtro_mes/filtro_transportadora — reaproveitados aqui pro detalhe.
     if extravio_transp is None or extravio_transp.empty:
         st.info("Nenhum pedido com extravio encontrado na base.")
 
     else:
+        # Dropdowns próprios do Extravio (ano completo, nomes de transportadora do PRW —
+        # não dependem do filtro geral da página, ver comentário na seção "Visão geral").
+        col_fe1, col_fe2 = st.columns(2)
+
+        with col_fe1:
+            mes_extravio_sel = st.selectbox(
+                "Mês",
+                options=["Todos os meses"] + meses_extravio,
+                key="extravio_filtro_mes"
+            )
+
+        with col_fe2:
+            transp_extravio_sel = st.selectbox(
+                "Transportadora",
+                options=["Todas as transportadoras"] + transportadoras_extravio,
+                key="extravio_filtro_transportadora"
+            )
+
+        extravio_filtrado = extravio_transp
+
+        if mes_extravio_sel != "Todos os meses":
+            extravio_filtrado = extravio_filtrado[extravio_filtrado["Mes"] == mes_extravio_sel]
+
+        if transp_extravio_sel != "Todas as transportadoras":
+            extravio_filtrado = extravio_filtrado[
+                extravio_filtrado["Transportadora"] == transp_extravio_sel
+            ]
+
+        resumo_extravio = (
+            extravio_filtrado
+            .groupby(["Transportadora", "Desfecho"])["ValorNota"]
+            .sum()
+            .reset_index()
+        )
+
+        pivot_extravio = (
+            resumo_extravio
+            .pivot(index="Transportadora", columns="Desfecho", values="ValorNota")
+            .fillna(0)
+        )
+
+        for col_desfecho in ["Entregue", "Devolvido", "Em aberto"]:
+            if col_desfecho not in pivot_extravio.columns:
+                pivot_extravio[col_desfecho] = 0.0
+
+        pivot_extravio = pivot_extravio[["Entregue", "Devolvido", "Em aberto"]]
+        pivot_extravio["Total Extraviado"] = pivot_extravio.sum(axis=1)
+        pivot_extravio = pivot_extravio.sort_values("Total Extraviado", ascending=False)
+
         col_ext1, col_ext2, col_ext3 = st.columns(3)
 
         with col_ext1:
-            card("Extraviado → Entregue", moeda(total_ext_entregue))
+            card("Extraviado → Entregue", moeda(pivot_extravio["Entregue"].sum()))
 
         with col_ext2:
-            card("Extraviado → Devolvido (NFD)", moeda(total_ext_devolvido))
+            card("Extraviado → Devolvido (NFD)", moeda(pivot_extravio["Devolvido"].sum()))
 
         with col_ext3:
-            card("Extraviado → Em aberto", moeda(total_ext_aberto))
+            card("Extraviado → Em aberto", moeda(pivot_extravio["Em aberto"].sum()))
 
         st.dataframe(
             pivot_extravio.style.format(moeda),
@@ -923,5 +965,30 @@ def render_devolucao():
 
         if extravio_det is not None and not extravio_det.empty:
 
-            with st.expander("Ver pedidos extraviados em detalhe"):
-                st.dataframe(extravio_det, use_container_width=True)
+            extravio_det_filtrado = extravio_det.copy()
+
+            extravio_det_filtrado["Transportadora"] = (
+                extravio_det_filtrado["Transportadora"].astype(str).str.strip().str.upper()
+            )
+
+            extravio_det_filtrado["MesDetalhe"] = pd.to_datetime(
+                extravio_det_filtrado["DataExtravio"], errors="coerce"
+            ).dt.strftime("%B %Y").str.capitalize()
+
+            if mes_extravio_sel != "Todos os meses":
+                extravio_det_filtrado = extravio_det_filtrado[
+                    extravio_det_filtrado["MesDetalhe"] == mes_extravio_sel
+                ]
+
+            if transp_extravio_sel != "Todas as transportadoras":
+                extravio_det_filtrado = extravio_det_filtrado[
+                    extravio_det_filtrado["Transportadora"] == transp_extravio_sel
+                ]
+
+            with st.expander(
+                f"Ver pedidos extraviados em detalhe ({len(extravio_det_filtrado)} registros)"
+            ):
+                st.dataframe(
+                    extravio_det_filtrado.drop(columns=["MesDetalhe"]),
+                    use_container_width=True
+                )
