@@ -244,6 +244,37 @@ def render_devolucao():
             unsafe_allow_html=True
         )
 
+    def to_excel_bytes(df):
+        """Serializa um DataFrame pra bytes de .xlsx, pra usar em st.download_button (que
+        precisa dos bytes prontos, não um caminho de arquivo)."""
+        buffer = BytesIO()
+        with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
+            df.to_excel(writer, index=False, sheet_name="Dados")
+        return buffer.getvalue()
+
+    def preparar_export(df, col_danfe="danfe", col_valor="ValorNota",
+                         col_pedido="PedidoFormatado", col_transp="Transportadora"):
+        """Monta a planilha de download padrão pedida pelo usuário (09/2026): chave da nota
+        fiscal, pedido formatado, transportadora e valor — usada nos 3 botões de download da
+        Visão Geral (Devolução em processo, Extraviado → Entregue, Extraviado → Devolvido).
+        `col_danfe` falta em bases geradas antes dessa mudança no pipeline — cai pra coluna
+        vazia em vez de quebrar."""
+        return pd.DataFrame({
+            "Chave da Nota Fiscal": df[col_danfe] if col_danfe in df.columns else "",
+            "Pedido Formatado": df[col_pedido] if col_pedido in df.columns else "",
+            "Transportadora": df[col_transp] if col_transp in df.columns else "",
+            "Valor": df[col_valor] if col_valor in df.columns else 0,
+        })
+
+    def botao_download_excel(label, df, nome_arquivo, key):
+        st.download_button(
+            label,
+            data=to_excel_bytes(preparar_export(df)),
+            file_name=nome_arquivo,
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            key=key
+        )
+
     # ==============================
     # EXTRAVIO — PREPARO
     # ==============================
@@ -306,8 +337,28 @@ def render_devolucao():
             perc_transportes(devolucao_total, venda_total)
         )
 
+        retornando_export = retornando_det[
+            retornando_det["Mes"].isin(filtro_mes) &
+            retornando_det["Transportadora"].isin(filtro_transportadora)
+        ]
+
+        botao_download_excel(
+            "⬇️ Baixar Excel",
+            retornando_export,
+            "devolucao_em_processo.xlsx",
+            "download_devolucao_processo"
+        )
+
     with col_kpi3:
         card("Extraviado → Entregue", moeda(total_ext_entregue), "ano completo, todas transp.")
+
+        if extravio_det is not None and not extravio_det.empty:
+            botao_download_excel(
+                "⬇️ Baixar Excel",
+                extravio_det[extravio_det["Desfecho"] == "Entregue"],
+                "extraviado_entregue.xlsx",
+                "download_extraviado_entregue"
+            )
 
     with col_kpi4:
         card(
@@ -315,6 +366,14 @@ def render_devolucao():
             moeda(total_ext_devolvido),
             "ano completo, todas transp."
         )
+
+        if extravio_det is not None and not extravio_det.empty:
+            botao_download_excel(
+                "⬇️ Baixar Excel",
+                extravio_det[extravio_det["Desfecho"] == "Devolvido"],
+                "extraviado_devolvido.xlsx",
+                "download_extraviado_devolvido"
+            )
 
     st.markdown("---")
 
