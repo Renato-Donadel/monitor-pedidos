@@ -244,12 +244,29 @@ def render_devolucao():
             unsafe_allow_html=True
         )
 
-    def to_excel_bytes(df):
+    def to_excel_bytes(df, colunas_texto=None):
         """Serializa um DataFrame pra bytes de .xlsx, pra usar em st.download_button (que
-        precisa dos bytes prontos, não um caminho de arquivo)."""
+        precisa dos bytes prontos, não um caminho de arquivo). `colunas_texto` força o formato
+        de célula como Texto nessas colunas — sem isso, o Excel trata uma string só de dígitos
+        (como a chave de NF-e de 44 dígitos) como número na abertura e mostra em notação
+        científica, mesmo a célula tendo sido escrita como texto."""
         buffer = BytesIO()
+
         with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
             df.to_excel(writer, index=False, sheet_name="Dados")
+
+            if colunas_texto:
+                planilha = writer.sheets["Dados"]
+
+                for nome_col in colunas_texto:
+                    if nome_col not in df.columns:
+                        continue
+
+                    idx_col = df.columns.get_loc(nome_col) + 1  # openpyxl é 1-indexado
+
+                    for linha in range(2, len(df) + 2):  # pula o cabeçalho (linha 1)
+                        planilha.cell(row=linha, column=idx_col).number_format = "@"
+
         return buffer.getvalue()
 
     def preparar_export(df, col_danfe="danfe", col_valor="ValorNota",
@@ -258,18 +275,27 @@ def render_devolucao():
         fiscal, pedido formatado, transportadora e valor — usada nos 3 botões de download da
         Visão Geral (Devolução em processo, Extraviado → Entregue, Extraviado → Devolvido).
         `col_danfe` falta em bases geradas antes dessa mudança no pipeline — cai pra coluna
-        vazia em vez de quebrar."""
+        vazia em vez de quebrar. Chave da Nota Fiscal e Pedido Formatado forçados pra string
+        (evita virar número e perder dígitos antes mesmo de chegar no Excel)."""
         return pd.DataFrame({
-            "Chave da Nota Fiscal": df[col_danfe] if col_danfe in df.columns else "",
-            "Pedido Formatado": df[col_pedido] if col_pedido in df.columns else "",
+            "Chave da Nota Fiscal": (
+                df[col_danfe].astype(str) if col_danfe in df.columns else ""
+            ),
+            "Pedido Formatado": (
+                df[col_pedido].astype(str) if col_pedido in df.columns else ""
+            ),
             "Transportadora": df[col_transp] if col_transp in df.columns else "",
             "Valor": df[col_valor] if col_valor in df.columns else 0,
         })
 
     def botao_download_excel(label, df, nome_arquivo, key):
+        export = preparar_export(df)
         st.download_button(
             label,
-            data=to_excel_bytes(preparar_export(df)),
+            data=to_excel_bytes(
+                export,
+                colunas_texto=["Chave da Nota Fiscal", "Pedido Formatado"]
+            ),
             file_name=nome_arquivo,
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             key=key
