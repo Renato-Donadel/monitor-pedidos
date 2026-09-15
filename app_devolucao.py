@@ -337,13 +337,18 @@ def render_devolucao():
         )
         transportadoras_extravio = sorted(extravio_transp["Transportadora"].unique().tolist())
 
+        # 4 categorias mutuamente exclusivas (pedido do usuário, 09/2026): "Entregue com NFD"
+        # (NFD emitida E mesmo assim entregue depois — caso raro/problemático) é diferente de
+        # "Entregue sem NFD" (achado/entregue depois do extravio, nunca gerou NFD nenhuma) — não
+        # dá pra misturar os dois num "Entregue" só, porque o projeto é sobre NFD geradas no SAP.
         totais_geral_extravio = extravio_transp.groupby("Desfecho")["ValorNota"].sum()
-        total_ext_entregue = totais_geral_extravio.get("Entregue", 0.0)
+        total_ext_entregue_com_nfd = totais_geral_extravio.get("Entregue com NFD", 0.0)
+        total_ext_entregue_sem_nfd = totais_geral_extravio.get("Entregue sem NFD", 0.0)
         total_ext_devolvido = totais_geral_extravio.get("Devolvido", 0.0)
 
     else:
         meses_extravio, transportadoras_extravio = [], []
-        total_ext_entregue = total_ext_devolvido = 0.0
+        total_ext_entregue_com_nfd = total_ext_entregue_sem_nfd = total_ext_devolvido = 0.0
 
     # ==============================
     # VISÃO GERAL (RESUMO RÁPIDO NO TOPO DA PÁGINA)
@@ -351,7 +356,7 @@ def render_devolucao():
 
     st.markdown("### Visão geral")
 
-    col_kpi1, col_kpi2, col_kpi3, col_kpi4 = st.columns(4)
+    col_kpi1, col_kpi2, col_kpi3, col_kpi4, col_kpi5 = st.columns(5)
 
     with col_kpi1:
         card("Venda Total", moeda(venda_total))
@@ -376,17 +381,38 @@ def render_devolucao():
         )
 
     with col_kpi3:
-        card("Extraviado → Entregue", moeda(total_ext_entregue), "ano completo, todas transp.")
+        # Caso raro e problemático: a NFD foi emitida (mercadoria dada como devolvida/baixada)
+        # e AINDA ASSIM a remessa foi entregue depois — diferente de "Entregue sem NFD" abaixo.
+        card(
+            "Extraviado → Entregue (com NFD)",
+            moeda(total_ext_entregue_com_nfd),
+            "ano completo, todas transp."
+        )
 
         if extravio_det is not None and not extravio_det.empty:
             botao_download_excel(
                 "⬇️ Baixar Excel",
-                extravio_det[extravio_det["Desfecho"] == "Entregue"],
-                "extraviado_entregue.xlsx",
-                "download_extraviado_entregue"
+                extravio_det[extravio_det["Desfecho"] == "Entregue com NFD"],
+                "extraviado_entregue_com_nfd.xlsx",
+                "download_extraviado_entregue_com_nfd"
             )
 
     with col_kpi4:
+        card(
+            "Extraviado → Entregue (sem NFD)",
+            moeda(total_ext_entregue_sem_nfd),
+            "ano completo, todas transp."
+        )
+
+        if extravio_det is not None and not extravio_det.empty:
+            botao_download_excel(
+                "⬇️ Baixar Excel",
+                extravio_det[extravio_det["Desfecho"] == "Entregue sem NFD"],
+                "extraviado_entregue_sem_nfd.xlsx",
+                "download_extraviado_entregue_sem_nfd"
+            )
+
+    with col_kpi5:
         card(
             "Extraviado → Devolvido (NFD)",
             moeda(total_ext_devolvido),
@@ -1001,23 +1027,28 @@ def render_devolucao():
             .fillna(0)
         )
 
-        for col_desfecho in ["Entregue", "Devolvido", "Em aberto"]:
+        COLUNAS_DESFECHO = ["Devolvido", "Entregue com NFD", "Entregue sem NFD", "Em aberto"]
+
+        for col_desfecho in COLUNAS_DESFECHO:
             if col_desfecho not in pivot_extravio.columns:
                 pivot_extravio[col_desfecho] = 0.0
 
-        pivot_extravio = pivot_extravio[["Entregue", "Devolvido", "Em aberto"]]
+        pivot_extravio = pivot_extravio[COLUNAS_DESFECHO]
         pivot_extravio["Total Extraviado"] = pivot_extravio.sum(axis=1)
         pivot_extravio = pivot_extravio.sort_values("Total Extraviado", ascending=False)
 
-        col_ext1, col_ext2, col_ext3 = st.columns(3)
+        col_ext1, col_ext2, col_ext3, col_ext4 = st.columns(4)
 
         with col_ext1:
-            card("Extraviado → Entregue", moeda(pivot_extravio["Entregue"].sum()))
-
-        with col_ext2:
             card("Extraviado → Devolvido (NFD)", moeda(pivot_extravio["Devolvido"].sum()))
 
+        with col_ext2:
+            card("Extraviado → Entregue (com NFD)", moeda(pivot_extravio["Entregue com NFD"].sum()))
+
         with col_ext3:
+            card("Extraviado → Entregue (sem NFD)", moeda(pivot_extravio["Entregue sem NFD"].sum()))
+
+        with col_ext4:
             card("Extraviado → Em aberto", moeda(pivot_extravio["Em aberto"].sum()))
 
         st.dataframe(
@@ -1026,7 +1057,7 @@ def render_devolucao():
         )
 
         graf_extravio = resumo_extravio[
-            resumo_extravio["Desfecho"].isin(["Entregue", "Devolvido"])
+            resumo_extravio["Desfecho"].isin(["Devolvido", "Entregue com NFD", "Entregue sem NFD"])
         ]
 
         if not graf_extravio.empty:
@@ -1037,7 +1068,7 @@ def render_devolucao():
                 y="ValorNota",
                 color="Desfecho",
                 barmode="group",
-                title="Valor extraviado por transportadora — Entregue x Devolvido"
+                title="Valor extraviado por transportadora — Devolvido x Entregue (com/sem NFD)"
             )
 
             fig_extravio.update_layout(
