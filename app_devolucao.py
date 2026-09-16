@@ -269,18 +269,20 @@ def render_devolucao():
 
         return buffer.getvalue()
 
-    def preparar_export(df, col_danfe="danfe", col_valor="ValorNota",
+    def preparar_export(df, col_valor="ValorNota",
                          col_pedido="PedidoFormatado", col_transp="Transportadora"):
-        """Monta a planilha de download padrão pedida pelo usuário (09/2026): chave da nota
-        fiscal, pedido formatado, transportadora e valor — usada nos 3 botões de download da
-        Visão Geral (Devolução em processo, Extraviado → Entregue, Extraviado → Devolvido).
-        `col_danfe` falta em bases geradas antes dessa mudança no pipeline — cai pra coluna
-        vazia em vez de quebrar. Chave da Nota Fiscal e Pedido Formatado forçados pra string
-        (evita virar número e perder dígitos antes mesmo de chegar no Excel)."""
+        """Monta a planilha de download padrão (pedido formatado, transportadora e valor) —
+        usada nos botões de download da Visão Geral (Devolução em processo, Extraviado →
+        Entregue com/sem NFD, Extraviado → Devolvido).
+
+        NUNCA inclui "Chave da Nota Fiscal" (danfe) — o repositório git deste site é PÚBLICO
+        (confirmado, 09/2026) e chave de NF é dado sensível da empresa; PedidoFormatado já
+        identifica o pedido sem precisar disso. Se algum dia alguém for tentado a adicionar
+        `danfe` de volta aqui: não — nem pra um botão novo, nem "só internamente", porque o
+        Excel gerado por este botão é um arquivo que o usuário baixa e pode compartilhar, e o
+        histórico do próprio Base_Streamlit_Devolucao.xlsx já foi publicado no GitHub público
+        com essa coluna antes disso ser corrigido (ver git log do repo pra contexto)."""
         return pd.DataFrame({
-            "Chave da Nota Fiscal": (
-                df[col_danfe].astype(str) if col_danfe in df.columns else ""
-            ),
             "Pedido Formatado": (
                 df[col_pedido].astype(str) if col_pedido in df.columns else ""
             ),
@@ -294,7 +296,7 @@ def render_devolucao():
             label,
             data=to_excel_bytes(
                 export,
-                colunas_texto=["Chave da Nota Fiscal", "Pedido Formatado"]
+                colunas_texto=["Pedido Formatado"]
             ),
             file_name=nome_arquivo,
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
