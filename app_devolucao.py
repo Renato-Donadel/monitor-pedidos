@@ -10,6 +10,7 @@ from utils import (
     perc_transportes,
     ARQ_DEVOLUCAO
 )
+import ressarcimento
 
 def render_devolucao():
 
@@ -37,6 +38,7 @@ def render_devolucao():
         devolucao_atras = bases["devolucao_atrasada"]
         nfd_mes = bases["nfd_mes"]
         nfd_coleta = bases["nfd_coleta"]
+        nfd_coleta_motivo = bases["nfd_coleta_motivo"]
         extravio_transp = bases.get("extravio_transportadora")
         extravio_det = bases.get("extravio_detalhado")
 
@@ -121,8 +123,11 @@ def render_devolucao():
 
     nfd_coleta["Mes_Coleta"] = pd.to_datetime(nfd_coleta["Mes_Coleta"].astype(str))
     nfd_coleta["Mes_Coleta"] = nfd_coleta["Mes_Coleta"].dt.strftime("%B %Y").str.capitalize()
-    
-    
+
+    nfd_coleta_motivo["Mes_Coleta"] = pd.to_datetime(nfd_coleta_motivo["Mes_Coleta"].astype(str))
+    nfd_coleta_motivo["Mes_Coleta"] = nfd_coleta_motivo["Mes_Coleta"].dt.strftime("%B %Y").str.capitalize()
+
+
     # ==============================
     # FILTROS
     # ==============================
@@ -213,6 +218,10 @@ def render_devolucao():
         nfd_coleta["Mes_Coleta"].isin(filtro_mes)
     ]
 
+    nfd_coleta_motivo = nfd_coleta_motivo[
+        nfd_coleta_motivo["Mes_Coleta"].isin(filtro_mes)
+    ]
+
 
     # formatação
     def moeda(x):
@@ -290,8 +299,8 @@ def render_devolucao():
             "Valor": df[col_valor] if col_valor in df.columns else 0,
         })
 
-    def botao_download_excel(label, df, nome_arquivo, key):
-        export = preparar_export(df)
+    def botao_download_excel(label, df, nome_arquivo, key, col_valor="ValorNota"):
+        export = preparar_export(df, col_valor=col_valor)
         st.download_button(
             label,
             data=to_excel_bytes(
@@ -436,18 +445,18 @@ def render_devolucao():
     hoje = pd.Timestamp.today().normalize()
     fim_mes = hoje + pd.offsets.MonthEnd(0)
     dias_restantes_mes = (fim_mes - hoje).days
-              
+
     # =====================================
     # DEVOLUÇÃO - PAINEL TRANSPORTES
     # =====================================
 
     with col_transp:
-    
+
             st.markdown(
                 '<div class="titulo-painel">Devolução - Painel Transportes</div>',
                 unsafe_allow_html=True
             )
-        
+
             # base completa
             ret = retornando_transp.copy()
             ret["Mes"] = ret["Mes"].replace("Sem_Data_Coleta", "1977-07-01")
@@ -462,20 +471,21 @@ def render_devolucao():
                 ret["Mes"].isin(filtro_mes) &
                 ret["Transportadora"].isin(filtro_transportadora)
             ]
-            
+
             venda_mes = vendas_transp[
                 vendas_transp["Mes"].isin(filtro_mes) &
                 vendas_transp["Transportadora"].isin(filtro_transportadora)
             ]["ValorVenda"].sum()
 
             nfd_total = nfd_coleta["Valor_NFD"].sum()
-            
+            nfd_motivo_total = nfd_coleta_motivo["Valor_NFD"].sum()
+
             # ===== ADICIONE ESTAS 3 LINHAS =====
             indice_nfd = nfd_total
             atrasado = devolucao_atras_total
             indice_atrasado = nfd_total + atrasado
-                        
-            
+
+
             # converter datas
             base_dev["DataColeta"] = pd.to_datetime(base_dev["DataColeta"], errors="coerce")
             base_dev["DataÚltimoStatus"] = pd.to_datetime(base_dev["DataÚltimoStatus"], errors="coerce")
@@ -503,7 +513,7 @@ def render_devolucao():
 
             impacto_retornando = retornando_transp.copy()
             impacto_retornando["Mes"] = impacto_retornando["Mes"].replace("Sem_Data_Coleta", "1977-07-01")
-            
+
             impacto_retornando["Mes"] = pd.to_datetime(impacto_retornando["Mes"].astype(str))
             impacto_retornando["Mes"] = impacto_retornando["Mes"].dt.strftime("%B %Y").str.capitalize()
 
@@ -514,7 +524,7 @@ def render_devolucao():
 
             impacto_retornando = impacto_retornando.rename(
                 columns={"Mes": "MesColeta"}
-            )  
+            )
 
             impacto_retornando = (
                 impacto_retornando
@@ -522,7 +532,7 @@ def render_devolucao():
                 .sum()
                 .reset_index()
             )
-                      
+
             # ==============================
             # NFD POR MÊS DE COLETA
             # ==============================
@@ -546,7 +556,7 @@ def render_devolucao():
             # =====================================
 
             triplo_real = potencial["Potencial"].sum()
-            
+
             # ==============================
             # IMPACTO POR MÊS DE COLETA
             # ==============================
@@ -563,7 +573,7 @@ def render_devolucao():
                     "Mes": "MesColeta",
                     "Potencial": "ValorNota"
                 }
-            )   
+            )
 
             # =====================================
             # EXIBIÇÃO
@@ -604,11 +614,14 @@ def render_devolucao():
             st.markdown("### NFD gerada")
             st.write(f"{moeda(nfd_total)} | {perc_transportes(indice_nfd, venda_mes)}")
 
+            st.markdown("### NFD gerada (motivo transportes)")
+            st.write(f"{moeda(nfd_motivo_total)} | {perc_transportes(nfd_motivo_total, venda_mes)}")
+
             st.markdown("### Atrasado")
             st.write(f"{moeda(atrasado)} | {perc_transportes(indice_atrasado, venda_mes)}")
 
             st.markdown("### Retornando")
-            
+
             st.write(f"Total: {moeda(retornando_total)}")
 
             for _, row in impacto_retornando.iterrows():
@@ -633,11 +646,11 @@ def render_devolucao():
                     f"{perc_transportes(indice_atual, venda_mes_base)} → "
                     f"{perc_transportes(indice_novo, venda_mes_base)}"
                 )
-            
+
             st.markdown("### Potencial Triplo Prazo")
 
             st.write(f"Total potencial: {moeda(triplo_real)}")
-            
+
             for _, row in impacto_mes.iterrows():
 
                 mes = row["MesColeta"]
@@ -662,7 +675,7 @@ def render_devolucao():
                 )
 
             st.markdown("</div>", unsafe_allow_html=True)
-            
+
             # ==============================
             # GRÁFICO IMPACTO POTENCIAL
             # ==============================
@@ -744,7 +757,7 @@ def render_devolucao():
                 fig,
                 use_container_width=True
             )
-            
+
     # =====================================
     # DEVOLUÇÃO - PAINEL BRAVIUM
     # =====================================
@@ -761,7 +774,7 @@ def render_devolucao():
         # ==============================
 
         base_nfd = retornando_det.copy()
-        
+
         base_nfd["DataÚltimoStatus"] = pd.to_datetime(base_nfd["DataÚltimoStatus"], errors="coerce")
         base_nfd["DataColeta"] = pd.to_datetime(base_nfd["DataColeta"], errors="coerce")
 
@@ -801,7 +814,7 @@ def render_devolucao():
         ]
 
         atrasado_brav = base_atrasado["Devolucao_Atrasada"].sum()
-        
+
         # PROVÁVEL
         provavel_brav = base_nfd[
             (base_nfd["DiasNoStatus"] >= 20) &
@@ -887,14 +900,14 @@ def render_devolucao():
         # ==============================
         # EXIBIÇÃO
         # ==============================
-        
+
         st.markdown("### Venda total (Empresa)")
         card("Venda Total", moeda(venda_mes))
 
         # ==============================
         # GRÁFICO VENDAS POR MÊS - BRAVIUM
         # ==============================
-        
+
         graf_bravium = bases["vendas_mes_pedido"].copy()
 
         graf_bravium["Mes_Pedido"] = pd.to_datetime(
@@ -946,7 +959,7 @@ def render_devolucao():
             f"Improvável: {moeda(improv_brav)} | "
             f"{perc_bravium(indice_brav_poss)} → {perc_bravium(indice_brav_improv)}"
         )
-       
+
 
         st.markdown("### Potencial no mês (Bravium)")
 
@@ -1110,3 +1123,135 @@ def render_devolucao():
                     extravio_det_filtrado.drop(columns=["MesDetalhe"]),
                     use_container_width=True
                 )
+
+    # =====================================
+    # CENTRAL DE RESSARCIMENTO
+    # =====================================
+    # Controle do que as transportadoras já pagaram de volta pelos pedidos extraviados que
+    # geraram NFD (bucket "Devolvido" acima — extravio confirmado, sem entrega depois). Pedido
+    # do usuário (09/2026): upload de uma planilha de 2 colunas (Pedido Formatado, Valor Pago)
+    # pra "imputar no sistema" o que já foi recebido, visão por transportadora, e exportar
+    # separadamente o que ainda falta pagar e o que já foi pago.
+    #
+    # PERSISTÊNCIA: Google Sheets, não o repositório git — ver docstring de ressarcimento.py
+    # pro motivo (repositório público, sem acesso ao Z: a partir do Streamlit Cloud).
+
+    st.markdown("---")
+
+    st.markdown(
+        '<div class="titulo-painel">Central de Ressarcimento</div>',
+        unsafe_allow_html=True
+    )
+
+    if extravio_det is None or extravio_det.empty:
+        st.info("Nenhum pedido com extravio encontrado na base.")
+
+    else:
+        devolvidos = extravio_det[extravio_det["Desfecho"] == "Devolvido"].copy()
+        devolvidos["Transportadora"] = (
+            devolvidos["Transportadora"].astype(str).str.strip().str.upper()
+        )
+        devolvidos["PedidoFormatado"] = (
+            devolvidos["PedidoFormatado"].astype(str).str.strip().str.upper()
+        )
+
+        pagamentos = ressarcimento.carregar_pagamentos()
+
+        devolvidos = devolvidos.merge(
+            pagamentos, on="PedidoFormatado", how="left"
+        )
+        devolvidos["ValorPago"] = devolvidos["ValorPago"].fillna(0)
+        devolvidos["Pago"] = devolvidos["PedidoFormatado"].isin(
+            set(pagamentos["PedidoFormatado"])
+        )
+
+        pendentes = devolvidos[~devolvidos["Pago"]]
+        pagos = devolvidos[devolvidos["Pago"]]
+
+        col_r1, col_r2, col_r3 = st.columns(3)
+
+        with col_r1:
+            card("Total extraviado (Devolvido)", moeda(devolvidos["ValorNota"].sum()))
+
+        with col_r2:
+            card("Aguardando ressarcimento", moeda(pendentes["ValorNota"].sum()))
+
+        with col_r3:
+            card("Já ressarcido", moeda(pagos["ValorNota"].sum()))
+
+        st.markdown("#### Por transportadora")
+
+        resumo_ressarc = (
+            devolvidos
+            .groupby("Transportadora")
+            .apply(lambda g: pd.Series({
+                "Aguardando ressarcimento": g.loc[~g["Pago"], "ValorNota"].sum(),
+                "Já ressarcido": g.loc[g["Pago"], "ValorNota"].sum(),
+            }))
+            .reset_index()
+        )
+        resumo_ressarc["Total"] = (
+            resumo_ressarc["Aguardando ressarcimento"] + resumo_ressarc["Já ressarcido"]
+        )
+        resumo_ressarc = resumo_ressarc.sort_values("Total", ascending=False)
+
+        st.dataframe(
+            resumo_ressarc.style.format({
+                "Aguardando ressarcimento": moeda,
+                "Já ressarcido": moeda,
+                "Total": moeda,
+            }),
+            use_container_width=True
+        )
+
+        col_dl1, col_dl2 = st.columns(2)
+
+        with col_dl1:
+            botao_download_excel(
+                "⬇️ Baixar não pagos",
+                pendentes,
+                "ressarcimento_pendente.xlsx",
+                "download_ressarcimento_pendente"
+            )
+
+        with col_dl2:
+            botao_download_excel(
+                "⬇️ Baixar já pagos",
+                pagos,
+                "ressarcimento_pago.xlsx",
+                "download_ressarcimento_pago",
+                col_valor="ValorPago"
+            )
+
+        st.markdown("#### Importar pagamentos recebidos")
+
+        st.caption(
+            "Envie uma planilha com exatamente 2 colunas: **Pedido Formatado** e **Valor "
+            "Pago**. Pedidos já registrados antes não são duplicados."
+        )
+
+        arquivo_pagamento = st.file_uploader(
+            "Planilha de pagamentos (Excel ou CSV)",
+            type=["xlsx", "csv"],
+            key="upload_ressarcimento"
+        )
+
+        if arquivo_pagamento is not None:
+            try:
+                if arquivo_pagamento.name.lower().endswith(".csv"):
+                    df_importado = pd.read_csv(arquivo_pagamento)
+                else:
+                    df_importado = pd.read_excel(arquivo_pagamento)
+
+                qtd_novos, qtd_existentes = ressarcimento.registrar_pagamentos(df_importado)
+
+                st.success(
+                    f"{qtd_novos} pagamento(s) novo(s) registrado(s). "
+                    f"{qtd_existentes} já estavam registrados e foram ignorados."
+                )
+
+                if qtd_novos > 0:
+                    st.rerun()
+
+            except (ValueError, RuntimeError) as exc:
+                st.error(str(exc))

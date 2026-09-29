@@ -80,6 +80,7 @@ def carregar_base_devolucao():
             "devolucao_atrasada",
             "nfd_mes",
             "nfd_coleta",
+            "nfd_coleta_motivo",
             "base",
             "retornando_detalhado",
             "dev_atrasada_detalhado",

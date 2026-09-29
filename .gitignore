@@ -2,3 +2,7 @@ __pycache__/
 *.pyc
 .claude/
 data/doccob_cadastro_transportadoras.json
+
+# Credenciais locais (NUNCA versionar) — no Streamlit Cloud essas mesmas chaves ficam em
+# Settings > Secrets do app publicado, nunca num arquivo dentro do repositorio.
+.streamlit/secrets.toml
