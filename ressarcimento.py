@@ -96,6 +96,36 @@ def carregar_pagamentos():
     return df[["PedidoFormatado", "ValorPago"]]
 
 
+def _normalizar_pedido(serie: pd.Series) -> pd.Series:
+    """Pedido Formatado em texto, maiúsculo, sem '.0' de número lido do Excel. Pedido só de
+    dígitos tem SEMPRE 14 caracteres (confirmado nos 16.305 pedidos de extravio_detalhado; os
+    com letra de reenvio têm 16) — se vier mais curto, o Excel do usuário comeu zeros à
+    esquerda (célula numérica), então restauramos com zfill(14)."""
+    s = serie.astype(str).str.strip().str.upper().str.replace(r"\.0$", "", regex=True)
+    so_digitos = s.str.fullmatch(r"\d+")
+    s = s.where(~so_digitos, s.str.zfill(14))
+    return s
+
+
+def _parse_valor(v):
+    """Converte 'Valor Pago' em float aceitando número do Excel (4837.8) e texto BR ('R$
+    4.837,80', '4837,8') ou US ('4837.80'). Devolve NaN se vazio/inválido — quem chama decide
+    (nunca vira 0 em silêncio)."""
+    if v is None or (isinstance(v, float) and pd.isna(v)):
+        return float("nan")
+    if isinstance(v, (int, float)):
+        return float(v)
+    t = str(v).strip().replace("R$", "").replace(" ", "")
+    if not t:
+        return float("nan")
+    if "," in t:
+        t = t.replace(".", "").replace(",", ".")
+    try:
+        return float(t)
+    except ValueError:
+        return float("nan")
+
+
 def registrar_pagamentos(df_novo: pd.DataFrame) -> tuple[int, int]:
     """Recebe o Excel/CSV importado pelo usuário (colunas 'Pedido Formatado'/'Valor Pago') e
     ACRESCENTA na planilha só os pedidos que ainda não estavam lá — evita duplicar valor se o
@@ -118,9 +148,18 @@ def registrar_pagamentos(df_novo: pd.DataFrame) -> tuple[int, int]:
         )
 
     df_novo = df_novo[COLUNAS_PLANILHA].copy()
-    df_novo["Pedido Formatado"] = df_novo["Pedido Formatado"].astype(str).str.strip().str.upper()
-    df_novo["Valor Pago"] = pd.to_numeric(df_novo["Valor Pago"], errors="coerce").fillna(0)
+    df_novo = df_novo.dropna(subset=["Pedido Formatado"])
+    df_novo["Pedido Formatado"] = _normalizar_pedido(df_novo["Pedido Formatado"])
     df_novo = df_novo[df_novo["Pedido Formatado"] != ""]
+
+    valores = df_novo["Valor Pago"].map(_parse_valor)
+    if valores.isna().any():
+        raise ValueError(
+            f"{int(valores.isna().sum())} linha(s) com 'Valor Pago' vazio ou inválido "
+            f"(ex.: {df_novo.loc[valores.isna(), 'Valor Pago'].head(3).tolist()}). "
+            "Nada foi importado — corrija a planilha e envie de novo."
+        )
+    df_novo["Valor Pago"] = valores
 
     existentes = set(carregar_pagamentos()["PedidoFormatado"])
     novos = df_novo[~df_novo["Pedido Formatado"].isin(existentes)]

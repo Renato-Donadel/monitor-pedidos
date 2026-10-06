@@ -1236,22 +1236,44 @@ def render_devolucao():
             key="upload_ressarcimento"
         )
 
+        # O file_uploader continua com o arquivo depois do st.rerun(), então sem esse controle
+        # o mesmo arquivo era processado de novo e a mensagem real do 1º envio ("1 novo") era
+        # trocada por "0 novos, 1 já registrado". Processa cada arquivo uma vez só (por id) e
+        # guarda a mensagem em session_state pra sobreviver ao rerun.
         if arquivo_pagamento is not None:
-            try:
-                if arquivo_pagamento.name.lower().endswith(".csv"):
-                    df_importado = pd.read_csv(arquivo_pagamento)
+            if st.session_state.get("ressarcimento_arquivo_id") != arquivo_pagamento.file_id:
+                st.session_state["ressarcimento_arquivo_id"] = arquivo_pagamento.file_id
+                try:
+                    # dtype=str no Pedido Formatado: sem isso o pandas converte "00760000714423"
+                    # (texto no Excel) pra número e perde os zeros à esquerda.
+                    if arquivo_pagamento.name.lower().endswith(".csv"):
+                        df_importado = pd.read_csv(
+                            arquivo_pagamento, dtype={"Pedido Formatado": str}, sep=None,
+                            engine="python"
+                        )
+                    else:
+                        df_importado = pd.read_excel(
+                            arquivo_pagamento, dtype={"Pedido Formatado": str}
+                        )
+
+                    qtd_novos, qtd_existentes = ressarcimento.registrar_pagamentos(df_importado)
+
+                    st.session_state["ressarcimento_resultado"] = (
+                        "ok",
+                        f"{qtd_novos} pagamento(s) novo(s) registrado(s). "
+                        f"{qtd_existentes} já estavam registrados e foram ignorados."
+                    )
+
+                    if qtd_novos > 0:
+                        st.rerun()
+
+                except (ValueError, RuntimeError) as exc:
+                    st.session_state["ressarcimento_resultado"] = ("erro", str(exc))
+
+            resultado_upload = st.session_state.get("ressarcimento_resultado")
+
+            if resultado_upload:
+                if resultado_upload[0] == "ok":
+                    st.success(resultado_upload[1])
                 else:
-                    df_importado = pd.read_excel(arquivo_pagamento)
-
-                qtd_novos, qtd_existentes = ressarcimento.registrar_pagamentos(df_importado)
-
-                st.success(
-                    f"{qtd_novos} pagamento(s) novo(s) registrado(s). "
-                    f"{qtd_existentes} já estavam registrados e foram ignorados."
-                )
-
-                if qtd_novos > 0:
-                    st.rerun()
-
-            except (ValueError, RuntimeError) as exc:
-                st.error(str(exc))
+                    st.error(resultado_upload[1])
