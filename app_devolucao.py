@@ -281,22 +281,32 @@ def render_devolucao():
         perdas["ValorBruto"] = perdas["ValorBruto"].fillna(perdas["ValorNota"]).fillna(0)
         perdas["ValorNota"] = perdas["ValorNota"].fillna(0)
 
-        pagamentos = ressarcimento.carregar_pagamentos()
+        # um pedido só pode ter um valor pago (a planilha já evita duplicar no upload; o
+        # drop_duplicates protege caso alguém edite a planilha à mão)
+        pagamentos = ressarcimento.carregar_pagamentos().drop_duplicates(
+            "PedidoFormatado", keep="last"
+        )
         pedidos_pagos = set(pagamentos["PedidoFormatado"])
 
-        com_nfd = perdas[perdas["Desfecho"] == "Devolvido"].copy()
-        com_nfd = com_nfd.merge(pagamentos, on="PedidoFormatado", how="left")
-        com_nfd["ValorPago"] = com_nfd["ValorPago"].fillna(0)
-        com_nfd["Pago"] = com_nfd["PedidoFormatado"].isin(pedidos_pagos)
+        # "Já ressarcido" vale pra qualquer pedido ressarcível pago — com NFD ("Devolvido") ou
+        # ainda "Em aberto" (pedido do usuário, 10/2026): a transportadora pode pagar antes da
+        # NFD sair, e esse pagamento não pode sumir da tela.
+        ressarcivel = perdas[perdas["Desfecho"].isin(["Devolvido", "Em aberto"])].copy()
+        ressarcivel = ressarcivel.merge(pagamentos, on="PedidoFormatado", how="left")
+        ressarcivel["ValorPago"] = ressarcivel["ValorPago"].fillna(0)
+        ressarcivel["Pago"] = ressarcivel["PedidoFormatado"].isin(pedidos_pagos)
+        # pedido repetido (aparece no extravio e na avaria): o pagamento conta uma vez só
+        ressarcivel.loc[ressarcivel.duplicated("PedidoFormatado"), "ValorPago"] = 0
+
+        com_nfd = ressarcivel[ressarcivel["Desfecho"] == "Devolvido"].copy()
         com_nfd["VoltouBom"] = (com_nfd["ValorBruto"] - com_nfd["ValorNota"]).clip(lower=0)
 
-        em_aberto = perdas[
-            (perdas["Desfecho"] == "Em aberto")
-            & ~perdas["PedidoFormatado"].isin(pedidos_pagos)
+        em_aberto = ressarcivel[
+            (ressarcivel["Desfecho"] == "Em aberto") & ~ressarcivel["Pago"]
         ].copy()
 
         pendentes = com_nfd[~com_nfd["Pago"]]
-        pagos = com_nfd[com_nfd["Pago"]]
+        pagos = ressarcivel[ressarcivel["Pago"]]
 
         col_r1, col_r2, col_r3, col_r4 = st.columns(4)
 
@@ -380,6 +390,100 @@ def render_devolucao():
                 incluir_tipo=True
             )
 
+        # ---- ESPERADO x RECEBIDO ----
+        # Pedido a pedido: o que esperávamos receber (valor da NFD/remessa) x o que a transportadora
+        # pagou. Também lista o que foi pago e NÃO está nas bases de extravio/avaria (a página
+        # cobre só 2026) ou consta como entregue — pra nenhum pagamento sumir em silêncio.
+        st.markdown("#### Esperado x recebido")
+
+        conc_base = ressarcivel[
+            ["PedidoFormatado", "Transportadora", "TipoPerda", "Desfecho", "ValorNota", "ValorPago", "Pago"]
+        ].copy()
+        conc_base = conc_base.rename(columns={"ValorNota": "Valor esperado", "TipoPerda": "Tipo"})
+
+        outros = perdas[
+            ~perdas["Desfecho"].isin(["Devolvido", "Em aberto"])
+            & perdas["PedidoFormatado"].isin(pedidos_pagos)
+        ].drop_duplicates("PedidoFormatado")
+        outros = outros.merge(pagamentos, on="PedidoFormatado", how="left")
+        outros = pd.DataFrame({
+            "PedidoFormatado": outros["PedidoFormatado"],
+            "Transportadora": outros["Transportadora"],
+            "Tipo": outros["TipoPerda"],
+            "Desfecho": outros["Desfecho"],
+            "Valor esperado": 0.0,
+            "ValorPago": outros["ValorPago"],
+            "Pago": True,
+        })
+
+        fora = pagamentos[~pagamentos["PedidoFormatado"].isin(set(perdas["PedidoFormatado"]))]
+        fora = pd.DataFrame({
+            "PedidoFormatado": fora["PedidoFormatado"],
+            "Transportadora": "—",
+            "Tipo": "—",
+            "Desfecho": "Fora da base",
+            "Valor esperado": 0.0,
+            "ValorPago": fora["ValorPago"],
+            "Pago": True,
+        })
+
+        conc = pd.concat([conc_base, outros, fora], ignore_index=True)
+        conc["Diferença"] = conc["ValorPago"] - conc["Valor esperado"]
+
+        def _situacao(linha):
+            if not linha["Pago"]:
+                return "Não pago"
+            if linha["Desfecho"] == "Fora da base":
+                return "Pago, pedido fora da base (extravio/avaria 2026)"
+            if linha["Desfecho"] not in ("Devolvido", "Em aberto"):
+                return f"Pago, mas pedido consta como '{linha['Desfecho']}'"
+            if abs(linha["Diferença"]) <= 0.05:
+                return "Pago corretamente"
+            return "Pago a menor" if linha["Diferença"] < 0 else "Pago a maior"
+
+        conc["Situação"] = conc.apply(_situacao, axis=1)
+        conc.loc[~conc["Pago"], "Diferença"] = None
+
+        resumo_conc = (
+            conc.groupby("Situação")
+            .agg(Pedidos=("PedidoFormatado", "count"),
+                 **{"Valor esperado": ("Valor esperado", "sum"), "Valor pago": ("ValorPago", "sum")})
+            .reset_index()
+        )
+        resumo_conc["Diferença (pago - esperado)"] = resumo_conc["Valor pago"] - resumo_conc["Valor esperado"]
+        resumo_conc.loc[resumo_conc["Situação"] == "Não pago", "Diferença (pago - esperado)"] = None
+
+        st.dataframe(
+            resumo_conc.style.format({
+                "Valor esperado": moeda,
+                "Valor pago": moeda,
+                "Diferença (pago - esperado)": lambda v: "—" if pd.isna(v) else moeda(v),
+            }),
+            use_container_width=True,
+            hide_index=True
+        )
+
+        colunas_conc = [
+            "PedidoFormatado", "Transportadora", "Tipo", "Desfecho", "Situação",
+            "Valor esperado", "ValorPago", "Diferença"
+        ]
+        conc_export = conc[colunas_conc].rename(
+            columns={"PedidoFormatado": "Pedido Formatado", "ValorPago": "Valor pago"}
+        )
+
+        pedidos_com_pagamento = conc_export[conc["Pago"].values]
+
+        with st.expander(f"Ver pedidos com pagamento registrado ({len(pedidos_com_pagamento)})"):
+            st.dataframe(pedidos_com_pagamento, use_container_width=True, hide_index=True)
+
+        st.download_button(
+            "⬇️ Baixar esperado x recebido (todos os pedidos)",
+            data=to_excel_bytes(conc_export, colunas_texto=["Pedido Formatado"]),
+            file_name="ressarcimento_esperado_x_recebido.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            key="download_ressarcimento_conciliacao"
+        )
+
         st.markdown("#### Importar pagamentos recebidos")
 
         st.caption(
@@ -415,11 +519,27 @@ def render_devolucao():
 
                     qtd_novos, qtd_existentes = ressarcimento.registrar_pagamentos(df_importado)
 
-                    st.session_state["ressarcimento_resultado"] = (
-                        "ok",
+                    mensagem = (
                         f"{qtd_novos} pagamento(s) novo(s) registrado(s). "
                         f"{qtd_existentes} já estavam registrados e foram ignorados."
                     )
+
+                    # pedidos do arquivo que não existem na base de extravio/avaria (2026):
+                    # ficam guardados, mas não entram nos cards — avisa em vez de calar
+                    pedidos_arquivo = set(
+                        ressarcimento._normalizar_pedido(df_importado["Pedido Formatado"].dropna())
+                    )
+                    sem_base = sorted(pedidos_arquivo - set(perdas["PedidoFormatado"]))
+
+                    if sem_base:
+                        mensagem += (
+                            f" Atenção: {len(sem_base)} pedido(s) do arquivo NÃO estão na base de "
+                            f"extravio/avaria de 2026 e não entram nos cards (ficam em 'Esperado x "
+                            f"recebido' como fora da base): {', '.join(sem_base[:10])}"
+                            + ("…" if len(sem_base) > 10 else "")
+                        )
+
+                    st.session_state["ressarcimento_resultado"] = ("ok", mensagem)
 
                     if qtd_novos > 0:
                         st.rerun()
