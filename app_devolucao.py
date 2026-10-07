@@ -129,100 +129,9 @@ def render_devolucao():
     nfd_coleta_motivo["Mes_Coleta"] = nfd_coleta_motivo["Mes_Coleta"].dt.strftime("%B %Y").str.capitalize()
 
 
-    # ==============================
-    # FILTROS
-    # ==============================
-
-    meses = sorted(vendas_transp["Mes"].dropna().unique())
-    transportadoras = sorted(vendas_transp["Transportadora"].unique())
-
-    with st.expander("🔍 Filtros (Mês / Transportadora)", expanded=False):
-
-        col_f1, col_f2 = st.columns(2)
-
-        with col_f1:
-            filtro_mes = st.multiselect(
-                "Mês",
-                options=meses,
-                default=meses,
-                key="devolucao_filtro_mes"
-            )
-
-        with col_f2:
-            filtro_transportadora = st.multiselect(
-                "Transportadora",
-                options=transportadoras,
-                default=transportadoras,
-                key="devolucao_filtro_transportadora"
-            )
-
-    # multiselect vazio = "sem filtro selecionado ainda", não "nada corresponde" — cai pra
-    # tudo, senão a página inteira zera assim que alguém limpa a seleção sem querer
-    filtro_mes = filtro_mes or meses
-    filtro_transportadora = filtro_transportadora or transportadoras
-
-    retornando_det["ValorNota"] = retornando_det["ValorNota"].fillna(0)
-
-    retornando_det["DataColeta"] = pd.to_datetime(retornando_det["DataColeta"], errors="coerce")
-
-    retornando_det["Mes"] = (
-        retornando_det["DataColeta"]
-        .dt.strftime("%B %Y")
-        .str.capitalize()
-    )
-
-    retornando_total = retornando_det[
-        retornando_det["Mes"].isin(filtro_mes) &
-        retornando_det["Transportadora"].isin(filtro_transportadora)
-    ]["ValorNota"].sum()   
-    
-          
-    # ==============================
-    # TOTAIS DOS INDICADORES
-    # ==============================
-
-    venda_total = vendas_transp[
-        vendas_transp["Mes"].isin(filtro_mes) &
-        vendas_transp["Transportadora"].isin(filtro_transportadora)
-    ]["ValorVenda"].sum()
-
-    devolucao_total = devolucao_proc[
-        devolucao_proc["Mes"].isin(filtro_mes) &
-        devolucao_proc["Transportadora"].isin(filtro_transportadora)
-    ]["Devolucao_Processo"].sum()
-
-    potencial_total = potencial[
-        potencial["Mes"].isin(filtro_mes) &
-        potencial["Transportadora"].isin(filtro_transportadora)
-    ]["Potencial"].sum()
-
-    devolucao_atras_total = devolucao_atras[
-        devolucao_atras["Mes"].isin(filtro_mes) &
-        devolucao_atras["Transportadora"].isin(filtro_transportadora)
-    ]["Devolucao_Atrasada"].sum()
-
-
-    # percentuais
-    perc_devolucao = devolucao_total / venda_total if venda_total > 0 else 0
-    perc_potencial = potencial_total / venda_total if venda_total > 0 else 0
-    perc_atrasada = devolucao_atras_total / venda_total if venda_total > 0 else 0
-    
-    # ==============================
-    # FILTRO NAS NFD POR TRANSPORTADORA
-    # ==============================
-
-    nfd_mes = nfd_mes[
-        nfd_mes["Mes_NFD"].isin(filtro_mes)
-    ]
-
-    nfd_coleta = nfd_coleta[
-        nfd_coleta["Mes_Coleta"].isin(filtro_mes)
-    ]
-
-    nfd_coleta_motivo = nfd_coleta_motivo[
-        nfd_coleta_motivo["Mes_Coleta"].isin(filtro_mes)
-    ]
-
+    # ORDEM DA PÁGINA (pedido do usuário, 10/2026): Central de Ressarcimento (cards, upload e
+    # downloads) no INÍCIO; Visão geral e Extravio no meio; painéis Transportes/Bravium (venda
+    # e NFD) no FIM. As funções de formatação/exportação ficam antes da Central porque ela as usa.
 
     # formatação
     def moeda(x):
@@ -319,6 +228,308 @@ def render_devolucao():
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             key=key
         )
+
+
+    # =====================================
+    # CENTRAL DE RESSARCIMENTO
+    # =====================================
+    # Controle do que as transportadoras já pagaram de volta por EXTRAVIO e AVARIA (unificados,
+    # pedido do usuário 10/2026). Regra do usuário: é ressarcível o que foi extraviado/avariado
+    # e depois NÃO foi devolvido ou foi devolvido quebrado — o que voltou em bom estado
+    # (condição "B" nos itens devolvidos) não é. Por isso são TRÊS valores diferentes:
+    #   - bruto: remessas com NFD emitida depois do extravio/avaria (inclui o que voltou bom);
+    #   - voltou bom: parte do bruto que NÃO é ressarcível;
+    #   - aguardando ressarcimento: o que não voltou bom e ainda não foi pago.
+    # "Em aberto" (extravio/avaria sem NFD, sem devolução nem entrega) também é ressarcível pela
+    # regra, mas fica em card próprio com download, FORA do "aguardando" (pedido do usuário).
+    # Atenção ao nome: "Devolvido" nos dados = NFD emitida (baixa fiscal do que sumiu), não
+    # mercadoria que voltou — por isso os cards aqui dizem "com NFD".
+    #
+    # upload de uma planilha de 2 colunas (Pedido Formatado, Valor Pago) pra "imputar no
+    # sistema" o que já foi recebido, visão por transportadora, e exportar separadamente o que
+    # ainda falta pagar e o que já foi pago.
+    #
+    # PERSISTÊNCIA: Google Sheets, não o repositório git — ver docstring de ressarcimento.py
+    # pro motivo (repositório público, sem acesso ao Z: a partir do Streamlit Cloud).
+
+    st.markdown(
+        '<div class="titulo-painel">Central de Ressarcimento</div>',
+        unsafe_allow_html=True
+    )
+
+    partes_perda = []
+
+    for det_perda, tipo_perda in ((extravio_det, "Extravio"), (avaria_det, "Avaria")):
+        if det_perda is not None and not det_perda.empty:
+            parte = det_perda.copy()
+            if "TipoPerda" not in parte.columns:
+                parte["TipoPerda"] = tipo_perda
+            partes_perda.append(parte)
+
+    if not partes_perda:
+        st.info("Nenhum pedido com extravio ou avaria encontrado na base.")
+
+    else:
+        perdas = pd.concat(partes_perda, ignore_index=True)
+
+        perdas["Transportadora"] = perdas["Transportadora"].astype(str).str.strip().str.upper()
+        perdas["PedidoFormatado"] = perdas["PedidoFormatado"].astype(str).str.strip().str.upper()
+
+        if "ValorBruto" not in perdas.columns:
+            perdas["ValorBruto"] = perdas["ValorNota"]
+
+        perdas["ValorBruto"] = perdas["ValorBruto"].fillna(perdas["ValorNota"]).fillna(0)
+        perdas["ValorNota"] = perdas["ValorNota"].fillna(0)
+
+        pagamentos = ressarcimento.carregar_pagamentos()
+        pedidos_pagos = set(pagamentos["PedidoFormatado"])
+
+        com_nfd = perdas[perdas["Desfecho"] == "Devolvido"].copy()
+        com_nfd = com_nfd.merge(pagamentos, on="PedidoFormatado", how="left")
+        com_nfd["ValorPago"] = com_nfd["ValorPago"].fillna(0)
+        com_nfd["Pago"] = com_nfd["PedidoFormatado"].isin(pedidos_pagos)
+        com_nfd["VoltouBom"] = (com_nfd["ValorBruto"] - com_nfd["ValorNota"]).clip(lower=0)
+
+        em_aberto = perdas[
+            (perdas["Desfecho"] == "Em aberto")
+            & ~perdas["PedidoFormatado"].isin(pedidos_pagos)
+        ].copy()
+
+        pendentes = com_nfd[~com_nfd["Pago"]]
+        pagos = com_nfd[com_nfd["Pago"]]
+
+        col_r1, col_r2, col_r3, col_r4 = st.columns(4)
+
+        with col_r1:
+            card(
+                "Extraviado/avariado com NFD (bruto)",
+                moeda(com_nfd["ValorBruto"].sum()),
+                "inclui o que voltou bom"
+            )
+
+        with col_r2:
+            card(
+                "Voltou bom (não ressarcível)",
+                moeda(com_nfd["VoltouBom"].sum()),
+                "itens devolvidos em bom estado"
+            )
+
+        with col_r3:
+            card("Aguardando ressarcimento", moeda(pendentes["ValorNota"].sum()))
+
+        with col_r4:
+            card("Já ressarcido", moeda(pagos["ValorPago"].sum()), "valor efetivamente pago")
+
+        col_ab1, col_ab2 = st.columns([1, 3])
+
+        with col_ab1:
+            card(
+                "Em aberto (sem NFD ainda)",
+                moeda(em_aberto["ValorNota"].sum()),
+                f"{len(em_aberto)} pedido(s) — extravio/avaria sem devolução nem entrega"
+            )
+
+        with col_ab2:
+            botao_download_excel(
+                "⬇️ Baixar em aberto (sem NFD)",
+                em_aberto,
+                "ressarcimento_em_aberto_sem_nfd.xlsx",
+                "download_ressarcimento_em_aberto",
+                incluir_tipo=True
+            )
+
+        st.markdown("#### Por transportadora")
+
+        resumo_ressarc = pd.DataFrame({
+            "Aguardando ressarcimento": pendentes.groupby("Transportadora")["ValorNota"].sum(),
+            "Já ressarcido": pagos.groupby("Transportadora")["ValorPago"].sum(),
+            "Voltou bom (não ressarcível)": com_nfd.groupby("Transportadora")["VoltouBom"].sum(),
+            "Em aberto (sem NFD)": em_aberto.groupby("Transportadora")["ValorNota"].sum(),
+        }).fillna(0).reset_index().rename(columns={"index": "Transportadora"})
+
+        resumo_ressarc["Total ressarcível"] = (
+            resumo_ressarc["Aguardando ressarcimento"] + resumo_ressarc["Em aberto (sem NFD)"]
+        )
+        resumo_ressarc = resumo_ressarc.sort_values("Total ressarcível", ascending=False)
+
+        st.dataframe(
+            resumo_ressarc.style.format({
+                coluna: moeda for coluna in resumo_ressarc.columns if coluna != "Transportadora"
+            }),
+            use_container_width=True
+        )
+
+        col_dl1, col_dl2 = st.columns(2)
+
+        with col_dl1:
+            botao_download_excel(
+                "⬇️ Baixar não pagos",
+                pendentes,
+                "ressarcimento_pendente.xlsx",
+                "download_ressarcimento_pendente",
+                incluir_tipo=True
+            )
+
+        with col_dl2:
+            botao_download_excel(
+                "⬇️ Baixar já pagos",
+                pagos,
+                "ressarcimento_pago.xlsx",
+                "download_ressarcimento_pago",
+                col_valor="ValorPago",
+                incluir_tipo=True
+            )
+
+        st.markdown("#### Importar pagamentos recebidos")
+
+        st.caption(
+            "Envie uma planilha com exatamente 2 colunas: **Pedido Formatado** e **Valor "
+            "Pago**. Pedidos já registrados antes não são duplicados."
+        )
+
+        arquivo_pagamento = st.file_uploader(
+            "Planilha de pagamentos (Excel ou CSV)",
+            type=["xlsx", "csv"],
+            key="upload_ressarcimento"
+        )
+
+        # O file_uploader continua com o arquivo depois do st.rerun(), então sem esse controle
+        # o mesmo arquivo era processado de novo e a mensagem real do 1º envio ("1 novo") era
+        # trocada por "0 novos, 1 já registrado". Processa cada arquivo uma vez só (por id) e
+        # guarda a mensagem em session_state pra sobreviver ao rerun.
+        if arquivo_pagamento is not None:
+            if st.session_state.get("ressarcimento_arquivo_id") != arquivo_pagamento.file_id:
+                st.session_state["ressarcimento_arquivo_id"] = arquivo_pagamento.file_id
+                try:
+                    # dtype=str no Pedido Formatado: sem isso o pandas converte "00760000714423"
+                    # (texto no Excel) pra número e perde os zeros à esquerda.
+                    if arquivo_pagamento.name.lower().endswith(".csv"):
+                        df_importado = pd.read_csv(
+                            arquivo_pagamento, dtype={"Pedido Formatado": str}, sep=None,
+                            engine="python"
+                        )
+                    else:
+                        df_importado = pd.read_excel(
+                            arquivo_pagamento, dtype={"Pedido Formatado": str}
+                        )
+
+                    qtd_novos, qtd_existentes = ressarcimento.registrar_pagamentos(df_importado)
+
+                    st.session_state["ressarcimento_resultado"] = (
+                        "ok",
+                        f"{qtd_novos} pagamento(s) novo(s) registrado(s). "
+                        f"{qtd_existentes} já estavam registrados e foram ignorados."
+                    )
+
+                    if qtd_novos > 0:
+                        st.rerun()
+
+                except (ValueError, RuntimeError) as exc:
+                    st.session_state["ressarcimento_resultado"] = ("erro", str(exc))
+
+            resultado_upload = st.session_state.get("ressarcimento_resultado")
+
+            if resultado_upload:
+                if resultado_upload[0] == "ok":
+                    st.success(resultado_upload[1])
+                else:
+                    st.error(resultado_upload[1])
+
+    st.markdown("---")
+
+    # ==============================
+    # FILTROS
+    # ==============================
+
+    meses = sorted(vendas_transp["Mes"].dropna().unique())
+    transportadoras = sorted(vendas_transp["Transportadora"].unique())
+
+    with st.expander("🔍 Filtros (Mês / Transportadora)", expanded=False):
+
+        col_f1, col_f2 = st.columns(2)
+
+        with col_f1:
+            filtro_mes = st.multiselect(
+                "Mês",
+                options=meses,
+                default=meses,
+                key="devolucao_filtro_mes"
+            )
+
+        with col_f2:
+            filtro_transportadora = st.multiselect(
+                "Transportadora",
+                options=transportadoras,
+                default=transportadoras,
+                key="devolucao_filtro_transportadora"
+            )
+
+    # multiselect vazio = "sem filtro selecionado ainda", não "nada corresponde" — cai pra
+    # tudo, senão a página inteira zera assim que alguém limpa a seleção sem querer
+    filtro_mes = filtro_mes or meses
+    filtro_transportadora = filtro_transportadora or transportadoras
+
+    retornando_det["ValorNota"] = retornando_det["ValorNota"].fillna(0)
+
+    retornando_det["DataColeta"] = pd.to_datetime(retornando_det["DataColeta"], errors="coerce")
+
+    retornando_det["Mes"] = (
+        retornando_det["DataColeta"]
+        .dt.strftime("%B %Y")
+        .str.capitalize()
+    )
+
+    retornando_total = retornando_det[
+        retornando_det["Mes"].isin(filtro_mes) &
+        retornando_det["Transportadora"].isin(filtro_transportadora)
+    ]["ValorNota"].sum()   
+    
+          
+    # ==============================
+    # TOTAIS DOS INDICADORES
+    # ==============================
+
+    venda_total = vendas_transp[
+        vendas_transp["Mes"].isin(filtro_mes) &
+        vendas_transp["Transportadora"].isin(filtro_transportadora)
+    ]["ValorVenda"].sum()
+
+    devolucao_total = devolucao_proc[
+        devolucao_proc["Mes"].isin(filtro_mes) &
+        devolucao_proc["Transportadora"].isin(filtro_transportadora)
+    ]["Devolucao_Processo"].sum()
+
+    potencial_total = potencial[
+        potencial["Mes"].isin(filtro_mes) &
+        potencial["Transportadora"].isin(filtro_transportadora)
+    ]["Potencial"].sum()
+
+    devolucao_atras_total = devolucao_atras[
+        devolucao_atras["Mes"].isin(filtro_mes) &
+        devolucao_atras["Transportadora"].isin(filtro_transportadora)
+    ]["Devolucao_Atrasada"].sum()
+
+
+    # percentuais
+    perc_devolucao = devolucao_total / venda_total if venda_total > 0 else 0
+    perc_potencial = potencial_total / venda_total if venda_total > 0 else 0
+    perc_atrasada = devolucao_atras_total / venda_total if venda_total > 0 else 0
+    
+    # ==============================
+    # FILTRO NAS NFD POR TRANSPORTADORA
+    # ==============================
+
+    nfd_mes = nfd_mes[
+        nfd_mes["Mes_NFD"].isin(filtro_mes)
+    ]
+
+    nfd_coleta = nfd_coleta[
+        nfd_coleta["Mes_Coleta"].isin(filtro_mes)
+    ]
+
+    nfd_coleta_motivo = nfd_coleta_motivo[
+        nfd_coleta_motivo["Mes_Coleta"].isin(filtro_mes)
+    ]
 
     # ==============================
     # EXTRAVIO — PREPARO
@@ -445,6 +656,149 @@ def render_devolucao():
                 "extraviado_devolvido.xlsx",
                 "download_extraviado_devolvido"
             )
+
+    # =====================================
+    # EXTRAVIO — ENTREGUE x DEVOLVIDO POR TRANSPORTADORA
+    # =====================================
+    # Regra: "Entregue" = a remessa extraviada acabou entregue mesmo assim (status Delivered/
+    # DeliveredSAT). "Devolvido" = a remessa extraviada teve NFD de devolução emitida. Ambos
+    # são calculados por remessa individual (não por família de reenvio) em
+    # Indicador_de_Devolucao.py — ver comentário lá para o detalhe da regra e dos status do PRW
+    # considerados "extravio".
+
+    st.markdown("---")
+
+    st.markdown(
+        '<div class="titulo-painel">Extravio — Entregue x Devolvido por Transportadora</div>',
+        unsafe_allow_html=True
+    )
+
+    if extravio_transp is None or extravio_transp.empty:
+        st.info("Nenhum pedido com extravio encontrado na base.")
+
+    else:
+        # Dropdowns próprios do Extravio (ano completo, nomes de transportadora do PRW —
+        # não dependem do filtro geral da página, ver comentário na seção "Visão geral").
+        col_fe1, col_fe2 = st.columns(2)
+
+        with col_fe1:
+            mes_extravio_sel = st.selectbox(
+                "Mês",
+                options=["Todos os meses"] + meses_extravio,
+                key="extravio_filtro_mes"
+            )
+
+        with col_fe2:
+            transp_extravio_sel = st.selectbox(
+                "Transportadora",
+                options=["Todas as transportadoras"] + transportadoras_extravio,
+                key="extravio_filtro_transportadora"
+            )
+
+        extravio_filtrado = extravio_transp
+
+        if mes_extravio_sel != "Todos os meses":
+            extravio_filtrado = extravio_filtrado[extravio_filtrado["Mes"] == mes_extravio_sel]
+
+        if transp_extravio_sel != "Todas as transportadoras":
+            extravio_filtrado = extravio_filtrado[
+                extravio_filtrado["Transportadora"] == transp_extravio_sel
+            ]
+
+        resumo_extravio = (
+            extravio_filtrado
+            .groupby(["Transportadora", "Desfecho"])["ValorNota"]
+            .sum()
+            .reset_index()
+        )
+
+        pivot_extravio = (
+            resumo_extravio
+            .pivot(index="Transportadora", columns="Desfecho", values="ValorNota")
+            .fillna(0)
+        )
+
+        COLUNAS_DESFECHO = ["Devolvido", "Entregue com NFD", "Entregue sem NFD", "Em aberto"]
+
+        for col_desfecho in COLUNAS_DESFECHO:
+            if col_desfecho not in pivot_extravio.columns:
+                pivot_extravio[col_desfecho] = 0.0
+
+        pivot_extravio = pivot_extravio[COLUNAS_DESFECHO]
+        pivot_extravio["Total Extraviado"] = pivot_extravio.sum(axis=1)
+        pivot_extravio = pivot_extravio.sort_values("Total Extraviado", ascending=False)
+
+        col_ext1, col_ext2, col_ext3, col_ext4 = st.columns(4)
+
+        with col_ext1:
+            card("Extraviado → Devolvido (NFD)", moeda(pivot_extravio["Devolvido"].sum()))
+
+        with col_ext2:
+            card("Extraviado → Entregue (com NFD)", moeda(pivot_extravio["Entregue com NFD"].sum()))
+
+        with col_ext3:
+            card("Extraviado → Entregue (sem NFD)", moeda(pivot_extravio["Entregue sem NFD"].sum()))
+
+        with col_ext4:
+            card("Extraviado → Em aberto", moeda(pivot_extravio["Em aberto"].sum()))
+
+        st.dataframe(
+            pivot_extravio.style.format(moeda),
+            use_container_width=True
+        )
+
+        graf_extravio = resumo_extravio[
+            resumo_extravio["Desfecho"].isin(["Devolvido", "Entregue com NFD", "Entregue sem NFD"])
+        ]
+
+        if not graf_extravio.empty:
+
+            fig_extravio = px.bar(
+                graf_extravio,
+                x="Transportadora",
+                y="ValorNota",
+                color="Desfecho",
+                barmode="group",
+                title="Valor extraviado por transportadora — Devolvido x Entregue (com/sem NFD)"
+            )
+
+            fig_extravio.update_layout(
+                xaxis_title="Transportadora",
+                yaxis_title="Valor (R$)",
+                height=450
+            )
+
+            st.plotly_chart(fig_extravio, use_container_width=True)
+
+        if extravio_det is not None and not extravio_det.empty:
+
+            extravio_det_filtrado = extravio_det.copy()
+
+            extravio_det_filtrado["Transportadora"] = (
+                extravio_det_filtrado["Transportadora"].astype(str).str.strip().str.upper()
+            )
+
+            extravio_det_filtrado["MesDetalhe"] = pd.to_datetime(
+                extravio_det_filtrado["DataExtravio"], errors="coerce"
+            ).dt.strftime("%B %Y").str.capitalize()
+
+            if mes_extravio_sel != "Todos os meses":
+                extravio_det_filtrado = extravio_det_filtrado[
+                    extravio_det_filtrado["MesDetalhe"] == mes_extravio_sel
+                ]
+
+            if transp_extravio_sel != "Todas as transportadoras":
+                extravio_det_filtrado = extravio_det_filtrado[
+                    extravio_det_filtrado["Transportadora"] == transp_extravio_sel
+                ]
+
+            with st.expander(
+                f"Ver pedidos extraviados em detalhe ({len(extravio_det_filtrado)} registros)"
+            ):
+                st.dataframe(
+                    extravio_det_filtrado.drop(columns=["MesDetalhe"]),
+                    use_container_width=True
+                )
 
     st.markdown("---")
 
@@ -988,353 +1342,3 @@ def render_devolucao():
             f"Cenário Potencial + Provável + Possível: {moeda(potencial_brav)} | "
             f"{perc_bravium(indice_brav_potencial_2)} → {perc_bravium(indice_brav_potencial_poss)}"
         )
-
-    # =====================================
-    # EXTRAVIO — ENTREGUE x DEVOLVIDO POR TRANSPORTADORA
-    # =====================================
-    # Regra: "Entregue" = a remessa extraviada acabou entregue mesmo assim (status Delivered/
-    # DeliveredSAT). "Devolvido" = a remessa extraviada teve NFD de devolução emitida. Ambos
-    # são calculados por remessa individual (não por família de reenvio) em
-    # Indicador_de_Devolucao.py — ver comentário lá para o detalhe da regra e dos status do PRW
-    # considerados "extravio".
-
-    st.markdown("---")
-
-    st.markdown(
-        '<div class="titulo-painel">Extravio — Entregue x Devolvido por Transportadora</div>',
-        unsafe_allow_html=True
-    )
-
-    if extravio_transp is None or extravio_transp.empty:
-        st.info("Nenhum pedido com extravio encontrado na base.")
-
-    else:
-        # Dropdowns próprios do Extravio (ano completo, nomes de transportadora do PRW —
-        # não dependem do filtro geral da página, ver comentário na seção "Visão geral").
-        col_fe1, col_fe2 = st.columns(2)
-
-        with col_fe1:
-            mes_extravio_sel = st.selectbox(
-                "Mês",
-                options=["Todos os meses"] + meses_extravio,
-                key="extravio_filtro_mes"
-            )
-
-        with col_fe2:
-            transp_extravio_sel = st.selectbox(
-                "Transportadora",
-                options=["Todas as transportadoras"] + transportadoras_extravio,
-                key="extravio_filtro_transportadora"
-            )
-
-        extravio_filtrado = extravio_transp
-
-        if mes_extravio_sel != "Todos os meses":
-            extravio_filtrado = extravio_filtrado[extravio_filtrado["Mes"] == mes_extravio_sel]
-
-        if transp_extravio_sel != "Todas as transportadoras":
-            extravio_filtrado = extravio_filtrado[
-                extravio_filtrado["Transportadora"] == transp_extravio_sel
-            ]
-
-        resumo_extravio = (
-            extravio_filtrado
-            .groupby(["Transportadora", "Desfecho"])["ValorNota"]
-            .sum()
-            .reset_index()
-        )
-
-        pivot_extravio = (
-            resumo_extravio
-            .pivot(index="Transportadora", columns="Desfecho", values="ValorNota")
-            .fillna(0)
-        )
-
-        COLUNAS_DESFECHO = ["Devolvido", "Entregue com NFD", "Entregue sem NFD", "Em aberto"]
-
-        for col_desfecho in COLUNAS_DESFECHO:
-            if col_desfecho not in pivot_extravio.columns:
-                pivot_extravio[col_desfecho] = 0.0
-
-        pivot_extravio = pivot_extravio[COLUNAS_DESFECHO]
-        pivot_extravio["Total Extraviado"] = pivot_extravio.sum(axis=1)
-        pivot_extravio = pivot_extravio.sort_values("Total Extraviado", ascending=False)
-
-        col_ext1, col_ext2, col_ext3, col_ext4 = st.columns(4)
-
-        with col_ext1:
-            card("Extraviado → Devolvido (NFD)", moeda(pivot_extravio["Devolvido"].sum()))
-
-        with col_ext2:
-            card("Extraviado → Entregue (com NFD)", moeda(pivot_extravio["Entregue com NFD"].sum()))
-
-        with col_ext3:
-            card("Extraviado → Entregue (sem NFD)", moeda(pivot_extravio["Entregue sem NFD"].sum()))
-
-        with col_ext4:
-            card("Extraviado → Em aberto", moeda(pivot_extravio["Em aberto"].sum()))
-
-        st.dataframe(
-            pivot_extravio.style.format(moeda),
-            use_container_width=True
-        )
-
-        graf_extravio = resumo_extravio[
-            resumo_extravio["Desfecho"].isin(["Devolvido", "Entregue com NFD", "Entregue sem NFD"])
-        ]
-
-        if not graf_extravio.empty:
-
-            fig_extravio = px.bar(
-                graf_extravio,
-                x="Transportadora",
-                y="ValorNota",
-                color="Desfecho",
-                barmode="group",
-                title="Valor extraviado por transportadora — Devolvido x Entregue (com/sem NFD)"
-            )
-
-            fig_extravio.update_layout(
-                xaxis_title="Transportadora",
-                yaxis_title="Valor (R$)",
-                height=450
-            )
-
-            st.plotly_chart(fig_extravio, use_container_width=True)
-
-        if extravio_det is not None and not extravio_det.empty:
-
-            extravio_det_filtrado = extravio_det.copy()
-
-            extravio_det_filtrado["Transportadora"] = (
-                extravio_det_filtrado["Transportadora"].astype(str).str.strip().str.upper()
-            )
-
-            extravio_det_filtrado["MesDetalhe"] = pd.to_datetime(
-                extravio_det_filtrado["DataExtravio"], errors="coerce"
-            ).dt.strftime("%B %Y").str.capitalize()
-
-            if mes_extravio_sel != "Todos os meses":
-                extravio_det_filtrado = extravio_det_filtrado[
-                    extravio_det_filtrado["MesDetalhe"] == mes_extravio_sel
-                ]
-
-            if transp_extravio_sel != "Todas as transportadoras":
-                extravio_det_filtrado = extravio_det_filtrado[
-                    extravio_det_filtrado["Transportadora"] == transp_extravio_sel
-                ]
-
-            with st.expander(
-                f"Ver pedidos extraviados em detalhe ({len(extravio_det_filtrado)} registros)"
-            ):
-                st.dataframe(
-                    extravio_det_filtrado.drop(columns=["MesDetalhe"]),
-                    use_container_width=True
-                )
-
-    # =====================================
-    # CENTRAL DE RESSARCIMENTO
-    # =====================================
-    # Controle do que as transportadoras já pagaram de volta por EXTRAVIO e AVARIA (unificados,
-    # pedido do usuário 10/2026). Regra do usuário: é ressarcível o que foi extraviado/avariado
-    # e depois NÃO foi devolvido ou foi devolvido quebrado — o que voltou em bom estado
-    # (condição "B" nos itens devolvidos) não é. Por isso são TRÊS valores diferentes:
-    #   - bruto: remessas com NFD emitida depois do extravio/avaria (inclui o que voltou bom);
-    #   - voltou bom: parte do bruto que NÃO é ressarcível;
-    #   - aguardando ressarcimento: o que não voltou bom e ainda não foi pago.
-    # "Em aberto" (extravio/avaria sem NFD, sem devolução nem entrega) também é ressarcível pela
-    # regra, mas fica em card próprio com download, FORA do "aguardando" (pedido do usuário).
-    # Atenção ao nome: "Devolvido" nos dados = NFD emitida (baixa fiscal do que sumiu), não
-    # mercadoria que voltou — por isso os cards aqui dizem "com NFD".
-    #
-    # upload de uma planilha de 2 colunas (Pedido Formatado, Valor Pago) pra "imputar no
-    # sistema" o que já foi recebido, visão por transportadora, e exportar separadamente o que
-    # ainda falta pagar e o que já foi pago.
-    #
-    # PERSISTÊNCIA: Google Sheets, não o repositório git — ver docstring de ressarcimento.py
-    # pro motivo (repositório público, sem acesso ao Z: a partir do Streamlit Cloud).
-
-    st.markdown("---")
-
-    st.markdown(
-        '<div class="titulo-painel">Central de Ressarcimento</div>',
-        unsafe_allow_html=True
-    )
-
-    partes_perda = []
-
-    for det_perda, tipo_perda in ((extravio_det, "Extravio"), (avaria_det, "Avaria")):
-        if det_perda is not None and not det_perda.empty:
-            parte = det_perda.copy()
-            if "TipoPerda" not in parte.columns:
-                parte["TipoPerda"] = tipo_perda
-            partes_perda.append(parte)
-
-    if not partes_perda:
-        st.info("Nenhum pedido com extravio ou avaria encontrado na base.")
-
-    else:
-        perdas = pd.concat(partes_perda, ignore_index=True)
-
-        perdas["Transportadora"] = perdas["Transportadora"].astype(str).str.strip().str.upper()
-        perdas["PedidoFormatado"] = perdas["PedidoFormatado"].astype(str).str.strip().str.upper()
-
-        if "ValorBruto" not in perdas.columns:
-            perdas["ValorBruto"] = perdas["ValorNota"]
-
-        perdas["ValorBruto"] = perdas["ValorBruto"].fillna(perdas["ValorNota"]).fillna(0)
-        perdas["ValorNota"] = perdas["ValorNota"].fillna(0)
-
-        pagamentos = ressarcimento.carregar_pagamentos()
-        pedidos_pagos = set(pagamentos["PedidoFormatado"])
-
-        com_nfd = perdas[perdas["Desfecho"] == "Devolvido"].copy()
-        com_nfd = com_nfd.merge(pagamentos, on="PedidoFormatado", how="left")
-        com_nfd["ValorPago"] = com_nfd["ValorPago"].fillna(0)
-        com_nfd["Pago"] = com_nfd["PedidoFormatado"].isin(pedidos_pagos)
-        com_nfd["VoltouBom"] = (com_nfd["ValorBruto"] - com_nfd["ValorNota"]).clip(lower=0)
-
-        em_aberto = perdas[
-            (perdas["Desfecho"] == "Em aberto")
-            & ~perdas["PedidoFormatado"].isin(pedidos_pagos)
-        ].copy()
-
-        pendentes = com_nfd[~com_nfd["Pago"]]
-        pagos = com_nfd[com_nfd["Pago"]]
-
-        col_r1, col_r2, col_r3, col_r4 = st.columns(4)
-
-        with col_r1:
-            card(
-                "Extraviado/avariado com NFD (bruto)",
-                moeda(com_nfd["ValorBruto"].sum()),
-                "inclui o que voltou bom"
-            )
-
-        with col_r2:
-            card(
-                "Voltou bom (não ressarcível)",
-                moeda(com_nfd["VoltouBom"].sum()),
-                "itens devolvidos em bom estado"
-            )
-
-        with col_r3:
-            card("Aguardando ressarcimento", moeda(pendentes["ValorNota"].sum()))
-
-        with col_r4:
-            card("Já ressarcido", moeda(pagos["ValorPago"].sum()), "valor efetivamente pago")
-
-        col_ab1, col_ab2 = st.columns([1, 3])
-
-        with col_ab1:
-            card(
-                "Em aberto (sem NFD ainda)",
-                moeda(em_aberto["ValorNota"].sum()),
-                f"{len(em_aberto)} pedido(s) — extravio/avaria sem devolução nem entrega"
-            )
-
-        with col_ab2:
-            botao_download_excel(
-                "⬇️ Baixar em aberto (sem NFD)",
-                em_aberto,
-                "ressarcimento_em_aberto_sem_nfd.xlsx",
-                "download_ressarcimento_em_aberto",
-                incluir_tipo=True
-            )
-
-        st.markdown("#### Por transportadora")
-
-        resumo_ressarc = pd.DataFrame({
-            "Aguardando ressarcimento": pendentes.groupby("Transportadora")["ValorNota"].sum(),
-            "Já ressarcido": pagos.groupby("Transportadora")["ValorPago"].sum(),
-            "Voltou bom (não ressarcível)": com_nfd.groupby("Transportadora")["VoltouBom"].sum(),
-            "Em aberto (sem NFD)": em_aberto.groupby("Transportadora")["ValorNota"].sum(),
-        }).fillna(0).reset_index().rename(columns={"index": "Transportadora"})
-
-        resumo_ressarc["Total ressarcível"] = (
-            resumo_ressarc["Aguardando ressarcimento"] + resumo_ressarc["Em aberto (sem NFD)"]
-        )
-        resumo_ressarc = resumo_ressarc.sort_values("Total ressarcível", ascending=False)
-
-        st.dataframe(
-            resumo_ressarc.style.format({
-                coluna: moeda for coluna in resumo_ressarc.columns if coluna != "Transportadora"
-            }),
-            use_container_width=True
-        )
-
-        col_dl1, col_dl2 = st.columns(2)
-
-        with col_dl1:
-            botao_download_excel(
-                "⬇️ Baixar não pagos",
-                pendentes,
-                "ressarcimento_pendente.xlsx",
-                "download_ressarcimento_pendente",
-                incluir_tipo=True
-            )
-
-        with col_dl2:
-            botao_download_excel(
-                "⬇️ Baixar já pagos",
-                pagos,
-                "ressarcimento_pago.xlsx",
-                "download_ressarcimento_pago",
-                col_valor="ValorPago",
-                incluir_tipo=True
-            )
-
-        st.markdown("#### Importar pagamentos recebidos")
-
-        st.caption(
-            "Envie uma planilha com exatamente 2 colunas: **Pedido Formatado** e **Valor "
-            "Pago**. Pedidos já registrados antes não são duplicados."
-        )
-
-        arquivo_pagamento = st.file_uploader(
-            "Planilha de pagamentos (Excel ou CSV)",
-            type=["xlsx", "csv"],
-            key="upload_ressarcimento"
-        )
-
-        # O file_uploader continua com o arquivo depois do st.rerun(), então sem esse controle
-        # o mesmo arquivo era processado de novo e a mensagem real do 1º envio ("1 novo") era
-        # trocada por "0 novos, 1 já registrado". Processa cada arquivo uma vez só (por id) e
-        # guarda a mensagem em session_state pra sobreviver ao rerun.
-        if arquivo_pagamento is not None:
-            if st.session_state.get("ressarcimento_arquivo_id") != arquivo_pagamento.file_id:
-                st.session_state["ressarcimento_arquivo_id"] = arquivo_pagamento.file_id
-                try:
-                    # dtype=str no Pedido Formatado: sem isso o pandas converte "00760000714423"
-                    # (texto no Excel) pra número e perde os zeros à esquerda.
-                    if arquivo_pagamento.name.lower().endswith(".csv"):
-                        df_importado = pd.read_csv(
-                            arquivo_pagamento, dtype={"Pedido Formatado": str}, sep=None,
-                            engine="python"
-                        )
-                    else:
-                        df_importado = pd.read_excel(
-                            arquivo_pagamento, dtype={"Pedido Formatado": str}
-                        )
-
-                    qtd_novos, qtd_existentes = ressarcimento.registrar_pagamentos(df_importado)
-
-                    st.session_state["ressarcimento_resultado"] = (
-                        "ok",
-                        f"{qtd_novos} pagamento(s) novo(s) registrado(s). "
-                        f"{qtd_existentes} já estavam registrados e foram ignorados."
-                    )
-
-                    if qtd_novos > 0:
-                        st.rerun()
-
-                except (ValueError, RuntimeError) as exc:
-                    st.session_state["ressarcimento_resultado"] = ("erro", str(exc))
-
-            resultado_upload = st.session_state.get("ressarcimento_resultado")
-
-            if resultado_upload:
-                if resultado_upload[0] == "ok":
-                    st.success(resultado_upload[1])
-                else:
-                    st.error(resultado_upload[1])
