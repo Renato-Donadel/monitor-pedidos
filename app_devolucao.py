@@ -567,95 +567,8 @@ def render_devolucao():
         )
         transportadoras_extravio = sorted(extravio_transp["Transportadora"].unique().tolist())
 
-        # 4 categorias mutuamente exclusivas (pedido do usuário, 09/2026): "Entregue com NFD"
-        # (NFD emitida E mesmo assim entregue depois — caso raro/problemático) é diferente de
-        # "Entregue sem NFD" (achado/entregue depois do extravio, nunca gerou NFD nenhuma) — não
-        # dá pra misturar os dois num "Entregue" só, porque o projeto é sobre NFD geradas no SAP.
-        totais_geral_extravio = extravio_transp.groupby("Desfecho")["ValorNota"].sum()
-        total_ext_entregue_com_nfd = totais_geral_extravio.get("Entregue com NFD", 0.0)
-        total_ext_entregue_sem_nfd = totais_geral_extravio.get("Entregue sem NFD", 0.0)
-        total_ext_devolvido = totais_geral_extravio.get("Devolvido", 0.0)
-
     else:
         meses_extravio, transportadoras_extravio = [], []
-        total_ext_entregue_com_nfd = total_ext_entregue_sem_nfd = total_ext_devolvido = 0.0
-
-    # ==============================
-    # VISÃO GERAL (RESUMO RÁPIDO NO TOPO DA PÁGINA)
-    # ==============================
-
-    st.markdown("### Visão geral")
-
-    col_kpi1, col_kpi2, col_kpi3, col_kpi4, col_kpi5 = st.columns(5)
-
-    with col_kpi1:
-        card("Venda Total", moeda(venda_total))
-
-    with col_kpi2:
-        card(
-            "Devolução em processo",
-            moeda(devolucao_total),
-            perc_transportes(devolucao_total, venda_total)
-        )
-
-        retornando_export = retornando_det[
-            retornando_det["Mes"].isin(filtro_mes) &
-            retornando_det["Transportadora"].isin(filtro_transportadora)
-        ]
-
-        botao_download_excel(
-            "⬇️ Baixar Excel",
-            retornando_export,
-            "devolucao_em_processo.xlsx",
-            "download_devolucao_processo"
-        )
-
-    with col_kpi3:
-        # Caso raro e problemático: a NFD foi emitida (mercadoria dada como devolvida/baixada)
-        # e AINDA ASSIM a remessa foi entregue depois — diferente de "Entregue sem NFD" abaixo.
-        card(
-            "Extraviado → Entregue (com NFD)",
-            moeda(total_ext_entregue_com_nfd),
-            "ano completo, todas transp."
-        )
-
-        if extravio_det is not None and not extravio_det.empty:
-            botao_download_excel(
-                "⬇️ Baixar Excel",
-                extravio_det[extravio_det["Desfecho"] == "Entregue com NFD"],
-                "extraviado_entregue_com_nfd.xlsx",
-                "download_extraviado_entregue_com_nfd"
-            )
-
-    with col_kpi4:
-        card(
-            "Extraviado → Entregue (sem NFD)",
-            moeda(total_ext_entregue_sem_nfd),
-            "ano completo, todas transp."
-        )
-
-        if extravio_det is not None and not extravio_det.empty:
-            botao_download_excel(
-                "⬇️ Baixar Excel",
-                extravio_det[extravio_det["Desfecho"] == "Entregue sem NFD"],
-                "extraviado_entregue_sem_nfd.xlsx",
-                "download_extraviado_entregue_sem_nfd"
-            )
-
-    with col_kpi5:
-        card(
-            "Extraviado → Devolvido (NFD)",
-            moeda(total_ext_devolvido),
-            "ano completo, todas transp."
-        )
-
-        if extravio_det is not None and not extravio_det.empty:
-            botao_download_excel(
-                "⬇️ Baixar Excel",
-                extravio_det[extravio_det["Desfecho"] == "Devolvido"],
-                "extraviado_devolvido.xlsx",
-                "download_extraviado_devolvido"
-            )
 
     # =====================================
     # EXTRAVIO — ENTREGUE x DEVOLVIDO POR TRANSPORTADORA
@@ -728,19 +641,55 @@ def render_devolucao():
         pivot_extravio["Total Extraviado"] = pivot_extravio.sum(axis=1)
         pivot_extravio = pivot_extravio.sort_values("Total Extraviado", ascending=False)
 
-        col_ext1, col_ext2, col_ext3, col_ext4 = st.columns(4)
+        col_ext1, col_ext2, col_ext3 = st.columns(3)
+
+        # detalhe filtrado pelos mesmos dropdowns (usado nos downloads e no expander abaixo)
+        extravio_det_filtrado = None
+
+        if extravio_det is not None and not extravio_det.empty:
+            extravio_det_filtrado = extravio_det.copy()
+            extravio_det_filtrado["Transportadora"] = (
+                extravio_det_filtrado["Transportadora"].astype(str).str.strip().str.upper()
+            )
+            extravio_det_filtrado["MesDetalhe"] = pd.to_datetime(
+                extravio_det_filtrado["DataExtravio"], errors="coerce"
+            ).dt.strftime("%B %Y").str.capitalize()
+
+            if mes_extravio_sel != "Todos os meses":
+                extravio_det_filtrado = extravio_det_filtrado[
+                    extravio_det_filtrado["MesDetalhe"] == mes_extravio_sel
+                ]
+
+            if transp_extravio_sel != "Todas as transportadoras":
+                extravio_det_filtrado = extravio_det_filtrado[
+                    extravio_det_filtrado["Transportadora"] == transp_extravio_sel
+                ]
+
+        def _download_desfecho(desfecho, arquivo, chave):
+            if extravio_det_filtrado is not None:
+                botao_download_excel(
+                    "⬇️ Baixar Excel",
+                    extravio_det_filtrado[extravio_det_filtrado["Desfecho"] == desfecho]
+                    .drop(columns=["MesDetalhe"]),
+                    arquivo,
+                    chave
+                )
 
         with col_ext1:
             card("Extraviado → Devolvido (NFD)", moeda(pivot_extravio["Devolvido"].sum()))
+            _download_desfecho("Devolvido", "extraviado_devolvido.xlsx", "download_extraviado_devolvido")
 
         with col_ext2:
+            # Caso raro e problemático: a NFD foi emitida (mercadoria dada como devolvida/baixada)
+            # e AINDA ASSIM a remessa foi entregue depois — diferente de "Entregue sem NFD".
             card("Extraviado → Entregue (com NFD)", moeda(pivot_extravio["Entregue com NFD"].sum()))
+            _download_desfecho("Entregue com NFD", "extraviado_entregue_com_nfd.xlsx",
+                               "download_extraviado_entregue_com_nfd")
 
         with col_ext3:
             card("Extraviado → Entregue (sem NFD)", moeda(pivot_extravio["Entregue sem NFD"].sum()))
-
-        with col_ext4:
-            card("Extraviado → Em aberto", moeda(pivot_extravio["Em aberto"].sum()))
+            _download_desfecho("Entregue sem NFD", "extraviado_entregue_sem_nfd.xlsx",
+                               "download_extraviado_entregue_sem_nfd")
 
         st.dataframe(
             pivot_extravio.style.format(moeda),
@@ -770,27 +719,7 @@ def render_devolucao():
 
             st.plotly_chart(fig_extravio, use_container_width=True)
 
-        if extravio_det is not None and not extravio_det.empty:
-
-            extravio_det_filtrado = extravio_det.copy()
-
-            extravio_det_filtrado["Transportadora"] = (
-                extravio_det_filtrado["Transportadora"].astype(str).str.strip().str.upper()
-            )
-
-            extravio_det_filtrado["MesDetalhe"] = pd.to_datetime(
-                extravio_det_filtrado["DataExtravio"], errors="coerce"
-            ).dt.strftime("%B %Y").str.capitalize()
-
-            if mes_extravio_sel != "Todos os meses":
-                extravio_det_filtrado = extravio_det_filtrado[
-                    extravio_det_filtrado["MesDetalhe"] == mes_extravio_sel
-                ]
-
-            if transp_extravio_sel != "Todas as transportadoras":
-                extravio_det_filtrado = extravio_det_filtrado[
-                    extravio_det_filtrado["Transportadora"] == transp_extravio_sel
-                ]
+        if extravio_det_filtrado is not None:
 
             with st.expander(
                 f"Ver pedidos extraviados em detalhe ({len(extravio_det_filtrado)} registros)"
@@ -985,6 +914,16 @@ def render_devolucao():
             st.markdown("### Retornando")
 
             st.write(f"Total: {moeda(retornando_total)}")
+
+            botao_download_excel(
+                "⬇️ Baixar Excel (devolução em processo)",
+                retornando_det[
+                    retornando_det["Mes"].isin(filtro_mes) &
+                    retornando_det["Transportadora"].isin(filtro_transportadora)
+                ],
+                "devolucao_em_processo.xlsx",
+                "download_devolucao_processo"
+            )
 
             for _, row in impacto_retornando.iterrows():
 
