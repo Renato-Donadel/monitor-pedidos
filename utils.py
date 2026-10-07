@@ -85,6 +85,7 @@ def carregar_base_devolucao():
             "retornando_detalhado",
             "dev_atrasada_detalhado",
             "extravio_detalhado",
+            "avaria_detalhado",
             "extravio_transportadora"
         ]
     )

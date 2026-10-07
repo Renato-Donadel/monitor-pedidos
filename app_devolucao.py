@@ -41,6 +41,7 @@ def render_devolucao():
         nfd_coleta_motivo = bases["nfd_coleta_motivo"]
         extravio_transp = bases.get("extravio_transportadora")
         extravio_det = bases.get("extravio_detalhado")
+        avaria_det = bases.get("avaria_detalhado")
 
     except Exception as e:
         st.error(f"Erro ao ler base de devolução: {e}")
@@ -279,7 +280,8 @@ def render_devolucao():
         return buffer.getvalue()
 
     def preparar_export(df, col_valor="ValorNota",
-                         col_pedido="PedidoFormatado", col_transp="Transportadora"):
+                         col_pedido="PedidoFormatado", col_transp="Transportadora",
+                         incluir_tipo=False):
         """Monta a planilha de download padrão (pedido formatado, transportadora e valor) —
         usada nos botões de download da Visão Geral (Devolução em processo, Extraviado →
         Entregue com/sem NFD, Extraviado → Devolvido).
@@ -291,7 +293,7 @@ def render_devolucao():
         Excel gerado por este botão é um arquivo que o usuário baixa e pode compartilhar, e o
         histórico do próprio Base_Streamlit_Devolucao.xlsx já foi publicado no GitHub público
         com essa coluna antes disso ser corrigido (ver git log do repo pra contexto)."""
-        return pd.DataFrame({
+        export = pd.DataFrame({
             "Pedido Formatado": (
                 df[col_pedido].astype(str) if col_pedido in df.columns else ""
             ),
@@ -299,8 +301,14 @@ def render_devolucao():
             "Valor": df[col_valor] if col_valor in df.columns else 0,
         })
 
-    def botao_download_excel(label, df, nome_arquivo, key, col_valor="ValorNota"):
-        export = preparar_export(df, col_valor=col_valor)
+        if incluir_tipo and "TipoPerda" in df.columns:
+            export.insert(2, "Tipo", df["TipoPerda"].values)
+
+        return export
+
+    def botao_download_excel(label, df, nome_arquivo, key, col_valor="ValorNota",
+                              incluir_tipo=False):
+        export = preparar_export(df, col_valor=col_valor, incluir_tipo=incluir_tipo)
         st.download_button(
             label,
             data=to_excel_bytes(
@@ -1127,11 +1135,21 @@ def render_devolucao():
     # =====================================
     # CENTRAL DE RESSARCIMENTO
     # =====================================
-    # Controle do que as transportadoras já pagaram de volta pelos pedidos extraviados que
-    # geraram NFD (bucket "Devolvido" acima — extravio confirmado, sem entrega depois). Pedido
-    # do usuário (09/2026): upload de uma planilha de 2 colunas (Pedido Formatado, Valor Pago)
-    # pra "imputar no sistema" o que já foi recebido, visão por transportadora, e exportar
-    # separadamente o que ainda falta pagar e o que já foi pago.
+    # Controle do que as transportadoras já pagaram de volta por EXTRAVIO e AVARIA (unificados,
+    # pedido do usuário 10/2026). Regra do usuário: é ressarcível o que foi extraviado/avariado
+    # e depois NÃO foi devolvido ou foi devolvido quebrado — o que voltou em bom estado
+    # (condição "B" nos itens devolvidos) não é. Por isso são TRÊS valores diferentes:
+    #   - bruto: remessas com NFD emitida depois do extravio/avaria (inclui o que voltou bom);
+    #   - voltou bom: parte do bruto que NÃO é ressarcível;
+    #   - aguardando ressarcimento: o que não voltou bom e ainda não foi pago.
+    # "Em aberto" (extravio/avaria sem NFD, sem devolução nem entrega) também é ressarcível pela
+    # regra, mas fica em card próprio com download, FORA do "aguardando" (pedido do usuário).
+    # Atenção ao nome: "Devolvido" nos dados = NFD emitida (baixa fiscal do que sumiu), não
+    # mercadoria que voltou — por isso os cards aqui dizem "com NFD".
+    #
+    # upload de uma planilha de 2 colunas (Pedido Formatado, Valor Pago) pra "imputar no
+    # sistema" o que já foi recebido, visão por transportadora, e exportar separadamente o que
+    # ainda falta pagar e o que já foi pago.
     #
     # PERSISTÊNCIA: Google Sheets, não o repositório git — ver docstring de ressarcimento.py
     # pro motivo (repositório público, sem acesso ao Z: a partir do Streamlit Cloud).
@@ -1143,63 +1161,104 @@ def render_devolucao():
         unsafe_allow_html=True
     )
 
-    if extravio_det is None or extravio_det.empty:
-        st.info("Nenhum pedido com extravio encontrado na base.")
+    partes_perda = []
+
+    for det_perda, tipo_perda in ((extravio_det, "Extravio"), (avaria_det, "Avaria")):
+        if det_perda is not None and not det_perda.empty:
+            parte = det_perda.copy()
+            if "TipoPerda" not in parte.columns:
+                parte["TipoPerda"] = tipo_perda
+            partes_perda.append(parte)
+
+    if not partes_perda:
+        st.info("Nenhum pedido com extravio ou avaria encontrado na base.")
 
     else:
-        devolvidos = extravio_det[extravio_det["Desfecho"] == "Devolvido"].copy()
-        devolvidos["Transportadora"] = (
-            devolvidos["Transportadora"].astype(str).str.strip().str.upper()
-        )
-        devolvidos["PedidoFormatado"] = (
-            devolvidos["PedidoFormatado"].astype(str).str.strip().str.upper()
-        )
+        perdas = pd.concat(partes_perda, ignore_index=True)
+
+        perdas["Transportadora"] = perdas["Transportadora"].astype(str).str.strip().str.upper()
+        perdas["PedidoFormatado"] = perdas["PedidoFormatado"].astype(str).str.strip().str.upper()
+
+        if "ValorBruto" not in perdas.columns:
+            perdas["ValorBruto"] = perdas["ValorNota"]
+
+        perdas["ValorBruto"] = perdas["ValorBruto"].fillna(perdas["ValorNota"]).fillna(0)
+        perdas["ValorNota"] = perdas["ValorNota"].fillna(0)
 
         pagamentos = ressarcimento.carregar_pagamentos()
+        pedidos_pagos = set(pagamentos["PedidoFormatado"])
 
-        devolvidos = devolvidos.merge(
-            pagamentos, on="PedidoFormatado", how="left"
-        )
-        devolvidos["ValorPago"] = devolvidos["ValorPago"].fillna(0)
-        devolvidos["Pago"] = devolvidos["PedidoFormatado"].isin(
-            set(pagamentos["PedidoFormatado"])
-        )
+        com_nfd = perdas[perdas["Desfecho"] == "Devolvido"].copy()
+        com_nfd = com_nfd.merge(pagamentos, on="PedidoFormatado", how="left")
+        com_nfd["ValorPago"] = com_nfd["ValorPago"].fillna(0)
+        com_nfd["Pago"] = com_nfd["PedidoFormatado"].isin(pedidos_pagos)
+        com_nfd["VoltouBom"] = (com_nfd["ValorBruto"] - com_nfd["ValorNota"]).clip(lower=0)
 
-        pendentes = devolvidos[~devolvidos["Pago"]]
-        pagos = devolvidos[devolvidos["Pago"]]
+        em_aberto = perdas[
+            (perdas["Desfecho"] == "Em aberto")
+            & ~perdas["PedidoFormatado"].isin(pedidos_pagos)
+        ].copy()
 
-        col_r1, col_r2, col_r3 = st.columns(3)
+        pendentes = com_nfd[~com_nfd["Pago"]]
+        pagos = com_nfd[com_nfd["Pago"]]
+
+        col_r1, col_r2, col_r3, col_r4 = st.columns(4)
 
         with col_r1:
-            card("Total extraviado (Devolvido)", moeda(devolvidos["ValorNota"].sum()))
+            card(
+                "Extraviado/avariado com NFD (bruto)",
+                moeda(com_nfd["ValorBruto"].sum()),
+                "inclui o que voltou bom"
+            )
 
         with col_r2:
-            card("Aguardando ressarcimento", moeda(pendentes["ValorNota"].sum()))
+            card(
+                "Voltou bom (não ressarcível)",
+                moeda(com_nfd["VoltouBom"].sum()),
+                "itens devolvidos em bom estado"
+            )
 
         with col_r3:
-            card("Já ressarcido", moeda(pagos["ValorNota"].sum()))
+            card("Aguardando ressarcimento", moeda(pendentes["ValorNota"].sum()))
+
+        with col_r4:
+            card("Já ressarcido", moeda(pagos["ValorPago"].sum()), "valor efetivamente pago")
+
+        col_ab1, col_ab2 = st.columns([1, 3])
+
+        with col_ab1:
+            card(
+                "Em aberto (sem NFD ainda)",
+                moeda(em_aberto["ValorNota"].sum()),
+                f"{len(em_aberto)} pedido(s) — extravio/avaria sem devolução nem entrega"
+            )
+
+        with col_ab2:
+            botao_download_excel(
+                "⬇️ Baixar em aberto (sem NFD)",
+                em_aberto,
+                "ressarcimento_em_aberto_sem_nfd.xlsx",
+                "download_ressarcimento_em_aberto",
+                incluir_tipo=True
+            )
 
         st.markdown("#### Por transportadora")
 
-        resumo_ressarc = (
-            devolvidos
-            .groupby("Transportadora")
-            .apply(lambda g: pd.Series({
-                "Aguardando ressarcimento": g.loc[~g["Pago"], "ValorNota"].sum(),
-                "Já ressarcido": g.loc[g["Pago"], "ValorNota"].sum(),
-            }))
-            .reset_index()
+        resumo_ressarc = pd.DataFrame({
+            "Aguardando ressarcimento": pendentes.groupby("Transportadora")["ValorNota"].sum(),
+            "Já ressarcido": pagos.groupby("Transportadora")["ValorPago"].sum(),
+            "Voltou bom (não ressarcível)": com_nfd.groupby("Transportadora")["VoltouBom"].sum(),
+            "Em aberto (sem NFD)": em_aberto.groupby("Transportadora")["ValorNota"].sum(),
+        }).fillna(0).reset_index().rename(columns={"index": "Transportadora"})
+
+        resumo_ressarc["Total ressarcível"] = (
+            resumo_ressarc["Aguardando ressarcimento"] + resumo_ressarc["Em aberto (sem NFD)"]
         )
-        resumo_ressarc["Total"] = (
-            resumo_ressarc["Aguardando ressarcimento"] + resumo_ressarc["Já ressarcido"]
-        )
-        resumo_ressarc = resumo_ressarc.sort_values("Total", ascending=False)
+        resumo_ressarc = resumo_ressarc.sort_values("Total ressarcível", ascending=False)
 
         st.dataframe(
             resumo_ressarc.style.format({
-                "Aguardando ressarcimento": moeda,
-                "Já ressarcido": moeda,
-                "Total": moeda,
+                coluna: moeda for coluna in resumo_ressarc.columns if coluna != "Transportadora"
             }),
             use_container_width=True
         )
@@ -1211,7 +1270,8 @@ def render_devolucao():
                 "⬇️ Baixar não pagos",
                 pendentes,
                 "ressarcimento_pendente.xlsx",
-                "download_ressarcimento_pendente"
+                "download_ressarcimento_pendente",
+                incluir_tipo=True
             )
 
         with col_dl2:
@@ -1220,7 +1280,8 @@ def render_devolucao():
                 pagos,
                 "ressarcimento_pago.xlsx",
                 "download_ressarcimento_pago",
-                col_valor="ValorPago"
+                col_valor="ValorPago",
+                incluir_tipo=True
             )
 
         st.markdown("#### Importar pagamentos recebidos")
