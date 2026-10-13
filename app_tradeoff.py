@@ -489,6 +489,10 @@ def render_tradeoff():
             )
 
     # Merge vendas + NFD por transportadora
+    # Azul Cargo/Azul Linhas Aereas nao fazem parte da operacao de transporte analisada aqui
+    TRANSP_FORA_TABELA = {"AZUL CARGO", "AZUL LINHAS AEREAS"}
+    vendas_tsp     = vendas_tsp[~vendas_tsp["Transportadora"].isin(TRANSP_FORA_TABELA)]
+    nfd_tsp_tabela = nfd_tsp_tabela[~nfd_tsp_tabela["Transportadora"].isin(TRANSP_FORA_TABELA)]
     resumo_tsp = vendas_tsp.merge(nfd_tsp_tabela, on="Transportadora", how="outer").fillna(0)
     resumo_tsp["NFD_pct"] = (resumo_tsp["ValorNFD"] / resumo_tsp["ValorVendas"] * 100).round(2)
     resumo_tsp.loc[resumo_tsp["ValorVendas"] == 0, "NFD_pct"] = np.nan
@@ -498,6 +502,11 @@ def render_tradeoff():
     resumo_tsp["_pequena"] = resumo_tsp["Pedidos"] < MIN_PED_TABELA
     resumo_tsp = resumo_tsp.sort_values(["_pequena", "NFD_pct"], ascending=[True, False]).reset_index(drop=True)
     idx_grandes = resumo_tsp.index[~resumo_tsp["_pequena"]]
+    # Ultimo despacho de cada transportadora (base inteira): quem parou de despachar ha
+    # tempo so aparece na janela pela "cauda" e o % NFD dela engana (ex: Azul Cargo).
+    ult_desp = (df_vendas_tsp.groupby("Transportadora")["Dia"].max()
+                if not df_vendas_tsp.empty else pd.Series(dtype="datetime64[ns]"))
+    resumo_tsp["_ult"] = resumo_tsp["Transportadora"].map(ult_desp)
 
     df_exib = resumo_tsp.rename(columns={
         "ValorVendas": "Valor Vendas (R$)",
@@ -505,7 +514,12 @@ def render_tradeoff():
         "ValorNFD":    "Valor NFD (R$)",
         "NFD_pct":     "% NFD",
     })[["Transportadora","Pedidos","Valor Vendas (R$)","Pedidos NFD","Valor NFD (R$)","% NFD"]]
-    df_exib["Obs."] = np.where(resumo_tsp["_pequena"], f"amostra pequena (<{MIN_PED_TABELA} ped.)", "")
+    _dias_parada = (pd.Timestamp.today() - resumo_tsp["_ult"]).dt.days
+    df_exib["Ult. despacho"] = resumo_tsp["_ult"].dt.strftime("%d/%m/%Y").fillna("—")
+    df_exib["Obs."] = np.select(
+        [_dias_parada > 30, resumo_tsp["_pequena"]],
+        ["sem despacho há " + _dias_parada.fillna(0).astype(int).astype(str) + " dias (só a cauda do período)",
+         f"amostra pequena (<{MIN_PED_TABELA} ped.)"], default="")
 
     st.dataframe(
         df_exib.style
