@@ -44,9 +44,15 @@ def carregar_bases():
     df_sim   = pd.read_excel(arq_sim)     if os.path.exists(arq_sim)     else pd.DataFrame()
     df_nfd   = pd.read_excel(arq_nfd, sheet_name="NFD_Real") if os.path.exists(arq_nfd) else pd.DataFrame()
     df_intel   = pd.read_excel(arq_intel)   if os.path.exists(arq_intel)   else pd.DataFrame()
+    arq_vt     = "data/Base_Vendas_Transp.xlsx"
+    df_vt      = pd.read_excel(arq_vt)      if os.path.exists(arq_vt)      else pd.DataFrame()
     arq_mensal = "data/Base_Mensal.xlsx"
     df_mensal_geral  = pd.read_excel(arq_mensal, sheet_name="Geral")           if os.path.exists(arq_mensal) else pd.DataFrame()
     df_mensal_transp = pd.read_excel(arq_mensal, sheet_name="Transportadoras") if os.path.exists(arq_mensal) else pd.DataFrame()
+
+    if not df_vt.empty:
+        df_vt["Dia"] = pd.to_datetime(df_vt["Dia"], errors="coerce")
+        if "Estimados" not in df_vt.columns: df_vt["Estimados"] = 0
 
     if not df_trade.empty:
         df_trade.columns = df_trade.columns.str.strip()
@@ -68,11 +74,11 @@ def carregar_bases():
         if "CruzouIntelipost" in df_nfd.columns: df_nfd["CruzouIntelipost"] = df_nfd["CruzouIntelipost"].fillna(False).astype(bool)
         if "StatusNaoTsp"     in df_nfd.columns: df_nfd["StatusNaoTsp"]     = df_nfd["StatusNaoTsp"].fillna("").astype(str)
 
-    return df_trade, df_sim, df_nfd, df_intel, df_mensal_geral, df_mensal_transp
+    return df_trade, df_sim, df_nfd, df_intel, df_mensal_geral, df_mensal_transp, df_vt
 
 def render_tradeoff():
 
-    df_trade, df_sim, df_nfd_real, df_intel, df_mensal_geral, df_mensal_transp = carregar_bases()
+    df_trade, df_sim, df_nfd_real, df_intel, df_mensal_geral, df_mensal_transp, df_vendas_tsp = carregar_bases()
     if df_trade.empty or df_sim.empty:
         st.error("Bases nao encontradas. Execute o ETL primeiro.")
         return
@@ -316,28 +322,68 @@ def render_tradeoff():
     st.markdown("### 📅 Evolução Mensal")
 
     if not df_mensal_geral.empty:
-        import plotly.graph_objects as go
+        hoje_m    = pd.Timestamp.today()
+        mes_atual = hoje_m.strftime("%Y-%m")
 
         df_mg = df_mensal_geral.copy()
         df_mg["Mes"] = df_mg["Mes"].astype(str)
-        df_mg = df_mg[df_mg["Mes"].str.startswith("2026")].sort_values("Mes")
+        # So entram meses de 2026 que ja comecaram e que tem venda: mes futuro ou sem
+        # venda so aparece por data trocada (dia/mes) na origem e gera % sem sentido.
+        df_mg = df_mg[
+            df_mg["Mes"].str.startswith("2026") & (df_mg["Mes"] <= mes_atual) & (df_mg["TotalVendas"] > 0)
+        ].sort_values("Mes").reset_index(drop=True)
+
+        ult_venda = None
+        if not df_intel.empty and "UltimaDataVenda" in df_intel.columns:
+            ult_venda = pd.to_datetime(df_intel["UltimaDataVenda"].iloc[0], errors="coerce")
+            if pd.isna(ult_venda): ult_venda = None
+
+        # A NFD so e lancada em media 30 dias depois do despacho (~54% em 30d, 81% em 45d,
+        # 98% em 60d - medido na Rentabilidade). Mes recente sempre parece melhor do que e.
+        _lag_x = [0, 15, 30, 45, 60, 75]
+        _lag_y = [0.0, 0.20, 0.54, 0.81, 0.98, 1.0]
+
+        def _situacao(mes):
+            p = pd.Period(mes)
+            fim = p.end_time.normalize()
+            meio = p.start_time + (fim - p.start_time) / 2
+            if mes == mes_atual or (ult_venda is not None and ult_venda < fim):
+                limite = ult_venda if ult_venda is not None else hoje_m
+                return "Parcial (vendas até " + limite.strftime("%d/%m") + ")", 1.0
+            mat = float(np.interp((hoje_m - meio).days, _lag_x, _lag_y))
+            if mat >= 0.97:
+                return "Fechado", 1.0
+            return f"NFD imatura (~{mat*100:.0f}% já lançada)", mat
+
+        sit = df_mg["Mes"].map(_situacao)
+        df_mg["Situacao"]   = [x[0] for x in sit]
+        df_mg["Maturidade"] = [x[1] for x in sit]
+        df_mg["Fechado"]    = df_mg["Situacao"] == "Fechado"
+        df_mg["PctProj"]    = np.where(
+            (~df_mg["Fechado"]) & (df_mg["Maturidade"] >= 0.5) & (df_mg["Maturidade"] < 1.0),
+            df_mg["PctNFDTSP"] / df_mg["Maturidade"], np.nan)
 
         def fmt_brl_mensal(v):
-            return f"R$ {v:,.2f}".replace(",","X").replace(".",",").replace("X",".")
+            return "—" if pd.isna(v) else f"R$ {v:,.2f}".replace(",","X").replace(".",",").replace("X",".")
 
-        df_display = df_mg[["Mes","TotalVendas","TotalNFD","NFDTSP","PctNFDTSP"]].copy()
-        df_display.columns = ["Mês","Total Vendas (R$)","NFD Total (R$)","NFD TSP (R$)","% TSP/Vendas"]
-        df_display["Total Vendas (R$)"] = df_display["Total Vendas (R$)"].apply(fmt_brl_mensal)
-        df_display["NFD Total (R$)"]    = df_display["NFD Total (R$)"].apply(fmt_brl_mensal)
-        df_display["NFD TSP (R$)"]      = df_display["NFD TSP (R$)"].apply(fmt_brl_mensal)
-        df_display["% TSP/Vendas"]      = df_display["% TSP/Vendas"].apply(lambda v: f"{v:.2f}%")
+        df_display = df_mg[["Mes","TotalVendas","TotalNFD","NFDTSP","PctNFDTSP","PctProj","Situacao"]].copy()
+        df_display.columns = ["Mês","Total Vendas (R$)","NFD Total (R$)","NFD TSP (R$)","% TSP/Vendas","% TSP projetado*","Situação"]
+        for c in ["Total Vendas (R$)","NFD Total (R$)","NFD TSP (R$)"]:
+            df_display[c] = df_display[c].apply(fmt_brl_mensal)
+        df_display["% TSP/Vendas"]     = df_display["% TSP/Vendas"].apply(lambda v: "—" if pd.isna(v) else f"{v:.2f}%")
+        df_display["% TSP projetado*"] = df_display["% TSP projetado*"].apply(lambda v: "—" if pd.isna(v) else f"{v:.2f}%")
         st.dataframe(df_display, use_container_width=True, hide_index=True)
+        st.caption(
+            "*Projeção = % atual ÷ fração da NFD que costuma estar lançada na idade do mês (estimativa, só para meses com ≥50% de maturidade). "
+            "Meses recentes aparecem melhores do que são porque a NFD ainda está chegando; só compare meses 'Fechado'."
+            + (f" Vendas disponíveis até {ult_venda:%d/%m/%Y}." if ult_venda is not None else "")
+        )
 
         st.markdown("<br>", unsafe_allow_html=True)
 
         if not df_mensal_transp.empty:
             df_mt = df_mensal_transp.copy()
-            df_mt = df_mt[df_mt["Mes"].astype(str).str.startswith("2026")].sort_values("Mes")
+            df_mt = df_mt[df_mt["Mes"].astype(str).isin(df_mg["Mes"])].sort_values("Mes")
 
             fig_mensal = go.Figure()
             cores_transp = {
@@ -360,11 +406,15 @@ def render_tradeoff():
                 line=dict(color="#0F172A", width=4),
                 marker=dict(size=8, symbol="diamond"), yaxis="y1"))
 
+            # % TSP/Vendas: marcador vazado nos meses que ainda nao fecharam
             fig_mensal.add_trace(go.Scatter(
                 x=df_mg["Mes"], y=df_mg["PctNFDTSP"],
                 name="% TSP/Vendas", mode="lines+markers",
                 line=dict(color="#6366F1", width=2, dash="dot"),
-                marker=dict(size=6), yaxis="y2"))
+                marker=dict(size=8, color=["#6366F1" if f else "#FFFFFF" for f in df_mg["Fechado"]],
+                            line=dict(color="#6366F1", width=2)),
+                text=df_mg["Situacao"], hovertemplate="%{x}: %{y:.2f}%<br>%{text}<extra></extra>",
+                yaxis="y2"))
 
             fig_mensal.add_trace(go.Scatter(
                 x=[df_mg["Mes"].min(), df_mg["Mes"].max()], y=[1.5, 1.5],
@@ -384,6 +434,7 @@ def render_tradeoff():
                 font=dict(family="Arial", size=11), xaxis=dict(gridcolor="#F1F5F9"),
             )
             st.plotly_chart(fig_mensal, use_container_width=True)
+            st.caption("Marcador vazado no % = mês ainda não fechado (parcial ou com NFD imatura).")
     else:
         st.info("Base_Mensal.xlsx não encontrada. Rode o ETL e suba os dados.")
 
@@ -394,14 +445,24 @@ def render_tradeoff():
     # ── VISÃO POR TRANSPORTADORA ──────────────────────────
     st.markdown(f"### NFD por Transportadora | Ultimos {dias} dias")
 
-    # VENDAS por transportadora: df_trade (Base_Pedidos_Codigo) filtrado por periodo
-    vendas_tsp = (
-        df_todas.groupby("Transportadora")
-        .agg(
-            Pedidos    = ("ValorNota", "count"),
-            ValorVendas = ("ValorNota", "sum"),
-        ).reset_index()
-    )
+    # VENDAS por transportadora: Base_Vendas_Transp (Intelipost inteiro, por dia). A
+    # Base_Pedidos_Codigo so tem pedido com tarifario/CEP mapeado e deixava transportadoras
+    # de fora (ex: JET aparecia com 10 pedidos). Fallback p/ ela se a base nova nao existir.
+    pct_estimado = None
+    if not df_vendas_tsp.empty:
+        vt_p = df_vendas_tsp[df_vendas_tsp["Dia"] >= data_corte]
+        vendas_tsp = (
+            vt_p.groupby("Transportadora", as_index=False)
+            .agg(Pedidos=("Pedidos", "sum"), ValorVendas=("ValorNota", "sum"), Estimados=("Estimados", "sum"))
+        )
+        if vendas_tsp["Pedidos"].sum() > 0:
+            pct_estimado = vendas_tsp["Estimados"].sum() / vendas_tsp["Pedidos"].sum() * 100
+    else:
+        vendas_tsp = (
+            df_todas.groupby("Transportadora")
+            .agg(Pedidos=("ValorNota", "count"), ValorVendas=("ValorNota", "sum"))
+            .reset_index()
+        )
 
     # NFD por transportadora: df_nfd_real (Base_NFD_Real) com Transportadora do Intelipost
     # Filtro: DataDespacho no periodo + TemNFD (motivo TSP) + exclui TspMasNaoTsp
@@ -428,10 +489,15 @@ def render_tradeoff():
             )
 
     # Merge vendas + NFD por transportadora
-    resumo_tsp = vendas_tsp.merge(nfd_tsp_tabela, on="Transportadora", how="left").fillna(0)
+    resumo_tsp = vendas_tsp.merge(nfd_tsp_tabela, on="Transportadora", how="outer").fillna(0)
     resumo_tsp["NFD_pct"] = (resumo_tsp["ValorNFD"] / resumo_tsp["ValorVendas"] * 100).round(2)
-    resumo_tsp.loc[resumo_tsp["ValorVendas"] == 0, "NFD_pct"] = 0
-    resumo_tsp = resumo_tsp.sort_values("NFD_pct", ascending=False)
+    resumo_tsp.loc[resumo_tsp["ValorVendas"] == 0, "NFD_pct"] = np.nan
+    # Amostra pequena (<200 pedidos) gera % absurdo (ex: 9 NFD em 10 pedidos = 95%): vai
+    # pro fim da lista e fica fora do gradiente de cor.
+    MIN_PED_TABELA = 200
+    resumo_tsp["_pequena"] = resumo_tsp["Pedidos"] < MIN_PED_TABELA
+    resumo_tsp = resumo_tsp.sort_values(["_pequena", "NFD_pct"], ascending=[True, False]).reset_index(drop=True)
+    idx_grandes = resumo_tsp.index[~resumo_tsp["_pequena"]]
 
     df_exib = resumo_tsp.rename(columns={
         "ValorVendas": "Valor Vendas (R$)",
@@ -439,6 +505,7 @@ def render_tradeoff():
         "ValorNFD":    "Valor NFD (R$)",
         "NFD_pct":     "% NFD",
     })[["Transportadora","Pedidos","Valor Vendas (R$)","Pedidos NFD","Valor NFD (R$)","% NFD"]]
+    df_exib["Obs."] = np.where(resumo_tsp["_pequena"], f"amostra pequena (<{MIN_PED_TABELA} ped.)", "")
 
     st.dataframe(
         df_exib.style
@@ -448,12 +515,24 @@ def render_tradeoff():
             "Pedidos NFD":       "{:,.0f}",
             "Valor NFD (R$)":    "R$ {:,.2f}",
             "% NFD":             "{:.2f}%",
-        })
-        .background_gradient(subset=["% NFD"], cmap="RdYlGn_r"),
+        }, na_rep="—")
+        .background_gradient(subset=pd.IndexSlice[idx_grandes, ["% NFD"]], cmap="RdYlGn_r"),
         use_container_width=True,
         hide_index=True
     )
 
+    _tot_v = resumo_tsp["ValorVendas"].sum()
+    _tot_n = resumo_tsp["ValorNFD"].sum()
+    st.caption(
+        f"Total no período: {fmt_brl(_tot_v)} em vendas | {fmt_brl(_tot_n)} em NFD TSP "
+        f"({(_tot_n/_tot_v*100 if _tot_v else 0):.2f}%). Vendas = Valor da Nota do Intelipost por data de despacho; "
+        f"NFD = valor lançado na Rentabilidade (TSP real, sem retirada/endereço/ausência)."
+    )
+    if pct_estimado:
+        st.caption(
+            f"ℹ️ {pct_estimado:.0f}% dos pedidos do período não têm Data Despacho no export do Intelipost "
+            f"(hoje só a J&T/JET) e usam data estimada (entrega − lag típico da transportadora)."
+        )
     if nfd_sem_tsp_periodo > 0:
         st.caption(f"⚠️ {nfd_sem_tsp_periodo:,} notas NFD TSP no periodo sem transportadora identificada (nem Intelipost nem PRW).")
 
@@ -1428,21 +1507,33 @@ def render_tradeoff():
 
     # Card: Categorizado como TSP mas nao e TSP
     dbg2.markdown(kpi_box(
-        "Categorizado como TSP mas nao e TSP (R$)",
+        "Categorizado como TSP mas nao e TSP (R$, 2026 todo)",
         fmt_brl(total_tsp_mas_nao) if total_tsp_mas_nao else "sem dado",
         cor_valor=COR_ALERTA
     ), unsafe_allow_html=True)
 
-    # Card: NFD sem transportadora (nem Intelipost nem PRW identificou)
+    # Card: NFD TSP sem transportadora (nem Intelipost nem PRW identificou).
+    # O numero que importa e o das NFD de motivo TSP; o total geral (inclui NFD de outros
+    # setores, que nunca teriam transportadora) fica so como legenda.
     nfd_sem_tsp_total = 0
+    nfd_sem_tsp_geral = 0
+    if not df_intel.empty and "NFDSemTransportadoraTSP" in df_intel.columns:
+        nfd_sem_tsp_total = int(df_intel["NFDSemTransportadoraTSP"].iloc[0])
     if not df_intel.empty and "NFDSemTransportadora" in df_intel.columns:
-        nfd_sem_tsp_total = int(df_intel["NFDSemTransportadora"].iloc[0])
+        nfd_sem_tsp_geral = int(df_intel["NFDSemTransportadora"].iloc[0])
+    _val_sem_tsp = 0.0
+    if not df_nfd_real.empty and "Transportadora" in df_nfd_real.columns:
+        _m = (df_nfd_real["Transportadora"].fillna("").str.strip() == "") & (df_nfd_real["TemNFD"] == True) \
+             & (df_nfd_real.get("TspMasNaoTsp", pd.Series(False, index=df_nfd_real.index)) != True)
+        _val_sem_tsp = df_nfd_real.loc[_m, "ValorNota"].sum()
     nfd_prw_fallback = int(df_intel["NFDTranspPRWFallback"].iloc[0]) if not df_intel.empty and "NFDTranspPRWFallback" in df_intel.columns else 0
     dbg3.markdown(kpi_box(
-        "NFD sem Transportadora",
-        fmt_int(nfd_sem_tsp_total) if nfd_sem_tsp_total else "0",
+        "NFD TSP sem Transportadora",
+        f"{fmt_int(nfd_sem_tsp_total)} · {fmt_brl(_val_sem_tsp)}" if nfd_sem_tsp_total else "0",
         cor_valor=COR_NEUTRO
     ), unsafe_allow_html=True)
+    if nfd_sem_tsp_geral:
+        st.caption(f"Considerando NFD de todos os motivos (inclui outros setores): {nfd_sem_tsp_geral:,} sem transportadora.")
     if nfd_prw_fallback > 0:
         st.caption(f"ℹ️ {nfd_prw_fallback:,} NFDs tiveram transportadora identificada via PRW (fallback).")
 
@@ -1452,6 +1543,29 @@ def render_tradeoff():
         f"endereco, ausencia ou acareacao (21 status). Sao retiradas dos totais de TSP da Visao Geral.</div>",
         unsafe_allow_html=True
     )
+
+    # Quebra do "TSP mas nao e TSP": quanto dele e extravio/recusa de transportadora
+    # (o que mais pesa na discussao de excluir ou nao) e por qual status passou.
+    if not nfd_tsp_mas_nao.empty:
+        with st.expander("🔎 Detalhe do 'categorizado como TSP mas não é TSP' (por motivo, status e mês)"):
+            _m1 = (nfd_tsp_mas_nao.groupby("MotivoDevolucao")["ValorNota"]
+                   .agg(Notas="count", Valor="sum").sort_values("Valor", ascending=False).reset_index())
+            _m1["Valor"] = _m1["Valor"].apply(fmt_brl)
+            st.markdown("**Por motivo da devolução**")
+            st.dataframe(_m1, use_container_width=True, hide_index=True)
+            if "StatusNaoTsp" in nfd_tsp_mas_nao.columns:
+                _st = nfd_tsp_mas_nao.assign(Status=nfd_tsp_mas_nao["StatusNaoTsp"].astype(str).str.split("; ")).explode("Status")
+                _st = _st[_st["Status"].fillna("").str.strip() != ""]
+                _m2 = _st.groupby("Status")["ValorNota"].agg(Notas="count", Valor="sum").sort_values("Notas", ascending=False).reset_index()
+                _m2["Valor"] = _m2["Valor"].apply(fmt_brl)
+                st.markdown("**Por status que a nota atravessou** (uma nota pode passar por mais de um)")
+                st.dataframe(_m2, use_container_width=True, hide_index=True)
+            if "DataDespacho" in nfd_tsp_mas_nao.columns:
+                _mm = nfd_tsp_mas_nao.assign(Mes=pd.to_datetime(nfd_tsp_mas_nao["DataDespacho"], errors="coerce").dt.strftime("%Y-%m").fillna("sem data"))
+                _m3 = _mm.groupby("Mes")["ValorNota"].agg(Notas="count", Valor="sum").reset_index()
+                _m3["Valor"] = _m3["Valor"].apply(fmt_brl)
+                st.markdown("**Por mês de despacho** (o card acima soma o ano todo, não respeita o filtro de período)")
+                st.dataframe(_m3, use_container_width=True, hide_index=True)
 
     # Botao exportar — PedidoFormatado + valor (sem danfe, conforme LGPD)
     if not nfd_tsp_mas_nao.empty:
