@@ -12,6 +12,17 @@ from utils import (
 )
 import ressarcimento
 
+
+@st.cache_data(ttl=600, show_spinner=False)
+def _carregar_dev_geral(caminho, mtime):
+    """Aba `magalu_devolvidas` (notas devolvidas x comprovante). Cache pelo mtime do arquivo:
+    sem isso cada troca de filtro relê a planilha inteira (16 abas) só pra pegar esta."""
+    try:
+        return pd.read_excel(caminho, sheet_name="magalu_devolvidas")
+    except Exception:
+        return None
+
+
 def render_devolucao():
 
     # ==============================
@@ -848,6 +859,98 @@ def render_devolucao():
                     extravio_det_filtrado.drop(columns=["MesDetalhe"]),
                     use_container_width=True
                 )
+
+    # =====================================
+    # DEVOLUÇÃO (GERAL) — ENVIADOS x "CONTA COMO DEVOLVIDO"
+    # =====================================
+    # Itens que enviamos à transportadora (NFDs que geramos) e se ela provou a devolução: "Conta
+    # como devolvido" = Sim quando o pedido foi lido nos PDFs de romaneio de devolução que ela
+    # devolveu (ver Indicador_de_Devolucao.py, aba `magalu_devolvidas`). Hoje só a Magalu
+    # (GFL/Magalog) mandou parecer; a coluna Transportadora já permite as próximas. Ano = ano da
+    # NFD; abre em 2026. Repo público: aqui só PedidoFormatado/Transportadora/Valor — chaves e
+    # links do Drive ficam no Excel da rede.
+    dev_geral = _carregar_dev_geral(ARQ_DEVOLUCAO, os.path.getmtime(ARQ_DEVOLUCAO))
+
+    if dev_geral is not None and not dev_geral.empty and "ContaDevolvido" in dev_geral.columns:
+
+        st.markdown("---")
+
+        st.markdown(
+            '<div class="titulo-painel">Devolução — Enviados x Conta como devolvido</div>',
+            unsafe_allow_html=True
+        )
+
+        anos_dev = sorted(dev_geral["Ano"].dropna().astype(int).unique(), reverse=True)
+        transp_dev = sorted(dev_geral["Transportadora"].dropna().astype(str).str.upper().unique())
+
+        col_fd1, col_fd2 = st.columns(2)
+
+        with col_fd1:
+            transp_dev_sel = st.selectbox(
+                "Transportadora",
+                options=["Todas as transportadoras"] + transp_dev,
+                key="devgeral_filtro_transportadora"
+            )
+
+        with col_fd2:
+            ano_dev_sel = st.selectbox(
+                "Ano da NFD",
+                options=["Todos os anos"] + anos_dev,
+                index=1 + (anos_dev.index(2026) if 2026 in anos_dev else 0),
+                key="devgeral_filtro_ano"
+            )
+
+        dev_ano = dev_geral
+
+        if ano_dev_sel != "Todos os anos":
+            dev_ano = dev_ano[dev_ano["Ano"] == ano_dev_sel]
+
+        if transp_dev_sel != "Todas as transportadoras":
+            dev_ano = dev_ano[dev_ano["Transportadora"].astype(str).str.upper() == transp_dev_sel]
+
+        dev_sim = dev_ano[dev_ano["ContaDevolvido"] == "Sim"]
+        dev_nao = dev_ano[dev_ano["ContaDevolvido"] != "Sim"]
+
+        col_dg1, col_dg2, col_dg3 = st.columns(3)
+
+        with col_dg1:
+            card("Enviados à transportadora", moeda(dev_ano["ValorNota"].sum()),
+                 f"{len(dev_ano)} item(ns)")
+
+        with col_dg2:
+            card("Conta como devolvido (Sim)", moeda(dev_sim["ValorNota"].sum()),
+                 f"{len(dev_sim)} item(ns) — constam nos PDFs")
+
+        with col_dg3:
+            card("Não conta como devolvido", moeda(dev_nao["ValorNota"].sum()),
+                 f"{len(dev_nao)} item(ns)")
+
+        def _export_dev(df):
+            return pd.DataFrame({
+                "Pedido Formatado": df["PedidoFormatado"].astype(str),
+                "Transportadora": df["Transportadora"],
+                "Valor": df["ValorNota"],
+                "Conta como devolvido?": df["ContaDevolvido"],
+            })
+
+        col_dd1, col_dd2, col_dd3 = st.columns(3)
+
+        for coluna, rotulo, base, chave in (
+            (col_dd1, "todos os enviados", dev_ano, "todos"),
+            (col_dd2, "conta como devolvido (Sim)", dev_sim, "sim"),
+            (col_dd3, "não conta (Não)", dev_nao, "nao"),
+        ):
+            with coluna:
+                st.download_button(
+                    f"⬇️ Baixar {rotulo}",
+                    data=to_excel_bytes(_export_dev(base), colunas_texto=["Pedido Formatado"]),
+                    file_name=f"enviados_{chave}_{ano_dev_sel}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    key=f"download_devgeral_{chave}"
+                )
+
+        with st.expander(f"Ver itens em detalhe ({len(dev_ano)} registros)"):
+            st.dataframe(dev_ano, use_container_width=True)
 
     st.markdown("---")
 
